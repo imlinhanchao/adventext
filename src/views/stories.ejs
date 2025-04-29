@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>剧情管理</title>
+</head>
+<body>
+    <h1>剧情管理</h1>
+    <ul>
+        <% stories.forEach(story => { %>
+            <li><strong><%= story.title %></strong>: <%= story.content %></li>
+        <% }) %>
+    </ul>
+    <h2>添加新剧情</h2>
+    <form action="/stories" method="POST">
+        <label for="title">标题:</label>
+        <input type="text" id="title" name="title" required>
+        <br>
+        <label for="content">内容:</label>
+        <textarea id="content" name="content" required></textarea>
+        <br>
+        <button type="submit">添加</button>
+    </form>
+</body>
+</html>
