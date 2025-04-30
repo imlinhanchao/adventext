@@ -17,6 +17,7 @@
     "jsonwebtoken": "^9.0.2",
     "mysql": "^2.18.1",
     "reflect-metadata": "^0.2.2",
+    "session-file-store": "^1.5.0",
     "svg-captcha": "^1.4.0",
     "typeorm": "^0.3.22"
   },
@@ -26,6 +27,7 @@
     "@types/express-session": "^1.18.1",
     "@types/jsonwebtoken": "^9.0.9",
     "@types/node": "^22.15.3",
+    "@types/session-file-store": "^1.2.5",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
   }

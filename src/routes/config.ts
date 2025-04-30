@@ -17,6 +17,7 @@ router.post("/", (req, res) => {
   
   const config = {
     name, webport, secret: {
+      identity: '_SESSION_ID_' + randomStr(),
       session: randomStr(),
       jwt: randomStr(),
     },
@@ -37,3 +38,5 @@ router.post("/", (req, res) => {
     process.exit(0);
   }, 200);
 });
+
+export default router;

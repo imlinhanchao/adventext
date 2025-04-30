@@ -1,19 +1,24 @@
 import 'reflect-metadata';
 import { DataSource } from 'typeorm';
+import { Record } from "./Record";
 import { State } from "./State";
 import { Story } from "./Story";
 import { User } from "./User";
+import utils from '../utils'
 
-export const AppDataSource = new DataSource({
+export const AppDataSource = utils.config ? new DataSource({
   type: "mysql",
-  host: "hancel.org",
-  port: 3306,
-  username: "hancel",
-  password: "root_`1qw23",
-  database: "game",
+  ...utils.config.database,
   synchronize: true,
   logging: false,
-  entities: [State, Story, User],
+  entities: [Record, State, Story, User],
   migrations: [],
   subscribers: [],
-});
+}) : {} as DataSource;
+
+export {
+  Record,
+  State,
+  Story,
+  User
+}

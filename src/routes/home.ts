@@ -1,10 +1,10 @@
 import { Router } from "express";
-import { render } from "../utils/route";
+import { init, game } from "../controllers/game";
+import { userSession } from "../utils/auth";
 
 const router = Router();
 
-router.get("/", (req, res) => {
-  render(res, "index").render();
-});
+router.get("/", userSession(init));
+router.post("/", userSession(game));
 
 export default router;

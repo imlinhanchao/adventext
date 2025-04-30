@@ -1,25 +1,19 @@
 import { Request, Response } from "express";
-import fs from 'fs';
-import path from 'path';
-
-let config: any = null
-const configPath = path.join(__dirname, '..', 'config.json');
-if (!config && fs.existsSync(configPath)) {
-  config = JSON.parse(fs.readFileSync(configPath).toString());
-  delete config.database;
-  delete config.secret;
-}
+import utils from './index'
 
 class Render {
   req?: Request;
   res: Response;
   params: any;
   name: string;
+  config: any;
   constructor(res: Response, name: string, req?: Request) {
     this.res = res;
     this.req = req;
     this.name = name;
     this.params = {}
+    const { database, secret, ...rest } = utils.config;
+    this.config = rest;
   }
 
   title(title: string) {
@@ -56,7 +50,7 @@ class Render {
   render(params: any = {}) {
     this.res.render(this.name, {
       name: this.name,
-      config,
+      config: this.config,
       ...this.params,
       ...params,
       ...(this.req?.session || {}),

@@ -5,23 +5,17 @@ import { Router } from "express";
 import { AppDataSource } from "../entities";
 import { User } from "../entities/User";
 import { login } from "../controllers/auth";
-import { State } from "../entities/State";
 import { render } from '../utils/route';
+import { omit } from '../utils';
 
 const router = Router();
 
 // 用户登录
 router.post("/login", async (req, res) => {
   try {
-    const { user } = await login(req.body, true);
-    req.session.user = user;
-
-    if (user) {
-      const state = await AppDataSource.getRepository(State).findOneBy({ id: user.id });
-      req.session.state = state;
-    }
-
-    res.redirect("/"); // 登录成功后重定向到主页
+    const { user } = await login(req.body);
+    req.session.user = omit(user, ["password"]);
+    res.redirect("/");
   } catch(error: any) {
     render(res, 'login', req).title('登录').error(error.message).render();
   }

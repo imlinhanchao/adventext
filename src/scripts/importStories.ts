@@ -12,14 +12,14 @@ async function importStories() {
     AppDataSource.getRepository(Story);
 
     // 读取 JSON 文件
-    const filePath = path.join(__dirname, "../../../data/story.json");
+    const filePath = path.join(__dirname, "../../data/story.json");
     const storyData = JSON.parse(fs.readFileSync(filePath, "utf-8"));
 
     // 转换并保存数据
     await AppDataSource.transaction(async (transactionalEntityManager) => {
       const stories = Object.entries(storyData).map(([key, value]: any) => {
         const story = new Story();
-        story.key = key;
+        story.scene = key;
         story.content = value.text;
         story.options = value.options;
         return story;

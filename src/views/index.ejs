@@ -1,8 +1,23 @@
 <%- include('header') %>
 
 <article>
-  <h2>欢迎来到 <%=config.name -%></h2>
-  <p>开始你的冒险吧！</p>
+  <div id="game">
+    <% if (locals.message){ -%>
+    <p class="<%= type -%> message"><%= message -%></p>
+    <% } -%>
+    <div id="story"></div>
+    <div id="options" class="space-x-2">
+      
+    </div>
+    <form action="/" id="form" method="POST">
+      <input type="hidden" name="option" id="option" />
+    </form>
+  </div>
+  <script>
+    const state = <%- JSON.stringify(locals.state || null) %>;
+    const scene = <%- JSON.stringify(locals.story || null) %>;
+    if (scene && state) startGame(scene, state);
+  </script>
 </article>
 
 <%- include('footer') %>

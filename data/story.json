@@ -1,0 +1,84 @@
+{
+  "start": {
+    "text": "你站在一个分岔路口，左边是黑暗的森林，右边是阳光明媚的小路。",
+    "options": [
+      {
+        "text": "进入森林",
+        "next": "forest"
+      },
+      {
+        "text": "走小路",
+        "next": "sunny_path"
+      }
+    ]
+  },
+  "forest": {
+    "text": "你进入了森林，听到远处传来狼嚎声。",
+    "options": [
+      {
+        "text": "捡起剑",
+        "append": "你发现了一把生锈的剑。",
+        "next": "forest",
+        "once": true,
+        "effect": {
+          "items": [
+            { "name": "rusty_sword", "count": 1, "once": true }
+          ]
+        }
+      },
+      {
+        "text": "继续前进",
+        "next": "deep_forest"
+      },
+      {
+        "text": "返回路口",
+        "next": "start"
+      }
+    ]
+  },
+  "sunny_path": {
+    "text": "你走在阳光明媚的小路上，感到一阵轻松。前方有一个村庄。",
+    "options": [
+      {
+        "text": "进入村庄",
+        "next": "village"
+      },
+      {
+        "text": "返回路口",
+        "next": "start"
+      }
+    ]
+  },
+  "deep_forest": {
+    "text": "你深入森林，遇到了一只狼。你是否要战斗？",
+    "options": [
+      {
+        "text": "用剑战斗",
+        "next": "wolf_fight",
+        "condition": {
+          "item": "rusty_sword"
+        }
+      },
+      {
+        "text": "逃跑",
+        "next": "start"
+      }
+    ]
+  },
+  "village": {
+    "text": "村庄里有一个商人，他愿意用金币交换物品。",
+    "options": [
+      {
+        "text": "购买药水",
+        "next": "buy_potion",
+        "condition": {
+          "gold": 10
+        }
+      },
+      {
+        "text": "离开村庄",
+        "next": "start"
+      }
+    ]
+  }
+}
