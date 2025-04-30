@@ -1,5 +1,4 @@
 body {
-  font-family: Arial, sans-serif;
   background-color: #f4f4f9;
   margin: 0;
   padding: 0;
@@ -29,6 +28,7 @@ body>footer {
   color:#ccc;
   font-size: 80%;
   text-align: center;
+  padding: 5px 0;
 }
 
 a {
