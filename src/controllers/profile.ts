@@ -1,10 +1,12 @@
 import { JwtPayload } from 'jsonwebtoken';
 import { Request, Response } from 'express';
 import { AppDataSource } from '../entities';
-import { GameState } from '../entities/GameState';
+import { State } from '../entities/State';
 import { User } from '../entities/User';
+import { omit } from '../utils';
+import { error, json } from '../utils/route';
 
-const gameStateRepository = AppDataSource.getRepository(GameState);
+const gameStateRepository = AppDataSource.getRepository(State);
 
 export const getGameState = async (payload: JwtPayload, req: Request, res: Response) => {
   try {
@@ -13,12 +15,12 @@ export const getGameState = async (payload: JwtPayload, req: Request, res: Respo
     const gameState = await gameStateRepository.findOneBy({ id: userId });
 
     if (!gameState) {
-      return res.status(404).json({ message: 'GameState not found' });
+      return json(res, new State());
     }
 
-    res.json(gameState);
+    json(res, gameState);
   } catch (error: any) {
-    res.status(error.message.includes('Unauthorized') ? 401 : 500).json({ message: error.message });
+    error(res, error.message);
   }
 };
 
@@ -30,7 +32,7 @@ export const saveGameState = async (payload: JwtPayload, req: Request, res: Resp
     let gameState = await gameStateRepository.findOneBy({ id: userId });
 
     if (!gameState) {
-      gameState = new GameState();
+      gameState = new State();
       gameState.id = userId;
     }
 
@@ -40,9 +42,9 @@ export const saveGameState = async (payload: JwtPayload, req: Request, res: Resp
 
     await gameStateRepository.save(gameState);
 
-    res.json({ message: 'GameState saved successfully' });
+    json(res, null, 'GameState saved successfully');
   } catch (error: any) {
-    res.status(error.message.includes('Unauthorized') ? 401 : 500).json({ message: error.message });
+    error(res, error.message);
   }
 };
 
@@ -53,11 +55,11 @@ export const getUserInfo = async (payload: JwtPayload, req: Request, res: Respon
     const user = await AppDataSource.getRepository(User).findOneBy({ id: userId });
 
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return error(res, 'User not found');
     }
 
-    res.json({ id: user.id, username: user.username });
+    json(res, omit(user, ['password']));
   } catch (error: any) {
-    res.status(error.message.includes('Unauthorized') ? 401 : 500).json({ message: error.message });
+    error(res, error.message);
   }
 };

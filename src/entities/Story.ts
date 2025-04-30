@@ -5,7 +5,7 @@ export class Story {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column('varchar', { length: 255 })
   key: string;
 
   @Column("text")

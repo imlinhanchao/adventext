@@ -1,0 +1,80 @@
+import { Request, Response } from "express";
+import fs from 'fs';
+import path from 'path';
+
+let config: any = null
+const configPath = path.join(__dirname, '..', 'config.json');
+if (!config && fs.existsSync(configPath)) {
+  config = JSON.parse(fs.readFileSync(configPath).toString());
+  delete config.database;
+  delete config.secret;
+}
+
+class Render {
+  req?: Request;
+  res: Response;
+  params: any;
+  name: string;
+  constructor(res: Response, name: string, req?: Request) {
+    this.res = res;
+    this.req = req;
+    this.name = name;
+    this.params = {}
+  }
+
+  title(title: string) {
+    this.params.title = title;
+    return this;
+  }
+
+  message(message: string, type: string = 'error') {
+    this.params.message = message;
+    this.params.type = type;
+    return this;
+  }
+
+  error(message: string) {
+    this.message(message, 'error');
+    return this;
+  }
+
+  success(message: string) {
+    this.message(message, 'success');
+    return this;
+  }
+
+  warning(message: string) {
+    this.message(message, 'warning');
+    return this;
+  }
+
+  location(location: string) {
+    this.params.location = location
+    return this;
+  }
+
+  render(params: any = {}) {
+    this.res.render(this.name, {
+      name: this.name,
+      config,
+      ...this.params,
+      ...params,
+      ...(this.req?.session || {}),
+      ...(this.req?.body || {}),
+      ...(this.req?.query || {}),
+      ...(this.req?.params || {}),
+    });
+  }
+}
+
+export function render(res: Response, name: string, req?: Request) {
+  return new Render(res, name, req);
+}
+
+export function json(res: Response, data: any, message?: string) {
+  res.json({ code: 0, data, message });
+}
+
+export function error(res: Response, message: string) {
+  res.json({ code: -1, message });
+}

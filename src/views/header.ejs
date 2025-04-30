@@ -3,15 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RPG Game</title>
+  <title><%= locals.title ? locals.title + ' | ' + config.name : config.name -%></title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <link rel="stylesheet" href="/assets/style.css">
   <link rel="stylesheet" href="/assets/main.js">
 </head>
 <header>
-  <nav>
-    <ul>
-      <li><a href="/">首页</a></li>
-    </ul>
-  </nav>
+  <h1>
+    <a href="/"><%= config.name -%></a>
+  </h1>
 </header>
 <main>

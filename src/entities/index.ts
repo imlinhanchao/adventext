@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import { DataSource } from 'typeorm';
-import { GameState } from "./GameState";
+import { State } from "./State";
 import { Story } from "./Story";
 import { User } from "./User";
 
@@ -13,7 +13,7 @@ export const AppDataSource = new DataSource({
   database: "game",
   synchronize: true,
   logging: false,
-  entities: [GameState, Story, User],
+  entities: [State, Story, User],
   migrations: [],
   subscribers: [],
 });

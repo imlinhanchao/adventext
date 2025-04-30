@@ -1,0 +1,47 @@
+<%- include('header') %>
+
+  <form class="form" action="/config" method="POST">
+    <h1>配置</h1>
+    <p>
+      <label for="name">游戏名称:</label>
+      <input type="text" id="name" name="name" required value="<%= locals.body?.name || '' -%>">
+    </p>
+    <p>
+      <label for="webport">端口:</label>
+      <input type="number" id="webport" name="webport" required value="<%= locals.body?.webport || '' -%>">
+    </p>
+    <h2>数据库配置</h2>
+    <p>
+      <label for="host">主机:</label>
+      <input type="text" id="host" name="host" required value="<%= locals.body?.host || '' -%>">
+    </p>
+    <p>
+      <label for="port">端口:</label>
+      <input type="host" id="port" name="port" required value="<%= locals.body?.port || '' -%>">
+    </p>
+    <p>
+      <label for="username">用户名:</label>
+      <input type="text" id="username" name="username" required value="<%= locals.body?.username || '' -%>">
+    </p>
+    <p>
+      <label for="password">密码:</label>
+      <input type="password" id="password" name="password" required value="<%= locals.body?.password || '' -%>">
+    </p>
+    <p>
+      <label for="database">数据库:</label>
+      <input type="text" id="database" name="database" required value="<%= locals.body?.database || '' -%>">
+    </p>
+    <button type="submit" class="btn">配置</button>
+    <% if (locals.message){ -%>
+    <p class="<%= type -%> message"><%= message -%></p>
+    <% } -%>
+    <% if (locals.location){ -%>
+      <scritp>
+        setTimeout(() => {
+          window.location.href = "<%= locals.location %>";
+        }, 1000);
+      </scritp>
+    <% } -%>
+  </form>
+
+  <%- include('footer') %>

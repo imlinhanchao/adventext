@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
 @Entity()
-export class GameState {
+export class State {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -12,8 +12,15 @@ export class GameState {
   currentScene: string;
 
   @Column('simple-json')
-  inventory: Record<string, boolean>;
+  inventory: Record<string, number>;
 
   @Column('int')
   gold: number;
+
+  constructor() {
+    this.state = '';
+    this.currentScene = '';
+    this.inventory = {};
+    this.gold = 0;
+  }
 }

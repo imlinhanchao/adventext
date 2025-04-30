@@ -5,7 +5,8 @@ import { Router } from "express";
 import { AppDataSource } from "../entities";
 import { User } from "../entities/User";
 import { login } from "../controllers/auth";
-import { GameState } from "../entities/GameState";
+import { State } from "../entities/State";
+import { render } from '../utils/route';
 
 const router = Router();
 
@@ -16,13 +17,13 @@ router.post("/login", async (req, res) => {
     req.session.user = user;
 
     if (user) {
-      const state = await AppDataSource.getRepository(GameState).findOneBy({ id: user.id });
+      const state = await AppDataSource.getRepository(State).findOneBy({ id: user.id });
       req.session.state = state;
     }
 
     res.redirect("/"); // 登录成功后重定向到主页
   } catch(error: any) {
-    res.render('login', { message: error.message, type: 'error', body: req.body });
+    render(res, 'login', req).title('登录').error(error.message).render();
   }
 });
 
@@ -43,13 +44,13 @@ router.post("/register", async (req, res) => {
   // 验证验证码
   const storedCaptcha = captchas.get(req.sessionID);
   if (!storedCaptcha || storedCaptcha.toUpperCase() !== captcha.toUpperCase()) {
-    res.render('register', { message: "Invalid captcha", type: 'error' });
+    render(res, 'register').title('注册').error("Invalid captcha").render();
     return;
   }
 
   const existingUser = await userRepository.findOne({ where: { username } });
   if (existingUser) {
-    res.render('register', { message: "Username already exists", type: 'error', body: req.body });
+    render(res, 'register').title('注册').error("Username already exists").render();
     return;
   }
 
@@ -57,7 +58,7 @@ router.post("/register", async (req, res) => {
   const newUser = userRepository.create({ username, password: hashedPassword });
   await userRepository.save(newUser);
 
-  res.render('login', { message: "Registration successful, please log in", type: 'success' });
+  render(res, 'login').title('登录').success("Registration successful, please log in").render();
 });
 
 const captchas = new Map(); // 存储验证码的 Map
@@ -78,13 +79,12 @@ router.get("/captcha", (req, res) => {
 
 // 登录页面
 router.get("/login", (req, res) => {
-  res.render("login");
+  render(res, 'login', req).title('登录').render();
 });
 
 // 注册页面
 router.get("/register", (req, res) => {
-  res.render("register");
-
+  render(res, 'register', req).title('注册').render();
 });
 
 export default router;
