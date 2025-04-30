@@ -5,6 +5,6 @@ import { userSession } from "../utils/auth";
 const router = Router();
 
 router.get("/", userSession(init));
-router.post("/", userSession(game));
+router.post("/choose", userSession(game));
 
 export default router;

@@ -1,6 +1,6 @@
 <%- include('header') %>
 
-  <form class="form" action="/config" method="POST">
+  <form class="form space-y-2" action="/" method="POST">
     <h1>配置</h1>
     <p>
       <label for="name">游戏名称:</label>
@@ -17,7 +17,7 @@
     </p>
     <p>
       <label for="port">端口:</label>
-      <input type="host" id="port" name="port" required value="<%= locals.body?.port || '' -%>">
+      <input type="host" id="port" name="port" required value="<%= locals.body?.port || '3306' -%>">
     </p>
     <p>
       <label for="username">用户名:</label>
@@ -36,11 +36,11 @@
     <p class="<%= type -%> message"><%= message -%></p>
     <% } -%>
     <% if (locals.location){ -%>
-      <scritp>
+      <script>
         setTimeout(() => {
           window.location.href = "<%= locals.location %>";
         }, 1000);
-      </scritp>
+      </script>
     <% } -%>
   </form>
 

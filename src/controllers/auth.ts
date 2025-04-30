@@ -1,7 +1,8 @@
-import bcrypt from "bcrypt";
+import crypto from "crypto";
 import { AppDataSource } from '../entities';
 import { User } from '../entities/User';
 import { generateToken } from "../utils/auth";
+import utils from '../utils';
 
 export async function login(params: { username: string; password: string }, needToken=false) {
   const { username, password } = params;
@@ -12,7 +13,10 @@ export async function login(params: { username: string; password: string }, need
     throw new Error("Username or Password is wrong." );
   }
 
-  const isValid = await bcrypt.compare(password, user.password!);
+  const sha256 = crypto.createHash('sha256');
+  const hashedPassword = sha256.update(password + utils.config.secret.salt).digest('hex');
+  
+  const isValid = hashedPassword == user.password;
   if (!isValid) {
     throw new Error("Username or Password is wrong." );
   }

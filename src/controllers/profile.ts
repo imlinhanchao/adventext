@@ -6,12 +6,12 @@ import { User } from '../entities/User';
 import { omit } from '../utils';
 import { error, json } from '../utils/route';
 
-const gameStateRepository = AppDataSource.getRepository(State);
 
 export const getGameState = async (payload: JwtPayload, req: Request, res: Response) => {
   try {
     const userId = payload.id;
-
+    
+    const gameStateRepository = AppDataSource.getRepository(State);
     const gameState = await gameStateRepository.findOneBy({ id: userId });
 
     if (!gameState) {
@@ -29,6 +29,7 @@ export const saveGameState = async (payload: JwtPayload, req: Request, res: Resp
     const userId = payload.id;
     const { currentScene, inventory, gold } = req.body;
 
+    const gameStateRepository = AppDataSource.getRepository(State);
     let gameState = await gameStateRepository.findOneBy({ id: userId });
 
     if (!gameState) {

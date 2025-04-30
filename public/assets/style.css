@@ -56,6 +56,7 @@ a {
   font-weight: bold;
   color: #555;
   width: 6em;
+  min-width: 6em;
   text-align: right;
   padding-right: 1em;
   white-space: nowrap;
@@ -154,7 +155,7 @@ h2 {
 
 #options button {
   border: 2px solid #007bff;
-  color: white;
+  color: #007bff;
   padding: 5px 10px;
   border-radius: 4px;
   cursor: pointer;

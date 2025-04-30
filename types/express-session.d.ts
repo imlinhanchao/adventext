@@ -6,5 +6,6 @@ declare module 'express-session' {
   interface SessionData {
     user?: User;
     state?: GameState | null;
+    captcha?: string;
   }
 }

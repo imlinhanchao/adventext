@@ -12,7 +12,7 @@ class Render {
     this.req = req;
     this.name = name;
     this.params = {}
-    const { database, secret, ...rest } = utils.config;
+    const { database, secret, ...rest } = utils.config || {};
     this.config = rest;
   }
 
@@ -51,12 +51,12 @@ class Render {
     this.res.render(this.name, {
       name: this.name,
       config: this.config,
+      body: this.req?.body,
+      query: this.req?.query,
+      params: this.req?.params,
       ...this.params,
       ...params,
       ...(this.req?.session || {}),
-      ...(this.req?.body || {}),
-      ...(this.req?.query || {}),
-      ...(this.req?.params || {}),
     });
   }
 }

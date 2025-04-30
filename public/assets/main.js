@@ -1,6 +1,7 @@
 function startGame(scene, state) {
   const storyDiv = document.getElementById('story');
   const optionsDiv = document.getElementById('options');
+  document.getElementById('error').style.display = 'none';
 
   storyDiv.textContent = scene.content;
   optionsDiv.innerHTML = '';
@@ -22,8 +23,26 @@ function startGame(scene, state) {
     }
 
     button.onclick = () => {
-      document.getElementById('option').value = option.text;
-      document.getElementById('form').submit();
+      button.disabled = true;
+      fetch('/choose', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          option: option.text,
+        })
+      }).then(res => res.json())
+        .then(res => {
+          button.disabled = false;
+          if (!res.code) {
+            startGame(res.data.story, res.data.state);
+          } else {
+            document.getElementById('error').innerText = res.message;
+            document.getElementById('error').style.display = 'block';
+          }
+        });
     };
     optionsDiv.appendChild(button);
   });

@@ -3,7 +3,7 @@ import { NextFunction, Request, Response } from 'express';
 import utils from './index'
 import { User } from '../entities';
 
-const SECRET_KEY = utils.config.secret.jwt;
+const SECRET_KEY = utils.config?.secret.jwt || '';
 
 export function verifyToken (token: string): JwtPayload | null {
   try {

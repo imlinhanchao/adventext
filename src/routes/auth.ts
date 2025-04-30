@@ -1,12 +1,12 @@
 import 'express-session';
-import bcrypt from "bcrypt";
+import crypto from "crypto";
 import svgCaptcha from "svg-captcha";
 import { Router } from "express";
 import { AppDataSource } from "../entities";
 import { User } from "../entities/User";
 import { login } from "../controllers/auth";
 import { render } from '../utils/route';
-import { omit } from '../utils';
+import utils, { omit } from '../utils';
 
 const router = Router();
 
@@ -36,9 +36,8 @@ router.post("/register", async (req, res) => {
   const userRepository = AppDataSource.getRepository(User);
 
   // 验证验证码
-  const storedCaptcha = captchas.get(req.sessionID);
-  if (!storedCaptcha || storedCaptcha.toUpperCase() !== captcha.toUpperCase()) {
-    render(res, 'register').title('注册').error("Invalid captcha").render();
+  if (!req.session.captcha || req.session.captcha.toUpperCase() !== captcha.toUpperCase()) {
+    render(res, 'register', req).title('注册').error("Invalid captcha").render();
     return;
   }
 
@@ -48,14 +47,14 @@ router.post("/register", async (req, res) => {
     return;
   }
 
-  const hashedPassword = await bcrypt.hash(password, 10);
+  const sha256 = crypto.createHash('sha256');
+  const hashedPassword = sha256.update(password + utils.config.secret.salt).digest('hex');
+
   const newUser = userRepository.create({ username, password: hashedPassword });
   await userRepository.save(newUser);
 
   render(res, 'login').title('登录').success("Registration successful, please log in").render();
 });
-
-const captchas = new Map(); // 存储验证码的 Map
 
 // 验证码生成
 router.get("/captcha", (req, res) => {
@@ -66,7 +65,7 @@ router.get("/captcha", (req, res) => {
     background: "#ccf2ff", // 背景颜色
   });
 
-  captchas.set(req.sessionID, captcha.text); // 将验证码文本存储到 Map 中
+  req.session.captcha = captcha.text; // 将验证码文本存储到 Map 中
   res.type("svg");
   res.status(200).send(captcha.data); // 返回验证码的 SVG 数据
 });

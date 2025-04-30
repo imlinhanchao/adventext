@@ -12,7 +12,7 @@ import utils from './utils'
 import SessionStore from "session-file-store";
 
 const app = express();
-const PORT = 3000;
+const PORT = 3001;
 const FileStore = SessionStore(session);
 
 // 中间件
