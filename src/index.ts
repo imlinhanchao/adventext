@@ -1,40 +1,39 @@
 import "reflect-metadata";
 import express from "express";
-import { DataSource } from "typeorm";
-import storyRoutes from "./routes/storyRoutes";
-import authRoutes from "./routes/authRoutes";
-import homeRoutes from "./routes/homeRoutes";
+import storyRoutes from "./routes/story";
+import authRoutes from "./routes/auth";
+import homeRoutes from "./routes/home";
+import profileRoutes from "./routes/profile";
 import path from "path";
+import { AppDataSource } from "./entities";
+import session from "express-session";
 
 const app = express();
 const PORT = 3000;
-
-export const AppDataSource = new DataSource({
-  type: "mysql",
-  host: "hancel.org",
-  port: 3306,
-  username: "hancel",
-  password: "root_`1qw23",
-  database: "game",
-  synchronize: true,
-  logging: false,
-  entities: ["src/entities/*.ts"],
-  migrations: [],
-  subscribers: [],
-});
 
 // 中间件
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// 添加会话支持
+app.use(
+  session({
+    secret: "your-secret-key", // 请替换为更安全的密钥
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false }, // 如果使用 HTTPS，请将其设置为 true
+  })
+);
+
 // 静态文件服务
-app.use("/assets", express.static(path.join(__dirname, "public/assets")));
+app.use(express.static(path.join(__dirname, "..", "public")));
 
 // 设置 EJS 模板引擎
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
 // 路由
+app.use("/profile", profileRoutes);
 app.use("/stories", storyRoutes);
 app.use("/auth", authRoutes);
 app.use("/", homeRoutes);

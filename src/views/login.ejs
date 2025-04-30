@@ -1,20 +1,20 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>登录</title>
-</head>
-<body>
+<%- include('header') %>
+
+  <form class="form" action="/auth/login" method="POST">
     <h1>登录</h1>
-    <form action="/auth/login" method="POST">
-        <label for="username">用户名:</label>
-        <input type="text" id="username" name="username" required>
-        <br>
-        <label for="password">密码:</label>
-        <input type="password" id="password" name="password" required>
-        <br>
-        <button type="submit">登录</button>
-    </form>
-</body>
-</html>
+    <p>
+      <label for="username">用户名:</label>
+      <input type="text" id="username" name="username" required value="<%= locals.body?.username || '' -%>">
+    </p>
+    <p>
+      <label for="password">密码:</label>
+      <input type="password" id="password" name="password" required value="<%= locals.body?.password || '' -%>">
+    </p>
+    <button type="submit" class="btn">登录</button>
+    <a href="./register" class="link">没有账号？注册</a>
+    <% if (locals.message){ -%>
+    <p class="<%= type -%> message"><%= message -%></p>
+    <% } -%>
+  </form>
+
+  <%- include('footer') %>

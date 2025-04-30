@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { AppDataSource } from "../index";
+import { AppDataSource } from "../entities";
 import { Story } from "../entities/Story";
 
 const router = Router();

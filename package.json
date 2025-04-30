@@ -1,27 +1,29 @@
 {
-  "name": "rpg",
+  "name": "rpg-game",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "ts-node src/index.ts --files"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "description": "",
   "dependencies": {
     "bcrypt": "^5.1.1",
     "ejs": "^3.1.10",
     "express": "^5.1.0",
+    "express-session": "^1.18.1",
     "jsonwebtoken": "^9.0.2",
     "mysql": "^2.18.1",
     "reflect-metadata": "^0.2.2",
-    "sqlite3": "^5.1.7",
+    "svg-captcha": "^1.4.0",
     "typeorm": "^0.3.22"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
     "@types/express": "^5.0.1",
+    "@types/express-session": "^1.18.1",
     "@types/jsonwebtoken": "^9.0.9",
     "@types/node": "^22.15.3",
     "ts-node": "^10.9.2",

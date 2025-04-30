@@ -1,0 +1,15 @@
+</main>
+<footer>
+  <div id="userinfo">
+  <% if(!locals.user){ -%>
+    <p><a href="/auth/login" id="login">登录</a> | <a href="/auth/register" id="register">注册</a></p>
+  <% }else{ -%>
+    <p>
+        <a title="个人资料" href="/u/<%= user.username %>"><%= user.nickname %></a>。
+    </p>
+  <% } -%>
+  </div>
+  <p>&copy; 2025 RPG Game. All rights reserved.</p>
+</footer>
+
+</html>

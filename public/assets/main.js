@@ -1,5 +1,29 @@
 let gameState = { currentScene: "start", inventory: {}, gold: 0 };
 
+class Game {
+  constructor() {
+
+  }
+
+  async init() {
+    this.user = await this.getUserInfo();
+  }
+  
+  async getUserInfo() {
+    try {
+      const response = await fetch('/user-info');
+      if (!response.ok) {
+        throw new Error('Failed to fetch user info');
+      }
+      const userInfo = await response.json();
+      console.log('User Info:', userInfo);
+      return userInfo;
+    } catch (error) {
+      console.error('Error fetching user info:', error);
+    }
+  }
+}
+
 async function loadStory() {
   const response = await fetch('/stories');
   return response.json();
