@@ -19,12 +19,10 @@
         "text": "捡起剑",
         "append": "你发现了一把生锈的剑。",
         "next": "forest",
-        "once": true,
-        "effect": {
-          "items": [
-            { "name": "rusty_sword", "count": 1, "once": true }
-          ]
-        }
+        "loop": -1,
+        "effects": [
+          { "name": "rusty_sword", "content": "1" }
+        ]
       },
       {
         "text": "继续前进",
@@ -53,15 +51,15 @@
     "text": "你深入森林，遇到了一只狼。你是否要战斗？",
     "options": [
       {
-        "text": "用剑战斗",
+        "text": "战斗",
         "next": "wolf_fight",
         "condition": {
-          "item": "rusty_sword"
+          "itemType": "weapon"
         }
       },
       {
         "text": "逃跑",
-        "next": "start"
+        "next": "<back>"
       }
     ]
   },
@@ -69,15 +67,20 @@
     "text": "村庄里有一个商人，他愿意用金币交换物品。",
     "options": [
       {
-        "text": "购买药水",
+        "text": "购买药水(10金币/瓶)",
         "next": "buy_potion",
-        "condition": {
-          "gold": 10
-        }
+        "value": "请输入购买数量",
+        "conditions": [
+          { "type": "Gold", "content": 10 }
+        ],
+        "effects": [
+          { "type": "Gold", "content": -10 },
+          { "name": "hp_restore", "type": "potion", "content": 1 }
+        ]
       },
       {
         "text": "离开村庄",
-        "next": "start"
+        "next": "<back>"
       }
     ]
   }

@@ -19,7 +19,7 @@ async function importStories() {
     await AppDataSource.transaction(async (transactionalEntityManager) => {
       const stories = Object.entries(storyData).map(([key, value]: any) => {
         const story = new Story();
-        story.scene = key;
+        story.name = key;
         story.content = value.text;
         story.options = value.options;
         return story;

@@ -1,11 +1,12 @@
 import { Request, Response } from 'express';
-import { Record, State, Story, User, AppDataSource } from "../entities";
+import { Record, Profile, Story, User, AppDataSource, Item } from "../entities";
 import { render, json, error } from "../utils/route";
+import { Effect } from '../entities/Story';
 
 async function gameState(userId: number) {
-  const stateRepository = AppDataSource.getRepository(State);
-  const state = (await stateRepository.findOneBy({ userId })) || new State(userId);
-  const scene = state.currentScene || "start";
+  const stateRepository = AppDataSource.getRepository(Profile);
+  const state = (await stateRepository.findOneBy({ userId })) || new Profile(userId);
+  const scene = state.scene || 'start';
   const story = await getStory(scene);
 
   return { state, story };
@@ -13,17 +14,21 @@ async function gameState(userId: number) {
 
 async function getStory(scene: string) {
   const storyRepository = AppDataSource.getRepository(Story);
-  return await storyRepository.findOneBy({ scene });
+
+  return await storyRepository.findOneBy({ name: scene });
 }
 
-async function updateOptions(story: Story, state: State) {
+async function getItem(item: string) {
+  const itemRepository = AppDataSource.getRepository(Item);
+  return await itemRepository.findOneBy({ key: item });
+}
+
+async function updateOptions(story: Story, state: Profile) {
   const recordRepository = AppDataSource.getRepository(Record);
   for (const option of story.options) {
-    if (option.once) {
-      const record = await recordRepository.findOneBy({ user: state.userId, story: story.id, option: option.text });
-      if (record) {
-        option.disabled = true;
-      }
+    const record = await recordRepository.findOneBy({ user: state.userId, story: story.name, option: option.text });
+    if (option.loop !== undefined && record && (option.loop < 0 || Date.now() - record.time < option.loop)) {
+      option.disabled = true;
     }
   }
   return story.options.filter((option) => !option.disabled);
@@ -46,76 +51,157 @@ export const init = async (user: User, req: Request, res: Response) => {
   }
 }
 
+export const ItemType: { [key:string]: string } = {
+  'weapon': '武器',
+  'armor': '护甲',
+  'potion': '药水',
+  'food': '食物',
+  'material': '材料',
+  'misc': '杂物',
+}
+
 export const game = async (user: User, req: Request, res: Response) => {
   try {
     const userId = user.id;
-    let { state, story } = await gameState(userId);
+    let { state: profile, story } = await gameState(userId);
 
     const optionText = req.body.option as string;
+    const valueText = req.body.value as string;
+    const timezone = req.body.timezone ?? - new Date().getTimezoneOffset() / 60;
     const option = story?.options.find((option) => option.text === optionText);
 
+    let message = '';
+    
     if (!option) {
-      throw new Error('Invalid option selected');
+      throw new Error('无效选项');
+    }
+    
+    if (option?.value && !valueText) {
+      throw new Error('缺少数值');
     }
 
-    if (option.condition) {
-      const { item, gold } = option.condition;
-      if (item && !state.inventory[item]) {
-        throw new Error(`You need ${item} to proceed.`);
+    if (option.conditions) {
+      for (const condition of option.conditions) {
+        if (condition.type === 'Time') {
+          const time = new Date();
+          if (condition.content.year !== undefined && time.getFullYear() !== condition.content.year 
+        || condition.content.month !== undefined && time.getMonth() + 1 !== condition.content.month
+        || condition.content.day !== undefined && time.getDate() !== condition.content.day
+        || condition.content.hour !== undefined && time.getHours() !== condition.content.hour + timezone
+        || condition.content.minute !== undefined && time.getMinutes() !== condition.content.minute) {
+            throw new Error(`还不是时候`);
+          }
+        }
+        if (condition.type === 'Fn') {
+          const fn = new Function('state', condition.content + '\nreturn state;');
+          const result = fn(profile);
+          if (result !== true) {
+            throw new Error(typeof result != 'string' ? `你还没准备好` : result);
+          }
+        }
+        if (condition.type === 'Item') {
+          const item = await getItem(condition.content);
+          if (!item) {
+            throw new Error(`物品未找到`);
+          }
+          const inventory = profile.inventory.find((i) => i.id === condition.content);
+          if (!inventory || inventory.count < 1) {
+            throw new Error(`你需要 ${item.name}.`);
+          }
+        }
+        if (condition.type === 'Gold') {
+          let gold = parseInt(condition.content);
+          if (option.value) {
+            gold = parseInt(valueText) * gold
+          }
+          if (profile.gold < gold) {
+            throw new Error(`你需要 ${gold} 金币.`);
+          }
+        }
+        if (condition.type === 'ItemType') {
+          const inventory = profile.inventory.find((i) => i.type === condition.content);
+          if (!inventory) {
+            throw new Error(`你需要 ${ItemType[condition.content.toString()]}.`);
+          }
+        }
       }
-      if (gold && state.gold < gold) {
-        throw new Error(`You need ${gold} gold to proceed.`);
+    }
+
+    let next = option.next;
+    if (option.effects) {
+      const gold = Effect.getGold(option.effects);
+      if (gold) {
+        profile.gold += gold;
+        message += `获得 ${gold} 金币.`;
       }
+      for (const item of option.effects) {
+        if (item.type === 'Gold') return;
+        if (item.type === 'Item') {
+          const inventory = await getItem(item.name);
+          const count = parseInt(item.content);
+          if (inventory) {
+            message += `获得 ${inventory.name}.`;
+            const item = profile.inventory.find((i) => i.id === inventory.id);
+            if (item) {
+              item.count += count;
+            } else {
+              profile.inventory.push({
+                ...inventory,
+                count: 1,
+              });
+            }
+          }
+        }
+        if (item.type === 'Fn') {
+          const result = new Function('profile', 'let message = "", next = null;\n' + item.content + '\nreturn { profile, message, next };')(profile);
+          profile = result.profile;
+          message += result.message;
+          if (result.next) {
+            next = result.next;
+          }
+        }
+      }
+    }
+
+    if (next === '<back>') {
+      next = profile.from;
+    }
+
+    const nextStory = await getStory(next);
+
+    if (!nextStory) {
+      throw new Error('Oops! 前方无路……');
     }
 
     const recordRepository = AppDataSource.getRepository(Record);
     await recordRepository.save({
       user: userId,
-      story: story!.id,
+      story: story!.name,
+      from: profile.from,
       content: story!.content,
       option: option.text,
       time: Date.now(),
     });
 
-    story = await getStory(option.next);
+    profile.from = story!.name;
+    profile.scene = nextStory.name;
 
-    if (!story) {
-      throw new Error('Story not found');
-    }
+    nextStory!.options = await updateOptions(nextStory!, profile);
 
-    state.currentScene = story.scene;
-
-    if (option.effect) {
-      const { items } = option.effect;
-      const gold = option.effect.gold
-      items.forEach((item) => {
-        if (item.name !== 'Gold') {
-          state.inventory[item.name] = (state.inventory[item.name] || 0) + item.count;
-        }
-      });
-      if (gold) state.gold += gold;
-    }
-
-    story!.options = await updateOptions(story!, state);
-
-    const stateRepository = AppDataSource.getRepository(State);
+    const stateRepository = AppDataSource.getRepository(Profile);
 
     const currentState = await stateRepository.findOneBy({ userId });
     if (currentState) {
-      Object.assign(currentState, state);
+      Object.assign(currentState, profile);
       await stateRepository.update(currentState.id, currentState);
     } else {
-      await stateRepository.save({
-        userId,
-        inventory: state.inventory,
-        gold: state.gold,
-        currentScene: story?.scene,
-      });
+      await stateRepository.save(profile);
     }
 
     json(res, {
-      state,
-      story,
+      state: profile,
+      story: nextStory,
+      message,
     })
   } catch (err: any) {
     error(res, err.message)

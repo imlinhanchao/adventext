@@ -1,7 +1,7 @@
 import { JwtPayload } from 'jsonwebtoken';
 import { Request, Response } from 'express';
 import { AppDataSource } from '../entities';
-import { State } from '../entities/State';
+import { State } from '../entities/Profile';
 import { User } from '../entities/User';
 import { omit } from '../utils';
 import { error, json } from '../utils/route';

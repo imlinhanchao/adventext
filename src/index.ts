@@ -1,9 +1,7 @@
 import "reflect-metadata";
 import express from "express";
-import storyRoutes from "./routes/story";
 import authRoutes from "./routes/auth";
 import homeRoutes from "./routes/home";
-import profileRoutes from "./routes/profile";
 import configRoutes from "./routes/config";
 import path from "path";
 import { AppDataSource } from "./entities";
@@ -40,8 +38,6 @@ if (utils.config) {
   );
   
   // 路由
-  app.use("/profile", profileRoutes);
-  app.use("/stories", storyRoutes);
   app.use("/auth", authRoutes);
   app.use("/", homeRoutes);
   

@@ -10,20 +10,17 @@ function startGame(scene, state) {
     const button = document.createElement('button');
     button.textContent = option.text;
 
-    if (option.condition) {
-      const { item, gold } = option.condition;
-      if (item && !state.inventory[item]) {
-        button.disabled = true;
-        button.textContent += " (需要道具)";
-      }
-      if (gold && state.gold < gold) {
-        button.disabled = true;
-        button.textContent += ` (需要${gold}金币)`;
-      }
+    if (option.append) {
+      storyDiv.textContent += option.append;
     }
 
     button.onclick = () => {
       button.disabled = true;
+      let value;
+      if (option.value) {
+        value = prompt(option.value)
+        if (!value) return;
+      }
       fetch('/choose', {
         method: 'POST',
         headers: {
@@ -32,6 +29,7 @@ function startGame(scene, state) {
         credentials: 'include',
         body: JSON.stringify({
           option: option.text,
+          value,
         })
       }).then(res => res.json())
         .then(res => {
