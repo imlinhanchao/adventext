@@ -4,7 +4,7 @@ import { userSession } from "../utils/auth";
 
 const router = Router();
 
-router.get("/", userSession(init));
-router.post("/choose", userSession(game));
+router.get("/:storyId", userSession(init));
+router.post("/choose/:storyId", userSession(game));
 
 export default router;

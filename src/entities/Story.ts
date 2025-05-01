@@ -1,56 +1,35 @@
-import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
-
-export class Option {
-  text: string;
-  append?: string;
-  next: string;
-  loop?: number;
-  disabled?: boolean;
-  value?: string;
-  conditions?: Condition[];
-  effects?: Effect[];
-
-  constructor(text: string, next: string, conditions?: Condition[], effects?: Effect[]) {
-    this.text = text;
-    this.next = next;
-    this.conditions = conditions;
-    this.effects = effects;
-  }
-}
-
-export class Condition {
-  type: string;
-  content: any;
-}
-
-export class Effect {
-  name: string;
-  type: string;
-  content: string;
-
-  constructor(name: string, type: string, content: string) {
-    this.name = name;
-    this.type = type;
-    this.content = content;
-  }
-
-  static getGold(effects: Effect[]): number {
-    const goldEffect = effects.find(effect => effect.type === 'Gold');
-    return goldEffect ? parseInt(goldEffect.content) : 0;
-  }
-}
+import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Item } from './Item';
+import { Inventory } from './Profile';
 
 @Entity()
 export class Story {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column('varchar', { length: 255 })
+  @Column('varchar', { length: 255, comment: '故事名称 ' })
   name: string;
 
-  @Column("text")
-  content: string;
+  @Column('varchar', { length: 255, comment: '起始场景' })
+  start: string;
 
-  @Column("simple-json")
-  options: Option[];
+  @Column('varchar', { length: 500, comment: '描述' })
+  description: string;
+
+  @Column('json', { comment: '人物初始化属性' })
+  attr: any;
+
+  @Column('json', { comment: '属性名称' })
+  attrName: { [key: string]: [string, string] | string };
+
+  @Column('json', { comment: '初始化物品' })
+  inventory: Inventory[];
+  
+
+  constructor() {
+    this.name = '';
+    this.description = '';
+    this.attr = {};
+    this.attrName = {};
+  }
 }

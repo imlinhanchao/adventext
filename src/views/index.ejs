@@ -5,7 +5,7 @@
     <% if (locals.message){ -%>
     <p class="<%= type -%> message"><%= message -%></p>
     <% } -%>
-    <p class="error message" id="error"></p>
+    <p class="message" id="message"></p>
     <div id="story"></div>
     <div id="options" class="space-x-2">
       
@@ -16,7 +16,8 @@
   </div>
   <script>
     const state = <%- JSON.stringify(locals.state || null) %>;
-    const scene = <%- JSON.stringify(locals.story || null) %>;
+    const scene = <%- JSON.stringify(locals.scene || null) %>;
+    const story = <%- locals.story %>;
     if (scene && state) startGame(scene, state);
   </script>
 </article>

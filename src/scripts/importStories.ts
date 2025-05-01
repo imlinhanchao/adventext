@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import { AppDataSource } from "../entities";
-import { Story } from "../entities/Story";
+import { Scene } from "../entities/Scene";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -9,7 +9,7 @@ async function importStories() {
     await AppDataSource.initialize();
     console.log("Database connected");
 
-    AppDataSource.getRepository(Story);
+    AppDataSource.getRepository(Scene);
 
     // 读取 JSON 文件
     const filePath = path.join(__dirname, "../../data/story.json");
@@ -18,11 +18,13 @@ async function importStories() {
     // 转换并保存数据
     await AppDataSource.transaction(async (transactionalEntityManager) => {
       const stories = Object.entries(storyData).map(([key, value]: any) => {
-        const story = new Story();
-        story.name = key;
-        story.content = value.text;
-        story.options = value.options;
-        return story;
+        const scene = new Scene();
+        scene.storyId = 1;
+        scene.name = key;
+        scene.content = value.text;
+        scene.options = value.options;
+        scene.position = { x: 0, y: 0 };
+        return scene;
       });
 
       for (const story of stories) {

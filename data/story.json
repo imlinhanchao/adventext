@@ -21,7 +21,7 @@
         "next": "forest",
         "loop": -1,
         "effects": [
-          { "name": "rusty_sword", "content": "1" }
+          { "type": "Item", "name": "rusty_sword", "content": "1" }
         ]
       },
       {
@@ -55,7 +55,11 @@
         "next": "wolf_fight",
         "condition": {
           "itemType": "weapon"
-        }
+        },
+        "effects": [
+          { "type": "Item", "name": "wolf_fur", "content": "1" },
+          { "type": "Gold", "content": 5 }
+        ]
       },
       {
         "text": "逃跑",

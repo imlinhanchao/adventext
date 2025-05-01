@@ -5,17 +5,20 @@ export class Record {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column('int', { comment: '用户 ID' })
+  user: number;
+
+  @Column('int', { comment: '故事 ID' })
+  storyId: number;
+
   @Column('varchar', { length: 255, comment: '场景' })
-  story: string;
+  scene: string;
 
   @Column('varchar', { length: 255, comment: '来源场景' })
   from: string;
 
   @Column("text", { comment: '内容' })
   content: string;
-
-  @Column('int', { comment: '用户 ID' })
-  user: number;
 
   @Column('varchar', { length: 500, comment: '选项' })
   option: string;

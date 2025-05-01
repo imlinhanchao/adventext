@@ -3,8 +3,8 @@ import { DataSource } from 'typeorm';
 import { Record } from "./Record";
 import { Profile } from "./Profile";
 import { Story } from "./Story";
+import { Scene } from "./Scene";
 import { Item } from "./Item";
-import { Skill } from "./Skill";
 import { User } from "./User";
 import utils from '../utils'
 
@@ -13,7 +13,7 @@ export const AppDataSource = utils.config ? new DataSource({
   ...utils.config.database,
   synchronize: true,
   logging: false,
-  entities: [Record, Profile, User, Story, Item, Skill],
+  entities: [Record, Profile, User, Story, Scene, Item],
   migrations: [],
   subscribers: [],
 }) : {} as DataSource;
@@ -23,6 +23,6 @@ export {
   Profile,
   User,
   Story,
+  Scene,
   Item,
-  Skill,
 }

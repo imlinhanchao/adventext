@@ -1,7 +1,7 @@
 function startGame(scene, state) {
   const storyDiv = document.getElementById('story');
   const optionsDiv = document.getElementById('options');
-  document.getElementById('error').style.display = 'none';
+  showMessage('', 'info')
 
   storyDiv.textContent = scene.content;
   optionsDiv.innerHTML = '';
@@ -21,7 +21,7 @@ function startGame(scene, state) {
         value = prompt(option.value)
         if (!value) return;
       }
-      fetch('/choose', {
+      fetch('/choose/' + story, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -35,15 +35,22 @@ function startGame(scene, state) {
         .then(res => {
           button.disabled = false;
           if (!res.code) {
-            startGame(res.data.story, res.data.state);
+            startGame(res.data.scene, res.data.state);
+            showMessage(res.data.message, 'info')
           } else {
-            document.getElementById('error').innerText = res.message;
-            document.getElementById('error').style.display = 'block';
+            showMessage(res.message, 'error')
           }
         });
     };
     optionsDiv.appendChild(button);
   });
+}
+
+function showMessage(message, type) {
+  const messageCon = document.getElementById('message');
+  messageCon.style.display = message ? 'block' : 'none';
+  messageCon.className = 'message ' + type;
+  messageCon.textContent = message;
 }
 
 
