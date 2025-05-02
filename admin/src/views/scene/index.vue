@@ -1,8 +1,9 @@
 <script setup lang="ts">
-  import { getSceneList, Scene, sceneBatchSave } from '@/api/scene';
+  import { deleteScene, getSceneList, Scene, sceneBatchSave } from '@/api/scene';
   import SceneItem from './scene.vue';
-  import { ElMessage } from 'element-plus';
+  import { ElMessage, ElMessageBox } from 'element-plus';
   import { useEventListener } from '@/hooks/event/useEventListener';
+  import ItemForm from './item.vue';
 
   const route = useRoute();
   const story = Number(route.params.story);
@@ -26,7 +27,28 @@
     await sceneBatchSave(story, scenes.value);
     ElMessage.success('保存成功');
   }
-  function add() {}
+
+  const itemRef = ref<InstanceType<typeof ItemForm>>();
+  function addScene() {
+    itemRef.value?.open().then((scene: Scene) => {
+      scenes.value.push(scene);
+    });
+  }
+  function editScene(scene: Scene) {
+    itemRef.value?.open(scene).then((data: Scene) => {
+      Object.assign(scene, data);
+    });
+  }
+  function removeScene(scene: Scene) {
+    ElMessageBox.confirm('确定删除该场景吗？', '提示', {
+      type: 'warning',
+    }).then(() => {
+      deleteScene(story, scene.id!).then(() => {
+        ElMessage.success('删除成功');
+      });
+      scenes.value = scenes.value.filter((item) => item !== scene);
+    });
+  } 
 
   const scenePanelRef = ref<HTMLElement>();
   const sceneViewRef = ref<HTMLElement>();
@@ -83,16 +105,21 @@
     },
     wait: 0,
   });
+
+  const sceneMap = computed<Recordable<Scene>>(() => scenes.value.reduce((acc, scene) => {
+    acc[scene.name] = scene;
+    return acc;
+  }, {}));
 </script>
 
 <template>
   <el-container>
     <el-header class="flex !py-2 justify-between" height="auto">
       <section>
-        <el-button type="primary" @click="add" plain>添加场景</el-button>
+        <el-button type="primary" @click="addScene" plain>添加场景</el-button>
       </section>
       <section>
-        <el-button type="primary" @click="save">保存</el-button>
+        <el-button type="primary" @click="save">保存布局</el-button>
       </section>
     </el-header>
     <el-main class="!h-full">
@@ -104,7 +131,8 @@
         <section
           id="scenePanel"
           ref="scenePanelRef"
-          class="absolute transition-all duration-200"
+          class="absolute"
+          :class="{ 'transition-all duration-200': !isMove }"
           :style="{ top: pos.y + 'px', left: pos.x + 'px' }"
         >
           <SceneItem
@@ -113,7 +141,10 @@
             :key="index"
             :story="story"
             :scene="scene"
+            :sceneMap="sceneMap"
             @next="highlightScene"
+            @edit="editScene"
+            @remove="removeScene"
             @mousedown.stop
             class="transition-all duration-200"
             :class="{
@@ -123,5 +154,6 @@
         </section>
       </section>
     </el-main>
+    <ItemForm ref="itemRef" :story="story" :scenes="scenes" />
   </el-container>
 </template>

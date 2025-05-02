@@ -70,6 +70,12 @@ router.post("/:id/scene", async (req, res) => {
   }
 
   const sceneRepository = AppDataSource.getRepository(Scene);
+
+  const existingScene = await sceneRepository.findOneBy({ name: req.body.name, storyId: Number(req.params.id) });
+  if (existingScene) {
+    return error(res, "场景名称已存在" );
+  }
+  
   const newScene = sceneRepository.create({ ...req.body, storyId: Number(req.params.id) });
   const result = await sceneRepository.save(newScene);
   json(res, result);
@@ -88,6 +94,12 @@ router.put("/:id/scene/:sceneId", async (req, res) => {
   if (!scene) {
     return error(res, "场景不存在" );
   }
+
+  const existingScene = await sceneRepository.findOneBy({ name: req.body.name, storyId: Number(req.params.id) });
+  if (existingScene && existingScene.id !== Number(req.params.sceneId)) {
+    return error(res, "场景名称已存在" );
+  }
+  
   sceneRepository.merge(scene, req.body);
   const result = await sceneRepository.save(scene);
   json(res, result);

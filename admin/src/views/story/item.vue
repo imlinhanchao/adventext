@@ -3,13 +3,14 @@
   import { ElMessage, FormInstance } from 'element-plus';
   import ItemSelector from '@/views/item/selector.vue';
   import { Item } from '@/api/item';
+  import { clone } from '@/utils';
 
-  const emit = defineEmits(['confirm'])
+  const emit = defineEmits(['confirm']);
   const visible = ref(false);
   const data = ref<Story>(new Story());
 
   function open(story?: Story) {
-    data.value = story || new Story();
+    data.value = clone(story || new Story());
     visible.value = true;
     baseAttr.value = Object.entries(data.value.attr).map(([key, value]) => {
       return {
@@ -17,7 +18,7 @@
         value: value.toString(),
         name: data.value.attrName[key],
       };
-    })
+    });
   }
 
   defineExpose({
@@ -41,7 +42,9 @@
     data.value.attr = data.value.attrName = {};
     baseAttr.value.forEach((item) => {
       if (item.key) {
-        data.value.attr[item.key] = isNaN(parseFloat(item.value)) ? item.value : parseFloat(item.value);
+        data.value.attr[item.key] = isNaN(parseFloat(item.value))
+          ? item.value
+          : parseFloat(item.value);
         if (item.name) data.value.attrName[item.key] = item.name;
       }
     });
@@ -52,7 +55,7 @@
     emit('confirm', data.value);
   }
 
-  const baseAttr = ref<{ key: string, value: string, name: string}[]>([]);
+  const baseAttr = ref<{ key: string; value: string; name: string }[]>([]);
   const itemRef = ref<InstanceType<typeof ItemSelector>>();
   function addInventory() {
     itemRef.value?.open(data.value.inventory).then((items: Item[]) => {
@@ -62,7 +65,12 @@
 </script>
 
 <template>
-  <el-dialog :title="data.id ? '更新故事' : '创建故事'" v-model="visible" width="700px" class="max-h-[80vh]">
+  <el-dialog
+    :title="data.id ? '更新故事' : '创建故事'"
+    v-model="visible"
+    width="700px"
+    class="max-h-[80vh]"
+  >
     <el-form ref="formRef" label-width="auto" :model="formData" :rules="rules" class="colon">
       <el-form-item label="名称" name="name">
         <el-input v-model.trim="data.name" />
@@ -93,7 +101,12 @@
         </el-table-column>
         <el-table-column label="操作" width="80" align="center">
           <template #header>
-            <el-button type="primary" link size="small" @click="baseAttr.push({ key: '', value: '', name: '' })">
+            <el-button
+              type="primary"
+              link
+              size="small"
+              @click="baseAttr.push({ key: '', value: '', name: '' })"
+            >
               <Icon icon="i-ep:circle-plus" />
             </el-button>
           </template>
@@ -108,7 +121,13 @@
         <el-button type="primary" link size="small" @click="addInventory">
           <Icon icon="i-ep:circle-plus-filled" />
         </el-button>
-        <el-tag v-for="(item, i) in data.inventory" :key="i" class="mr-2" closable @close="data.inventory.splice(i, 1)">
+        <el-tag
+          v-for="(item, i) in data.inventory"
+          :key="i"
+          class="mr-2"
+          closable
+          @close="data.inventory.splice(i, 1)"
+        >
           {{ item.name }}×{{ item.count }}
         </el-tag>
       </el-form-item>

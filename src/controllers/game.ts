@@ -39,7 +39,7 @@ async function updateOptions(story: Scene, state: Profile) {
   const recordRepository = AppDataSource.getRepository(Record);
   for (const option of story.options) {
     const record = await recordRepository.findOneBy({ user: state.userId, scene: story.name, option: option.text });
-    if (option.loop !== undefined && record && (option.loop < 0 || Date.now() - record.time < option.loop)) {
+    if (option.loop !== undefined && record && (option.loop < 0 || Date.now() - record.time < option.loop * 1000)) {
       option.disabled = true;
     }
   }
@@ -241,6 +241,20 @@ export const game = async (user: User, req: Request, res: Response) => {
                 });
               });
               if (!inventory) {
+                throw new Error(`你还没准备好.`);
+              }
+            }
+          }
+          if (condition.type === 'Attr') {
+            if (profile.attr[condition.content] === undefined) {
+              throw new Error(`你还没准备好.`);
+            }
+            if (typeof profile.attr[condition.content] === 'number') {
+              if (profile.attr[condition.content] < parseFloat(valueText)) {
+                throw new Error(`你还没准备好.`);
+              }
+            } else {
+              if (profile.attr[condition.content] !== valueText) {
                 throw new Error(`你还没准备好.`);
               }
             }

@@ -39,6 +39,12 @@ router.post("/:id/item", async (req, res) => {
   }
 
   const itemRepository = AppDataSource.getRepository(Item);
+
+  const existingItem = await itemRepository.findOneBy({ name: req.body.name, storyId: Number(req.params.id) });
+  if (existingItem) {
+    return error(res, "物品名称已存在" );
+  }
+
   const newItem = itemRepository.create({ ...req.body, storyId: Number(req.params.id) });
   const result = await itemRepository.save(newItem);
 
@@ -54,6 +60,12 @@ router.put("/:id/item/:itemId", async (req, res) => {
   }
 
   const itemRepository = AppDataSource.getRepository(Item);
+
+  const existingItem = await itemRepository.findOneBy({ name: req.body.name, storyId: Number(req.params.id) });
+  if (existingItem && existingItem.id !== Number(req.params.itemId)) {
+    return error(res, "物品名称已存在" );
+  }
+  
   const item = await itemRepository.findOneBy({ id: Number(req.params.itemId), storyId: Number(req.params.id) });
   if (!item) {
     return error(res, "物品不存在" );

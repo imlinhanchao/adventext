@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import { createItem, Item, updateItem } from '@/api/item';
+  import { clone } from '@/utils';
   import { FormInstance } from 'element-plus';
 
   const props = defineProps<{
@@ -20,7 +21,7 @@
   const formRef = ref<FormInstance>();
 
   function open(item?: Item) {
-    data.value = item || new Item();
+    data.value = clone(item || new Item());
     visible.value = true;
     attr.value = Object.entries(data.value.attributes).map(([key, value]) => {
       return {

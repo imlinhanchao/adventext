@@ -5,9 +5,10 @@
   const props = defineProps<{
     story: number;
     scene: Scene;
+    sceneMap: Recordable<Scene>;
   }>();
 
-  const emit = defineEmits(['next', 'edit']);
+  const emit = defineEmits(['next', 'edit', 'remove']);
   const data = ref<Scene>(props.scene);
 
   const isMove = ref(false);
@@ -44,15 +45,18 @@
 </script>
 <template>
   <section
-    class="absolute"
+    class="absolute transition-none"
     :style="{ left: scene.position.x + 'px', top: scene.position.y + 'px' }"
   >
     <el-card class="scene min-w-[400px]" :header="scene.name" header-class="!flex justify-between">
       <template #header>
-        <span class="text-lg font-bold select-none cursor-move" @mousedown="beginMove">{{
+        <span class="text-lg font-bold select-none cursor-move" @mousedown.stop="beginMove">{{
           scene.name
         }}</span>
-        <el-button type="primary" link icon="el-icon-edit" @click="$emit('edit', scene)" />
+        <span>
+          <el-button type="danger" link icon="el-icon-delete" @click="$emit('remove', scene)" />
+          <el-button type="primary" link icon="el-icon-edit" @click="$emit('edit', scene)" />
+        </span>
       </template>
       <p class="my-2">
         <span class="font-bold">{{ scene.content }}</span>
@@ -75,11 +79,12 @@
                 <Icon
                   icon="i-eva:gift-outline"
                   v-if="item.effects?.length"
-                  :title="`影响x` + item.effects?.length"
+                  :title="`效果x` + item.effects?.length"
                 />
+                <Icon icon="i-icon-park-outline:loop-once" v-if="(item.loop ?? -1) >= 0" :title="`循环/${item.loop}s`" />
               </span>
             </span>
-            <span ref="nextRef" :class="{ 'cursor-pointer': item.next != '<back>' }" @click="emit('next', item.next)">→{{ item.next }}</span>
+            <span ref="nextRef" :class="{ 'cursor-pointer': item.next != '<back>' && sceneMap[item.next], 'bg-red px-2 rounded font-bold': item.next != '<back>' && !sceneMap[item.next] }" @click="emit('next', item.next)">→{{ item.next }}</span>
           </li>
         </ul>
       </section>
