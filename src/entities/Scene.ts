@@ -22,6 +22,7 @@ export class Condition {
   type: string;
   name: string;
   content: any;
+  tip?: string;
 }
 
 export class Effect {
