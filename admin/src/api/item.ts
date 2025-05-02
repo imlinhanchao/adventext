@@ -35,9 +35,12 @@ export class Item {
   /**
    * 属性
    */
-  attributes: {
-    [key: string]: any;
-  } = {};
+  attributes: Recordable<string|number> = {};
+
+  /**
+   * 属性名称
+   */
+  attrName: Recordable<string> = {};
 }
 
 export interface IItemQuery {

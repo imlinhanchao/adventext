@@ -10,21 +10,41 @@ export class Inventory extends Item {
 }
 
 export class Story {
+  /**
+   * 故事Id
+   */
   id?: number;
 
+  /**
+   * 故事名称
+   */
   name: string;
 
+  /**
+   * 起始场景
+   */
   start: string;
 
+  /**
+   * 描述
+   */
   description: string;
 
+  /**
+   * 人物初始化属性
+   */
   attr: Recordable<string|number>;
 
+  /**
+   * 属性名称
+   */
   attrName: Recordable<string>;
 
+  /**
+   * 初始化物品
+   */
   inventory: Inventory[];
   
-
   constructor() {
     this.name = '';
     this.description = '';

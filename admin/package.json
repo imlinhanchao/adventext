@@ -20,7 +20,7 @@
     "codemirror": "^5.65.16",
     "crypto-js": "^4.2.0",
     "echarts": "^5.5.1",
-    "element-plus": "^2.8.6",
+    "element-plus": "^2.9.9",
     "lodash-es": "^4.17.21",
     "pinia": "^2.1.7",
     "qs": "^6.12.3",

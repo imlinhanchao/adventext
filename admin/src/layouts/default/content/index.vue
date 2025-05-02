@@ -15,7 +15,7 @@
           mode="out-in"
           appear
         >
-          <component :is="Component" :key="route.fullPath" />
+          <component :is="Component" :key="route.fullPath" class="h-full" />
         </transition>
       </template>
     </RouterView>

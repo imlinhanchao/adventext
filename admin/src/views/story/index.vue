@@ -50,7 +50,10 @@
         <el-table-column label="操作" align="center" width="280">
           <template #default="{ row }">
             <el-button-group>
-              <el-button type="primary" size="small" @click="$router.push(`/story/${row.id}/scenes`)">
+              <el-button type="primary" size="small" @click="$router.push(`/story/${row.id}/item`)">
+                物品
+              </el-button>
+              <el-button type="primary" size="small" @click="$router.push(`/story/${row.id}/scene`)">
                 场景
               </el-button>
               <el-button type="primary" size="small" @click="edit(row)">编辑</el-button>

@@ -33,14 +33,5 @@ export const LoginRoute: AppRouteRecordRaw = {
   },
 };
 
-export const RegisterRoute: AppRouteRecordRaw = {
-  path: PageEnum.BASE_REGISTER,
-  name: 'Register',
-  component: () => import('/@/views/sys/Register.vue'),
-  meta: {
-    title: '注册',
-  },
-};
-
 // Basic routing without permission
-export const basicRoutes = [LoginRoute, RegisterRoute, RootRoute, PAGE_NOT_FOUND_ROUTE];
+export const basicRoutes = [LoginRoute, RootRoute, PAGE_NOT_FOUND_ROUTE];

@@ -4,6 +4,7 @@
   import ItemSelector from '@/views/item/selector.vue';
   import { Item } from '@/api/item';
 
+  const emit = defineEmits(['confirm'])
   const visible = ref(false);
   const data = ref<Story>(new Story());
 
@@ -48,6 +49,7 @@
     await (data.value.id ? updateStory : createStory)(data.value);
     ElMessage.success('保存成功');
     visible.value = false;
+    emit('confirm', data.value);
   }
 
   const baseAttr = ref<{ key: string, value: string, name: string}[]>([]);
@@ -61,14 +63,14 @@
 
 <template>
   <el-dialog :title="data.id ? '更新故事' : '创建故事'" v-model="visible" width="700px" class="max-h-[80vh]">
-    <el-form ref="formRef" :model="formData" :rules="rules" class="colon">
+    <el-form ref="formRef" label-width="auto" :model="formData" :rules="rules" class="colon">
       <el-form-item label="名称" name="name">
         <el-input v-model.trim="data.name" />
       </el-form-item>
       <el-form-item label="描述" name="description">
         <el-input v-model="data.description" type="textarea" />
       </el-form-item>
-      <el-form-item label="人物基础属性" />
+      <el-form-item label="人物基础属性" class="no-error" />
       <el-table :data="baseAttr" class="no-error-padding w-full">
         <el-table-column prop="key" label="标识符" align="center">
           <template #default="{ row, $index: i }">

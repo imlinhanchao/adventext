@@ -6,7 +6,6 @@ export class Option {
   append?: string;
   next: string;
   loop?: number;
-  disabled?: boolean;
   value?: string;
   conditions?: Condition[];
   effects?: Effect[];

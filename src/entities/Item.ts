@@ -24,4 +24,7 @@ export class Item {
   attributes: {
     [key: string]: any;
   };
+  
+  @Column('json', { comment: '属性名称' })
+  attrName: { [key: string]: string };
 }
