@@ -22,7 +22,7 @@ export class Condition {
   type: string;
   name: string;
   content: any;
-  tip?: string;
+  tip: string;
 }
 
 export class Effect {
@@ -34,11 +34,6 @@ export class Effect {
     this.name = name;
     this.type = type;
     this.content = content;
-  }
-
-  static getGold(effects: Effect[]): number {
-    const goldEffect = effects.find(effect => effect.type === 'Gold');
-    return goldEffect ? parseInt(goldEffect.content) : 0;
   }
 }
 

@@ -1,0 +1,106 @@
+
+html[data-theme='light'] {
+  .text-secondary {
+    color: rgb(0 0 0 / 45%);
+  }
+
+  .ant-alert-success {
+    background-color: #f6ffed;
+    border: 1px solid #b7eb8f;
+  }
+
+  .ant-alert-error {
+    background-color: #fff2f0;
+    border: 1px solid #ffccc7;
+  }
+
+  .ant-alert-warning {
+    background-color: #fffbe6;
+    border: 1px solid #ffe58f;
+  }
+}
+
+[data-theme='dark'] {
+  .text-secondary {
+    color: #8b949e;
+  }
+
+  .ant-card-grid-hoverable:hover {
+    box-shadow:
+      0 3px 6px -4px rgb(0 0 0 / 48%),
+      0 6px 16px 0 rgb(0 0 0 / 32%),
+      0 9px 28px 8px rgb(0 0 0 / 20%);
+  }
+
+  .ant-card-grid {
+    box-shadow:
+      1px 0 0 0 #434343,
+      0 1px 0 0 #434343,
+      1px 1px 0 0 #434343,
+      1px 0 0 0 #434343 inset,
+      0 1px 0 0 #434343 inset;
+  }
+
+  .ant-calendar-selected-day .ant-calendar-date {
+    color: rgb(0 0 0 / 80%);
+  }
+
+  .ant-select-tree li .ant-select-tree-node-content-wrapper.ant-select-tree-node-selected {
+    color: rgb(0 0 0 / 90%);
+  }
+}
+
+@font-face {
+  font-family: HarmonyOS;
+  src:
+    url(//resource.hellofont.cn/font/HarmonyOS_SansSC_Regular-J.woff2) format('woff2'),
+    url(//resource.hellofont.cn/font/HarmonyOS_SansSC_Regular-J.woff) format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: HarmonyOS;
+  src:
+    url(//resource.hellofont.cn/font/HarmonyOS_SansSC_Medium-J.woff2) format('woff2'),
+    url(//resource.hellofont.cn/font/HarmonyOS_SansSC_Medium-J.woff) format('woff');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: HarmonyOS;
+  src:
+    url(//resource.hellofont.cn/font/HarmonyOS_SansSC_Bold-J.woff2) format('woff2'),
+    url(//resource.hellofont.cn/font/HarmonyOS_SansSC_Bold-J.woff) format('woff');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: HarmonyOS;
+  src:
+    url(//resource.hellofont.cn/font/HarmonyOS_SansSC_Black-J.woff2) format('woff2'),
+    url(//resource.hellofont.cn/font/HarmonyOS_SansSC_Black-J.woff) format('woff');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+:where(.css-dev-only-do-not-override-19iuou)[class^='ant-layout'],
+:where(.css-dev-only-do-not-override-19iuou)[class*=' ant-layout'] {
+  font-family:
+    HarmonyOS,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    'Helvetica Neue',
+    Arial,
+    'Noto Sans',
+    sans-serif,
+    'Apple Color Emoji',
+    'Segoe UI Emoji',
+    'Segoe UI Symbol',
+    'Noto Color Emoji';
+}

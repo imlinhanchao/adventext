@@ -1,5 +1,4 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
-import { Item } from './Item';
 import { Inventory } from './Profile';
 
 @Entity()
@@ -31,5 +30,6 @@ export class Story {
     this.description = '';
     this.attr = {};
     this.attrName = {};
+    this.inventory = [];
   }
 }

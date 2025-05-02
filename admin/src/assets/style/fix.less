@@ -1,0 +1,51 @@
+.ant-drawer-content-wrapper {
+  width: auto !important;
+}
+
+.no-error {
+  &.ant-form-item,
+  .ant-form-item {
+    margin-bottom: 0;
+  }
+}
+
+.fullscreen {
+  .ant-modal {
+    max-width: 100%;
+    top: 0;
+    padding-bottom: 0;
+    margin: 0;
+  }
+  .ant-modal-content {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh);
+  }
+  .ant-modal-body {
+    flex: 1;
+  }
+}
+
+
+.no-error-padding {
+
+  .el-form-item,
+  &.el-form-item {
+    margin-bottom: 0;
+  }
+
+  .el-form-item__error {
+    position: static;
+  }
+}
+
+// 表单字段 label 添加冒号
+.colon { 
+  .el-form-item__label, &.el-form-item__label{
+    &::after {
+      content: ':';
+      display: inline-block;
+      margin-left: 4px;
+    }
+  }
+}

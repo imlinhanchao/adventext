@@ -79,7 +79,7 @@
         ],
         "effects": [
           { "type": "Gold", "content": -10 },
-          { "name": "hp_restore", "type": "potion", "content": 1 }
+          { "name": "hp_restore", "type": "Item", "content": 1 }
         ]
       },
       {

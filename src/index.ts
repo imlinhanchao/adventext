@@ -1,6 +1,9 @@
 import "reflect-metadata";
 import express from "express";
 import authRoutes from "./routes/auth";
+import adminRoutes from "./routes/admin";
+import StoryRoute from './routes/story';
+import ItemRoute from './routes/item';
 import homeRoutes from "./routes/home";
 import configRoutes from "./routes/config";
 import path from "path";
@@ -39,6 +42,7 @@ if (utils.config) {
   
   // 路由
   app.use("/auth", authRoutes);
+  app.use("/api", adminRoutes);
   app.use("/", homeRoutes);
   
   // 数据库连接

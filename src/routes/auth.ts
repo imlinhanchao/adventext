@@ -1,12 +1,9 @@
 import 'express-session';
-import crypto from "crypto";
 import svgCaptcha from "svg-captcha";
 import { Router } from "express";
-import { AppDataSource } from "../entities";
-import { User } from "../entities/User";
-import { login } from "../controllers/auth";
+import { login, register } from "../controllers/auth";
 import { render } from '../utils/route';
-import utils, { omit } from '../utils';
+import { omit } from '../utils';
 
 const router = Router();
 
@@ -16,7 +13,7 @@ router.post("/login", async (req, res) => {
     const { user } = await login(req.body);
     req.session.user = omit(user, ["password"]);
     res.redirect("/");
-  } catch(error: any) {
+  } catch (error: any) {
     render(res, 'login', req).title('登录').error(error.message).render();
   }
 });
@@ -25,35 +22,28 @@ router.post("/token", async (req, res) => {
   try {
     const { token } = await login(req.body, true);
     res.json({ code: 0, data: token });
-  } catch(error: any) {
+  } catch (error: any) {
     res.json({ code: -1, message: error.message });
   }
 });
 
 // 用户注册
 router.post("/register", async (req, res) => {
-  const { username, password, captcha } = req.body;
-  const userRepository = AppDataSource.getRepository(User);
+  try {
+    const { username, password, captcha } = req.body;
 
-  // 验证验证码
-  if (!req.session.captcha || req.session.captcha.toUpperCase() !== captcha.toUpperCase()) {
-    render(res, 'register', req).title('注册').error("Invalid captcha").render();
-    return;
+    // 验证验证码
+    if (!req.session.captcha || req.session.captcha.toUpperCase() !== captcha.toUpperCase()) {
+      render(res, 'register', req).title('注册').error("Invalid captcha").render();
+      return;
+    }
+
+    await register({ username, password });
+
+    render(res, 'login').title('登录').success("Registration successful, please log in").render();
+  } catch (error: any) {
+    render(res, 'register').title('注册').error(error.message).render();
   }
-
-  const existingUser = await userRepository.findOne({ where: { username } });
-  if (existingUser) {
-    render(res, 'register').title('注册').error("Username already exists").render();
-    return;
-  }
-
-  const sha256 = crypto.createHash('sha256');
-  const hashedPassword = sha256.update(password + utils.config.secret.salt).digest('hex');
-
-  const newUser = userRepository.create({ username, password: hashedPassword });
-  await userRepository.save(newUser);
-
-  render(res, 'login').title('登录').success("Registration successful, please log in").render();
 });
 
 // 验证码生成
