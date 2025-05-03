@@ -40,6 +40,9 @@ export class Profile {
   @Column({ comment: '已经结局' })
   isEnd: boolean;
 
+  @Column('bigint', { comment: '创建时间' })
+  createTime: number;
+
   constructor(user: number, storyId: number) {
     this.userId = user;
     this.storyId = storyId;
@@ -50,5 +53,6 @@ export class Profile {
     this.attrName = {};
     this.endId = Date.now() / 1000;
     this.isEnd = false;
+    this.createTime = Date.now();
   }
 }

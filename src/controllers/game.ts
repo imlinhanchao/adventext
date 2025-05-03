@@ -242,6 +242,7 @@ export const addEnd = async (scene: Scene, profile: Profile) => {
     from: scene.name,
     endId: profile.endId,
     time: Date.now(),
+    cost: Date.now() - profile.createTime,
   })
 
   return await endRepository.save(end);

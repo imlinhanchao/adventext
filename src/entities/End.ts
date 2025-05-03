@@ -20,6 +20,9 @@ export class End {
   @Column('varchar', { length: 255, comment: '来源场景' })
   from: string;
 
-  @Column('bigint', { comment: '选择时间'})
+  @Column('bigint', { comment: '触发时间'})
   time: number;
+
+  @Column('bigint', { comment: '耗费时间'})
+  cost: number;
 }
