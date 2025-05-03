@@ -8,6 +8,7 @@
   import { getItemList, Item } from '@/api/item';
   import { ItemsContext, ScenesContext, StoryContext } from './index';
   import ItemSelector from '@/views/item/selector.vue';
+  import Virtual from './virtual.vue';
 
   const route = useRoute();
   const storyId = Number(route.params.story);
@@ -44,7 +45,7 @@
     ElMessage.success('保存成功');
   }
 
-  const sceneFormRef = ref<InstanceType<typeof ItemForm>>();
+  const sceneFormRef = ref<InstanceType<typeof SceneForm>>();
   function addScene() {
     sceneFormRef.value?.open().then((scene: Scene) => {
       scenes.value.push(scene);
@@ -151,54 +152,65 @@
       items.value = await getItemList(storyId);
     });
   }
+
+  const isVirtual = ref(false);
+  function virtualRun() {
+    isVirtual.value = !isVirtual.value;
+  }
 </script>
 
 <template>
   <el-container>
-    <el-header class="flex !py-2 justify-between" height="auto">
-      <section>
-        <el-button type="primary" @click="addScene" plain>添加场景</el-button>
-        <el-button type="primary" @click="viewItemList" plain>管理物品</el-button>
-      </section>
-      <section>
-        <el-button type="primary" @click="save">保存布局</el-button>
-      </section>
-    </el-header>
-    <el-main class="!h-full">
-      <section
-        @mousedown="beginMove"
-        class="relative overflow-hidden w-full h-full shadow shadow-lg border bg-light-50"
-        ref="sceneViewRef"
-      >
-        <section
-          id="scenePanel"
-          ref="scenePanelRef"
-          class="absolute"
-          :class="{ 'transition-all duration-200': !isMove }"
-          :style="{ top: pos.y + 'px', left: pos.x + 'px' }"
-        >
-          <SceneItem
-            v-for="(scene, index) in scenes"
-            :ref="(el) => (sceneRef[scene.name] = el)"
-            :key="index"
-            :story="storyId"
-            :scene="scene"
-            :sceneMap="sceneMap"
-            @next="highlightScene"
-            @edit="editScene"
-            @remove="removeScene"
-            @start="setStart"
-            @mousedown.stop
-            class="transition-all duration-200"
-            :class="{
-              'border-2 border-blue-500': highlight === scene.name,
-            }"
-            :start="story.start === scene.name"
-          />
+    <el-container>
+      <el-header class="flex !py-2 justify-between" height="auto">
+        <section>
+          <el-button type="primary" @click="addScene" plain>添加场景</el-button>
+          <el-button type="primary" @click="viewItemList" plain>管理物品</el-button>
+          <el-button type="success" @click="virtualRun" plain>模拟运行</el-button>
         </section>
-      </section>
-    </el-main>
-    <ItemSelector ref="itemListRef" :story="storyId" readonly />
-    <SceneForm ref="sceneFormRef" :story="storyId" :scenes="scenes" />
+        <section>
+          <el-button type="primary" @click="save">保存布局</el-button>
+        </section>
+      </el-header>
+      <el-main class="!h-full">
+        <section
+          @mousedown="beginMove"
+          class="relative overflow-hidden w-full h-full shadow shadow-lg border bg-light-50"
+          ref="sceneViewRef"
+        >
+          <section
+            id="scenePanel"
+            ref="scenePanelRef"
+            class="absolute"
+            :class="{ 'transition-all duration-200': !isMove }"
+            :style="{ top: pos.y + 'px', left: pos.x + 'px' }"
+          >
+            <SceneItem
+              v-for="(scene, index) in scenes"
+              :ref="(el) => (sceneRef[scene.name] = el)"
+              :key="index"
+              :story="storyId"
+              :scene="scene"
+              :sceneMap="sceneMap"
+              @next="highlightScene"
+              @edit="editScene"
+              @remove="removeScene"
+              @start="setStart"
+              @mousedown.stop
+              class="transition-all duration-200"
+              :class="{
+                'border-2 border-blue-500': highlight === scene.name,
+              }"
+              :start="story.start === scene.name"
+            />
+          </section>
+        </section>
+      </el-main>
+      <ItemSelector ref="itemListRef" :story="storyId" readonly />
+      <SceneForm ref="sceneFormRef" :story="storyId" :scenes="scenes" />
+    </el-container>
+    <el-aside v-if="isVirtual" width="500px">
+      <Virtual />
+    </el-aside>
   </el-container>
 </template>

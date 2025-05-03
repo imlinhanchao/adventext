@@ -39,7 +39,8 @@
       return;
     }
 
-    data.value.attr = data.value.attrName = {};
+    data.value.attr = {};
+    data.value.attrName = {};
     baseAttr.value.forEach((item) => {
       if (item.key) {
         data.value.attr[item.key] = isNaN(parseFloat(item.value))

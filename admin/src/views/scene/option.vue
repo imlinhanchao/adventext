@@ -110,17 +110,15 @@ import { getItem, Item } from '@/api/item';
           </template>
         </el-autocomplete>
       </el-form-item>
+      <el-form-item label="单次触发">
+        <el-switch v-model="data.loop" :active-value="-1" :inactive-value="0" />
+      </el-form-item>
       <el-form-item label="重复触发间隔（秒）" prop="loop">
-        <template #label>
-          <el-checkbox :model-value="(data.loop ?? -1) >= 0" @click="data.loop = (data.loop ?? -1) < 0 ? Math.abs(data.loop??1) : -Math.abs(data.loop||1)">
-            重复触发间隔（秒）
-          </el-checkbox>
-        </template>
-        <el-input type="number" v-if="(data.loop ?? -1) >= 0" v-model="data.loop" :min="0" />
+        <el-input type="number" v-if="(data.loop ?? 0) >= 0" v-model="data.loop" :min="0" />
         <span v-else>不可重复</span>
       </el-form-item>
       <el-form-item label="客户端输入提示" prop="value">
-        <el-input v-model="data.value" clearable placeholder="若要用户选择物品，可使用 item: 开头" />
+        <el-input v-model="data.value" clearable placeholder="若要用户选择物品，可使用 item:提示内容:物品类型，物品类型非必须" type="textarea" />
       </el-form-item>
       <el-divider>条件列表</el-divider>
       <el-table :data="data.conditions" border stripe>

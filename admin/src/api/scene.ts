@@ -17,7 +17,7 @@ export class Option {
   /**
    * 下次重复出发秒数
    */
-  loop?: number;
+  loop: number;
   /**
    * 客户端输入提示文本
    */
@@ -31,11 +31,17 @@ export class Option {
    */
   effects?: Effect[];
 
+  /**
+   * 过滤标志
+   */
+  disabled?: boolean;
+
   constructor(text: string, next: string, conditions?: Condition[], effects?: Effect[]) {
     this.text = text;
     this.next = next;
     this.conditions = conditions;
     this.effects = effects;
+    this.loop = 0;
   }
 }
 
@@ -120,6 +126,16 @@ export class Scene {
    * 场景选项
    */
   options: Option[] = [];
+
+  /**
+   * 结局名称
+   */
+  theEnd: string = '';
+
+  /**
+   * 是否结局
+   */
+  isEnd: boolean = false;
 
   /**
    * 面板位置

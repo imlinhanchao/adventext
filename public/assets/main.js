@@ -4,6 +4,10 @@ function startGame(scene, state) {
   const optionsDiv = document.getElementById('options');
   showMessage('', 'info')
 
+  if (scene.isEnd) {
+    showMessage(`收获结局：${scene.theEnd}`, 'success')
+  }
+
   storyDiv.textContent = scene.content;
   optionsDiv.innerHTML = '';
 
@@ -43,6 +47,7 @@ function startGame(scene, state) {
         body: JSON.stringify({
           option: option.text,
           value,
+          timezone: new Date().getTimezoneOffset() / 60
         })
       }).then(res => res.json())
         .then(res => {

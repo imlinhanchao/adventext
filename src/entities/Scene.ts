@@ -54,6 +54,12 @@ export class Scene {
   @Column("json", { comment: '场景选项' })
   options: Option[];
 
+  @Column("varchar", { length: 255, comment: '结局名称' })
+  theEnd: string;
+
+  @Column({ comment: '是否结局' })
+  isEnd: boolean;
+
   @Column("json", { comment: '面板位置' })
   position: { x: number, y: number, w?: number, h?: number };
 }

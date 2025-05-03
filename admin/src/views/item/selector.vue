@@ -1,7 +1,8 @@
 <script lang="ts" setup>
-  import { getItemList, Item } from '@/api/item';
+  import { deleteItem, getItemList, Item } from '@/api/item';
   import { Inventory } from '@/api/story';
   import ItemForm from '@/views/item/item.vue';
+import { ElMessageBox } from 'element-plus';
 
   const props = defineProps<{
     story: number;
@@ -62,6 +63,25 @@
   function add() {
     itemRef.value?.open()
   }
+  function edit(row: Item) {
+    itemRef.value?.open(row);
+  }
+  function remove(row: Item) {
+    ElMessageBox.confirm('确定删除吗?', '提示', {
+      type: 'warning',
+      showCancelButton: true,
+      cancelButtonText: '取消',
+      confirmButtonText: '确定',
+    }).then(() => {
+      deleteItem(props.story, row.id!).then(() => {
+        ElMessageBox.alert('删除成功', '提示', {
+          type: 'success',
+        });
+        items.value = items.value.filter((item) => item.id !== row.id);
+      });
+    });
+  }
+
 </script>
 
 <template>
@@ -100,6 +120,14 @@
               <el-input-number v-model="row.count" type="number" :min="1" />
             </template>
           </el-table-column>
+          <el-table-column label="操作" align="center" width="280" v-if="readonly">
+            <template #default="{ row }">
+              <el-button-group>
+                <el-button type="primary" size="small" @click="edit(row)">编辑</el-button>
+                <el-button type="danger" size="small" @click="remove(row)">删除</el-button>
+              </el-button-group>
+            </template>
+          </el-table-column>
         </el-table>
       </el-main>
       <el-footer>
@@ -116,7 +144,7 @@
       </el-footer>
       <ItemForm ref="itemRef" @confirm="search" :story-id="story" />
     </el-container>
-    <template #footer>
+    <template #footer v-if="!readonly">
       <el-button @click="visible = false">取消</el-button>
       <el-button type="primary" @click="selectedResolve(selected)">确定</el-button>
     </template>

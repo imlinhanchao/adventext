@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { Record, Story, Profile, Scene, User, AppDataSource, Item } from "../entities";
+import { Record, Story, Profile, Scene, User, AppDataSource, Item, End } from "../entities";
 import { render, json, error } from "../utils/route";
 import { Condition, Effect } from '../entities/Scene';
 import { clone, omit } from '../utils';
@@ -226,15 +226,29 @@ function conditionCheckTime(condition: Condition, timezone: number) {
   return true;
 }
 
-export const game = async (user: User, req: Request, res: Response) => {
-  try {
-    const userId = user.id;
-    const storyId = parseInt(req.params.storyId);
-    let { state: profile, scene } = await gameState(userId, storyId);
+export const addEnd = async (scene: Scene, profile: Profile) => {
+  if (!scene.isEnd) return;
+  const endRepository = AppDataSource.getRepository(End);
 
-    const optionText = req.body.option as string;
-    const valueText = req.body.value as string;
-    const timezone = req.body.timezone ?? - new Date().getTimezoneOffset() / 60;
+  let end = await endRepository.findOneBy({ user: profile.userId, storyId: profile.storyId, end: scene.theEnd });
+
+  if (end) return;
+
+  end = endRepository.create({
+    user: profile.userId,
+    storyId: profile.storyId,
+    end: scene.theEnd,
+    from: scene.name,
+    time: Date.now(),
+  })
+
+  return await endRepository.save(end);
+}
+
+export const gameExcute = async (profile: Profile, scene: Scene, { option: optionText, value: valueText, timezone }: any, virtual=false) => {
+  try {
+    const storyId = profile.storyId;
+    const userId = profile.userId;
     const option = scene?.options.find((option) => option.text === optionText);
 
     let message = '';
@@ -358,37 +372,85 @@ export const game = async (user: User, req: Request, res: Response) => {
       throw new Error('Oops! 前方无路……');
     }
 
-    const recordRepository = AppDataSource.getRepository(Record);
-    await recordRepository.save({
-      user: userId,
-      storyId: storyId,
-      scene: scene!.name,
-      from: profile.from,
-      content: scene!.content,
-      option: option.text,
-      time: Date.now(),
-    });
+    if (!virtual) {
+      const recordRepository = AppDataSource.getRepository(Record);
+      await recordRepository.save({
+        user: userId,
+        storyId: storyId,
+        scene: scene!.name,
+        from: profile.from,
+        content: scene!.content,
+        option: option.text,
+        time: Date.now(),
+      });
+    }
 
     if (nextScene.name != scene!.name) profile.from = scene!.name;
     profile.scene = nextScene.name;
+    
+    if (!virtual) {
+      nextScene!.options = await updateOptions(nextScene!, profile);
 
-    nextScene!.options = await updateOptions(nextScene!, profile);
+      const stateRepository = AppDataSource.getRepository(Profile);
 
-    const stateRepository = AppDataSource.getRepository(Profile);
+      const currentState = await stateRepository.findOneBy({ userId });
+      if (currentState) {
+        Object.assign(currentState, profile);
+        await stateRepository.update(currentState.id, currentState);
+      } else {
+        await stateRepository.save(profile);
+      }
 
-    const currentState = await stateRepository.findOneBy({ userId });
-    if (currentState) {
-      Object.assign(currentState, profile);
-      await stateRepository.update(currentState.id, currentState);
-    } else {
-      await stateRepository.save(profile);
+      if (nextScene.isEnd) {
+        await addEnd(nextScene, profile);
+      }
     }
 
-    json(res, {
+    return {
       state: profile,
       scene: nextScene,
+      next,
       message,
-    })
+    }
+  } catch (err: any) {
+    throw err;
+  }
+}
+
+export const gameVirtual = async (req: Request, res: Response) => {
+  try {
+    let { profile, scene } = req.body;
+
+    if (!scene) {
+      throw new Error(`缺少运行场景！`);
+    }
+
+    if (!profile) {
+      throw new Error(`缺少游戏资料！`);
+    }
+
+    const result = await gameExcute(profile, scene, req.body, true)
+
+    json(res, result)
+  } catch (err: any) {
+    error(res, err.message)
+  }
+
+}
+
+export const game = async (user: User, req: Request, res: Response) => {
+  try {
+    const userId = user.id;
+    const storyId = parseInt(req.params.storyId);
+    let { state: profile, scene } = await gameState(userId, storyId);
+
+    if (!scene) {
+      throw new Error(`场景${profile.scene}丢失！`);
+    }
+
+    const result = await gameExcute(profile, scene, req.body)
+
+    json(res, result)
   } catch (err: any) {
     error(res, err.message)
   }

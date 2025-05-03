@@ -51,11 +51,13 @@
   >
     <el-card class="scene min-w-[400px]" :header="scene.name" header-class="!flex justify-between">
       <template #header>
-        <span class="text-lg font-bold select-none cursor-move" @mousedown.stop="beginMove">{{
-          scene.name
-        }}<Icon title="起始场景" :size="20" color="#f63832" v-if="start" icon="i-lets-icons:flag-fill" /></span>
+        <span class="text-lg font-bold select-none cursor-move" @mousedown.stop="beginMove">
+          {{ scene.name }}
+          <Icon title="起始场景" :size="20" color="#f63832" v-if="start" icon="i-lets-icons:flag-fill" />
+          <Icon title="结局" :size="20" color="#1f8bf4" v-if="scene.isEnd" icon="i-carbon:circle-filled" />
+        </span>
         <span>
-          <el-button class="!group-hover:inline !hidden" v-if="!start" link @click="$emit('start', scene)" title="设置为起始场景">
+          <el-button class="!group-hover:inline !hidden" v-if="!start && !scene.isEnd" link @click="$emit('start', scene)" title="设置为起始场景">
             <Icon icon="i-lets-icons:flag-duotone" />
           </el-button>
           <el-button type="danger" link icon="el-icon-delete" @click="$emit('remove', scene)" />
@@ -85,7 +87,8 @@
                   v-if="item.effects?.length"
                   :title="`效果x` + item.effects?.length"
                 />
-                <Icon icon="i-icon-park-outline:loop-once" v-if="(item.loop ?? -1) >= 0" :title="`循环/${item.loop}s`" />
+                <Icon icon="i-icon-park-outline:play-once" v-if="(item.loop ?? 0) < 0" title="单次执行" />
+                <Icon icon="i-icon-park-outline:loop-once" v-if="(item.loop ?? 0) > 0" :title="`循环/${item.loop}s`" />
               </span>
             </span>
             <span ref="nextRef" :class="{ 'cursor-pointer': item.next != '<back>' && sceneMap[item.next], 'bg-red px-2 rounded font-bold': item.next != '<back>' && !sceneMap[item.next] }" @click="emit('next', item.next)">→{{ item.next }}</span>

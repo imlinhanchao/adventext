@@ -42,7 +42,8 @@
     if (!(await formRef.value?.validate())) {
       return;
     }
-    data.value.attributes = data.value.attrName = {};
+    data.value.attributes = {};
+    data.value.attrName = {};
     attr.value.forEach((item) => {
       if (item.key) {
         data.value.attributes[item.key] = isNaN(parseFloat(item.value)) ? item.value : parseFloat(item.value);

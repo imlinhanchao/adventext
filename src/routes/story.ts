@@ -1,13 +1,12 @@
 import { Router } from "express";
+import { gameVirtual } from "../controllers/game";
 import { AppDataSource, Scene, Story } from "../entities/";
 import { error, json } from "../utils/route";
 import ItemRoute from './item';
 
 const router = Router();
 
-router.use((req, res, next) => {
-  next();
-})
+router.post("/run", gameVirtual);
 
 // 获取所有故事
 router.get("/list", async (req, res) => {

@@ -90,28 +90,36 @@
       <el-form-item label="场景内容" prop="content">
         <el-input v-model="data.content" type="textarea" placeholder="请输入场景内容" />
       </el-form-item>
-      <el-form-item label="场景选项" />
-      <el-table :data="data.options" border stripe>
-        <el-table-column prop="text" label="选项" />
-        <el-table-column prop="append" label="追加内容" show-overflow-tooltip />
-        <el-table-column prop="next" label="下一个场景" />
-        <el-table-column label="操作" width="100px" align="center">
-          <template #header>
-            <el-button type="primary" link size="small" @click="addOption">
-              <Icon icon="i-ep:circle-plus" />
-            </el-button>
-          </template>
-          <template #default="{ row, $index }">
-            <el-button type="primary" link size="small" @click="editOption(row)">
-              <Icon icon="i-ep:edit" />
-            </el-button>
-            <el-button type="danger" link size="small" @click="data.options.splice($index, 1)">
-              <Icon icon="i-ep:remove" />
-            </el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-      <OptionForm ref="optionRef" :scenes="scenes" :story="story" />
+      <el-form-item label="是否结局" prop="isEnd">
+        <el-switch v-model="data.isEnd" />
+      </el-form-item>
+      <el-form-item v-if="data.isEnd" label="结局名称" prop="isEnd">
+        <el-input clearable v-model="data.theEnd" />
+      </el-form-item>
+      <template v-else>
+        <el-form-item label="场景选项" />
+        <el-table :data="data.options" border stripe>
+          <el-table-column prop="text" label="选项" />
+          <el-table-column prop="append" label="追加内容" show-overflow-tooltip />
+          <el-table-column prop="next" label="下一个场景" />
+          <el-table-column label="操作" width="100px" align="center">
+            <template #header>
+              <el-button type="primary" link size="small" @click="addOption">
+                <Icon icon="i-ep:circle-plus" />
+              </el-button>
+            </template>
+            <template #default="{ row, $index }">
+              <el-button type="primary" link size="small" @click="editOption(row)">
+                <Icon icon="i-ep:edit" />
+              </el-button>
+              <el-button type="danger" link size="small" @click="data.options.splice($index, 1)">
+                <Icon icon="i-ep:remove" />
+              </el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+        <OptionForm ref="optionRef" :scenes="scenes" :story="story" />
+      </template>
     </el-form>
     <template #footer>
       <el-button @click="visible = false">取消</el-button>

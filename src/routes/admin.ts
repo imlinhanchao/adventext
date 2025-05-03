@@ -4,7 +4,6 @@ import { login, profile } from '../controllers/auth';
 import { json, error } from '../utils/route';
 import { authenticate } from '../utils/auth';
 import { JwtPayload } from 'jsonwebtoken';
-
 import StoryRoute from './story';
 
 const router = Router();
@@ -28,6 +27,7 @@ router.get("/profile", authenticate(async (payload: JwtPayload, req, res) => {
     error(res, err.message);
   }
 }));
+
 
 router.use(authenticate((payload: JwtPayload, req, res, next) => {
   next();
