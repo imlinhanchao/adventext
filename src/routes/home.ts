@@ -6,6 +6,6 @@ const router = Router();
 
 router.get("/", userSession(storyList));
 router.get("/:storyId", userSession(init));
-router.post("/choose/:storyId", userSession(game));
+router.post("/:storyId/choose", userSession(game));
 
 export default router;

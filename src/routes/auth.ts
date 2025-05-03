@@ -51,8 +51,8 @@ router.get("/captcha", (req, res) => {
   const captcha = svgCaptcha.create({
     size: 4, // 验证码长度
     noise: 2, // 干扰线条数
-    color: true, // 是否使用彩色
-    background: "#ccf2ff", // 背景颜色
+    color: false, // 是否使用彩色
+    background: "#ffffff", // 背景颜色
   });
 
   req.session.captcha = captcha.text; // 将验证码文本存储到 Map 中

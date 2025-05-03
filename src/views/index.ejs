@@ -37,6 +37,14 @@
       <input type="hidden" name="option" id="option" />
     </form>
   </div>
+  <div id="dialog" class="dialog">
+    <div id="dialog-container" class="container">
+      <div id="dialog-content" class="content"></div>
+      <div id="dialog-options" class="space-x-2 options">
+        <button type="button" id="dialog-cancel" class="btn">关闭</button>
+      </div>
+    </div>
+  </div>
   <script>
     const state = <%- JSON.stringify(locals.state || null) %>;
     const scene = <%- JSON.stringify(locals.scene || null) %>;

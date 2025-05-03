@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { Record, Story, Profile, Scene, User, AppDataSource, Item } from "../entities";
 import { render, json, error } from "../utils/route";
 import { Condition, Effect } from '../entities/Scene';
-import { clone } from '../utils';
+import { clone, omit } from '../utils';
 
 async function gameState(userId: number, storyId: number) {
   const stateRepository = AppDataSource.getRepository(Profile);
