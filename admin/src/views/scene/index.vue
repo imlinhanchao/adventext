@@ -166,7 +166,7 @@
         <section>
           <el-button type="primary" @click="addScene" plain>添加场景</el-button>
           <el-button type="primary" @click="viewItemList" plain>管理物品</el-button>
-          <el-button type="success" @click="virtualRun" plain>模拟运行</el-button>
+          <el-button type="success" @click="virtualRun" :plain="!isVirtual">模拟运行</el-button>
         </section>
         <section>
           <el-button type="primary" @click="save">保存布局</el-button>

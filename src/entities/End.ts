@@ -5,6 +5,9 @@ export class End {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column('int', { comment: '结局 ID，绑定 Profile 和 Record' })
+  endId: number;
+
   @Column('int', { comment: '用户 ID' })
   user: number;
 

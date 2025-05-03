@@ -25,4 +25,7 @@ export class Record {
 
   @Column('bigint', { comment: '选择时间'})
   time: number;
+
+  @Column('int', { comment: '结局 ID' })
+  endId: number;
 }

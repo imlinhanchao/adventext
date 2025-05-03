@@ -3,10 +3,11 @@ import { Record, Story, Profile, Scene, User, AppDataSource, Item, End } from ".
 import { render, json, error } from "../utils/route";
 import { Condition, Effect } from '../entities/Scene';
 import { clone, omit } from '../utils';
+import { getGameState } from './profile';
 
 async function gameState(userId: number, storyId: number) {
   const stateRepository = AppDataSource.getRepository(Profile);
-  const state = (await stateRepository.findOneBy({ userId, storyId })) || new Profile(userId, storyId);
+  const state = (await stateRepository.findOneBy({ userId, storyId, isEnd: false })) || new Profile(userId, storyId);
 
   if (!state.scene) {
     const storyRepository = AppDataSource.getRepository(Story);
@@ -45,7 +46,7 @@ async function updateOptions(story: Scene, state: Profile) {
   const recordRepository = AppDataSource.getRepository(Record);
   for (const option of story.options) {
     const [record] = await recordRepository.find({
-      where: { user: state.userId, scene: story.name, option: option.text },
+      where: { user: state.userId, scene: story.name, option: option.text, endId: state.endId },
       order: { time: 'DESC' }, // 按 time 字段降序排序
       take: 1, // 只取一条记录
     });
@@ -156,7 +157,7 @@ export async function runEffects(profile: Profile, effects: Effect[]) {
         });
 
         for (const item of items) {
-          const myItem = profile.inventory.find(i => i.name == item.name);
+          const myItem = profile.inventory.find(i => i.key == item.name);
           if (myItem) myItem.count += item.count;
           else {
             const itemInstance = await getItem(item.name);
@@ -239,10 +240,31 @@ export const addEnd = async (scene: Scene, profile: Profile) => {
     storyId: profile.storyId,
     end: scene.theEnd,
     from: scene.name,
+    endId: profile.endId,
     time: Date.now(),
   })
 
   return await endRepository.save(end);
+}
+
+export const restartGame = async (user: User, req: Request, res: Response) => {
+  try {
+    const userId = user.id;
+    const storyId = parseInt(req.params.storyId);
+    const stateRepository = AppDataSource.getRepository(Profile);
+    let { state, scene } = await gameState(userId, storyId);
+
+    if (!scene?.isEnd) {
+      throw new Error('还没有结局');
+    }
+
+    state.isEnd = true;
+    await stateRepository.update(state.id, state);
+    
+    json(res, { message: '游戏已重置' })
+  } catch (error: any) {
+    error(res, error.message)
+  }
 }
 
 export const gameExcute = async (profile: Profile, scene: Scene, { option: optionText, value: valueText, timezone }: any, virtual=false) => {
@@ -378,6 +400,7 @@ export const gameExcute = async (profile: Profile, scene: Scene, { option: optio
         user: userId,
         storyId: storyId,
         scene: scene!.name,
+        endId: profile.endId,
         from: profile.from,
         content: scene!.content,
         option: option.text,
@@ -391,18 +414,18 @@ export const gameExcute = async (profile: Profile, scene: Scene, { option: optio
     if (!virtual) {
       nextScene!.options = await updateOptions(nextScene!, profile);
 
+      if (nextScene.isEnd) {
+        await addEnd(nextScene, profile);
+      }
+
       const stateRepository = AppDataSource.getRepository(Profile);
 
-      const currentState = await stateRepository.findOneBy({ userId });
+      const currentState = await stateRepository.findOneBy({ userId, storyId, isEnd: false });
       if (currentState) {
         Object.assign(currentState, profile);
         await stateRepository.update(currentState.id, currentState);
       } else {
         await stateRepository.save(profile);
-      }
-
-      if (nextScene.isEnd) {
-        await addEnd(nextScene, profile);
       }
     }
 

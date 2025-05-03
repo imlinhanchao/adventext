@@ -34,6 +34,12 @@ export class Profile {
   @Column('json', { comment: '属性名称' })
   attrName: { [key: string]: [string, string] | string } = {}
 
+  @Column('int', { comment: '结局 ID' })
+  endId: number;
+
+  @Column({ comment: '已经结局' })
+  isEnd: boolean;
+
   constructor(user: number, storyId: number) {
     this.userId = user;
     this.storyId = storyId;
@@ -42,5 +48,7 @@ export class Profile {
     this.inventory = [];
     this.attr = {};
     this.attrName = {};
+    this.endId = Date.now() / 1000;
+    this.isEnd = false;
   }
 }
