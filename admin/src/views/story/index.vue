@@ -29,9 +29,7 @@
       confirmButtonText: '确定',
     }).then(() => {
       deleteStory(row.id!).then(() => {
-        ElMessageBox.alert('删除成功', '提示', {
-          type: 'success',
-        });
+        ElMessage.success('删除成功');
         storyList.value = storyList.value.filter((item) => item.id !== row.id);
       });
     });

@@ -61,7 +61,7 @@ class Render {
       params: this.req?.params,
       ...this.params,
       ...params,
-      ...(this.req?.session || {}),
+      user: this.req?.session?.user,
     });
   }
 }

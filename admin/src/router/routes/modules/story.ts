@@ -7,6 +7,7 @@ export default [
       order: 1,
       icon: 'i-bi:app',
       title: '故事',
+      hidden: true,
     },
     children: [
       {

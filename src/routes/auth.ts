@@ -34,7 +34,7 @@ router.post("/register", async (req, res) => {
 
     // 验证验证码
     if (!req.session.captcha || req.session.captcha.toUpperCase() !== captcha.toUpperCase()) {
-      render(res, 'register', req).title('注册').error("Invalid captcha").render();
+      render(res, 'register', req).title('注册').error("验证码错误").render();
       return;
     }
 
@@ -42,7 +42,7 @@ router.post("/register", async (req, res) => {
 
     render(res, 'login').title('登录').success("Registration successful, please log in").render();
   } catch (error: any) {
-    render(res, 'register').title('注册').error(error.message).render();
+    render(res, 'register', req).title('注册').error(error.message).render();
   }
 });
 
@@ -68,6 +68,11 @@ router.get("/login", (req, res) => {
 // 注册页面
 router.get("/register", (req, res) => {
   render(res, 'register', req).title('注册').render();
+});
+
+router.get("/logout", (req, res) => {
+  delete req.session.user;
+  res.redirect("/auth/login");
 });
 
 export default router;

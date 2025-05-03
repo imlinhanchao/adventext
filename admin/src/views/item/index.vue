@@ -30,9 +30,7 @@
       confirmButtonText: '确定',
     }).then(() => {
       deleteItem(story, row.id!).then(() => {
-        ElMessageBox.alert('删除成功', '提示', {
-          type: 'success',
-        });
+        ElMessage.success('删除成功');
         items.value = items.value.filter((item) => item.id !== row.id);
       });
     });
@@ -63,8 +61,9 @@
         <el-table-column prop="key" label="标识符" width="180" />
         <el-table-column prop="name" label="名称" width="180" />
         <el-table-column prop="description" label="描述" min-width="180" />
+        <el-table-column prop="attributes" label="属性" show-tooltip-overflow :formatter="({ attributes }) => JSON.stringify(attributes)" />
         <el-table-column prop="type" label="类型" width="80" />
-        <el-table-column label="操作" align="center" width="280">
+        <el-table-column label="操作" align="center" width="180">
           <template #default="{ row }">
             <el-button-group>
               <el-button type="primary" size="small" @click="edit(row)">编辑</el-button>

@@ -50,6 +50,10 @@ a {
   color: inherit;
 }
 
+a:hover {
+  text-decoration: none;
+}
+
 .form {
   border-radius: 8px;
   width: 100%;
@@ -110,10 +114,6 @@ a {
   color: #007bff;
   text-decoration: none;
   font-size: 80%;
-}
-
-.link:hover {
-  text-decoration: underline;
 }
 
 .message {

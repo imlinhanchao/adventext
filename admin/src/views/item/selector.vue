@@ -120,7 +120,7 @@ import { ElMessageBox } from 'element-plus';
               <el-input-number v-model="row.count" type="number" :min="1" />
             </template>
           </el-table-column>
-          <el-table-column label="操作" align="center" width="280" v-if="readonly">
+          <el-table-column label="操作" align="center" width="180" v-if="readonly">
             <template #default="{ row }">
               <el-button-group>
                 <el-button type="primary" size="small" @click="edit(row)">编辑</el-button>

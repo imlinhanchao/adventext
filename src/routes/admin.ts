@@ -5,6 +5,7 @@ import { json, error } from '../utils/route';
 import { authenticate } from '../utils/auth';
 import { JwtPayload } from 'jsonwebtoken';
 import StoryRoute from './story';
+import UserRoute from './user';
 
 const router = Router();
 
@@ -33,6 +34,7 @@ router.use(authenticate((payload: JwtPayload, req, res, next) => {
   next();
 }))
 
+router.use("/user", UserRoute);
 router.use("/story", StoryRoute);
 
 

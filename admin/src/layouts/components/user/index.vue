@@ -3,7 +3,7 @@
 
   const userStore = useUserStore();
 
-  function menuClick({ key }) {
+  function menuClick(key) {
     switch (key) {
       case 'logout':
         userStore.confirmLoginOut();

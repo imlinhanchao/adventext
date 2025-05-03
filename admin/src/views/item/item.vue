@@ -54,7 +54,7 @@
     emit('confirm', data.value);
     visible.value = false;
   }
-
+  
 </script>
 <template>
   <el-dialog :title="data.id ? '物品更新' : '物品创建'" v-model="visible" width="800px">

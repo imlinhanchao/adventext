@@ -54,3 +54,23 @@ export function getUserInfo() {
 export function doLogout() {
   return '';
 }
+
+
+export interface User {
+  id: number;
+  username: string;
+  password: string;
+  isAdmin: boolean;
+}
+
+export function getUserList() {
+  return defHttp.get<User[]>({ url: '/user/list' });
+}
+
+export function updateUser(user: User) {
+  return defHttp.post({ url: '/user/update/' + user.id, data: user });
+}
+
+export function deleteUser(id: number) {
+  return defHttp.delete({ url: '/user/delete/' + id });
+}
