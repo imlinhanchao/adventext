@@ -1,6 +1,29 @@
 <%- include('header') %>
 
 <article>
+  <% if (locals.state) { -%>
+  <div id="profile" class="space-y-2">
+    <section>
+      <section class="title">属性</section>
+      <section class="attr">
+        <% Object.entries(state.attrName).forEach(function([key, name]) { %>
+          <span class="name"><%=name-%></span>
+          <span class="value"><%=state.attr[key]-%></span>
+        <% }); %>
+      </section>
+    </section>
+    <section>
+      <section class="title">物品</section>
+      <section class="inventory">
+        <% state.inventory.forEach(function(item) { %>
+          <span class="name"><%=item.name-%></span>
+          <span class="value">x<%=item.count-%></span>
+        <% }); %>
+      </section>
+    </section>
+  </div>
+  <% } %>
+  
   <div id="game">
     <% if (locals.message){ -%>
     <p class="<%= type -%> message"><%= message -%></p>

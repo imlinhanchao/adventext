@@ -160,3 +160,35 @@ h2 {
   border-radius: 4px;
   cursor: pointer;
 }
+
+#profile .item {
+  display: inline-block;
+  margin: 2px 5px;
+}
+
+#profile .name {
+  font-weight: bold;
+}
+
+#profile .attr .name::after {
+  content: ':'
+}
+
+#profile {
+  position: absolute;
+  top: 1em;
+  color: #555;
+}
+
+#profile .title {
+  display: inline-block;
+  color: white;
+  background-color: #333;
+  padding: 2px 5px;
+  border-radius: 5px;
+}
+
+#profile .attr, #profile .inventory {
+  margin-left: 2px;
+  display: inline-block;
+}

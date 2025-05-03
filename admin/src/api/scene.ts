@@ -39,6 +39,16 @@ export class Option {
   }
 }
 
+export const ConditionType = {
+  Time: '时间',
+  Item: '物品',
+  ItemType: '物品类型',
+  ItemAttr: '物品属性',
+  Attr: '属性',
+  Value: '输入值',
+  Fn: '函数判定',
+};
+
 export class Condition {
   /**
    * 条件类型，Time：时间，Item:物品，ItemType：物品类型，ItemAttr:物品属性,Attr:属性,Value:输入值，Fn:函数判定
@@ -58,9 +68,15 @@ export class Condition {
   tip?: string;
 }
 
+export const EffectType = {
+  Item: '获得物品',
+  Attr: '属性变化',
+  Fn: '函数调用',
+}
+
 export class Effect {
   /**
-   * 标识符
+   * 效果对象
    */
   name: string;
   /**
@@ -72,7 +88,7 @@ export class Effect {
    */
   content: string;
 
-  constructor(name: string, type: string, content: string) {
+  constructor(name: string = '', type: string = '', content: string = '') {
     this.name = name;
     this.type = type;
     this.content = content;

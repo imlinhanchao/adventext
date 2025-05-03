@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { Record, Story, Profile, Scene, User, AppDataSource, Item } from "../entities";
 import { render, json, error } from "../utils/route";
 import { Condition, Effect } from '../entities/Scene';
+import { clone } from '../utils';
 
 async function gameState(userId: number, storyId: number) {
   const stateRepository = AppDataSource.getRepository(Profile);
@@ -35,10 +36,20 @@ async function getItem(item: string) {
   return await itemRepository.findOneBy({ key: item });
 }
 
+async function getStory(id: number) {
+  const storyRepository = AppDataSource.getRepository(Story);
+  return await storyRepository.findOneBy({ id });
+}
+
 async function updateOptions(story: Scene, state: Profile) {
   const recordRepository = AppDataSource.getRepository(Record);
   for (const option of story.options) {
-    const record = await recordRepository.findOneBy({ user: state.userId, scene: story.name, option: option.text });
+    const [record] = await recordRepository.find({
+      where: { user: state.userId, scene: story.name, option: option.text },
+      order: { time: 'DESC' }, // 按 time 字段降序排序
+      take: 1, // 只取一条记录
+    });
+    if (!record) continue;
     if (option.loop !== undefined && record && (option.loop < 0 || Date.now() - record.time < option.loop * 1000)) {
       option.disabled = true;
     }
@@ -46,10 +57,23 @@ async function updateOptions(story: Scene, state: Profile) {
   return story.options.filter((option) => !option.disabled);
 }
 
+export const storyList = async (user: User, req: Request, res: Response) => {
+  try {
+    const storyRepository = AppDataSource.getRepository(Story);
+    const stories = await storyRepository.find();
+    render(res, 'stories', req).render({
+      stories,
+    })
+  } catch (error: any) {
+    render(res, 'index', req).error(error.message).render()
+  }
+}
+
 export const init = async (user: User, req: Request, res: Response) => {
   try {
     const userId = user.id;
     const { state, scene } = await gameState(userId, parseInt(req.params.storyId));
+    const story = await getStory(parseInt(req.params.storyId));
 
     scene!.options = await updateOptions(scene!, state);
 
@@ -57,6 +81,7 @@ export const init = async (user: User, req: Request, res: Response) => {
       state,
       scene,
       story: req.params.storyId,
+      logo: story?.name,
     })
 
   } catch (error: any) {
@@ -66,13 +91,22 @@ export const init = async (user: User, req: Request, res: Response) => {
 
 export async function runEffects(profile: Profile, effects: Effect[]) {
   try {
-    let message = ''
+    let message = '', next = null;
     for (const effect of effects) {
       if (effect.type === 'Item') {
         const item = await getItem(effect.name);
         if (!item) throw new Error(`物品 ${effect.name} 未找到.`)
         const inventory = profile.inventory.find((i) => i.key === effect.name);
-        const count = parseInt(effect.content || '1');
+        let count = 1;
+        if (typeof effect.content == 'string' && effect.content.match(/rand\(([\d-]+),([\d-]+)\)/)) {
+          const rand = effect.content.match(/rand\(([\d-]+),([\d-]+)\)/);
+          if (rand) {
+            count = Math.floor(Math.random() * (parseInt(rand[2]) - parseInt(rand[1]) + 1)) + parseInt(rand[1]);
+          }
+        } else {
+          count = parseFloat(effect.content || '1');
+        }
+        if (isNaN(count)) throw new Error(`Item ${effect.name} 效果获取数量失败！`)
         if (inventory) {
           inventory.count += count;
         } else {
@@ -81,7 +115,7 @@ export async function runEffects(profile: Profile, effects: Effect[]) {
             count,
           });
         }
-  
+
         message += `获得 ${item.name}×${count}.\n`;
       }
       if (effect.type === 'Attr') {
@@ -90,7 +124,17 @@ export async function runEffects(profile: Profile, effects: Effect[]) {
           profile.attr[effect.name] = isNaN(parseFloat(effect.content)) ? effect.content : parseFloat(effect.content);
         }
         else if (typeof profile.attr[effect.name] === 'number') {
-          profile.attr[effect.name] += parseFloat(effect.content);
+          let count = 1;
+          if (typeof effect.content == 'string' && effect.content.match(/rand\(([\d-]+),([\d-]+)\)/)) {
+            const rand = effect.content.match(/rand\(([\d-]+),([\d-]+)\)/);
+            if (rand) {
+              count = Math.floor(Math.random() * (parseInt(rand[2]) - parseInt(rand[1]) + 1)) + parseInt(rand[1]);
+            }
+          } else {
+            count = parseFloat(effect.content || '1');
+          }
+          if (isNaN(count)) throw new Error(`Item ${effect.name} 效果获取数量失败！`)
+          profile.attr[effect.name] += count;
         }
         else {
           profile.attr[effect.name] = effect.content;
@@ -100,12 +144,34 @@ export async function runEffects(profile: Profile, effects: Effect[]) {
         }
       }
       if (effect.type === 'Fn') {
-        return new Function('profile', 'let message = "", next = null;\n' + effect.content + '\nreturn { profile, message, next };')(profile);
+        const call = new Function('profile', 'addItem', 'setAttr', 'let message = "", next = null;\n' + effect.content + '\nreturn { message, next };');
+        const items: any[] = []
+        const result = call(clone(profile), (name: string, count: number) => {
+          items.push({ name, count })
+        }, (attr: { key: string; name?: string; value: string }) => {
+          profile.attr[attr.key] = attr.value;
+          if (attr.name) {
+            profile.attrName[attr.key] = attr.name;
+          }
+        });
+
+        for (const item of items) {
+          const myItem = profile.inventory.find(i => i.name == item.name);
+          if (myItem) myItem.count += item.count;
+          else {
+            const itemInstance = await getItem(item.name);
+            if (!itemInstance) throw new Error(`物品 ${item.name} 未找到.`)
+            profile.inventory.push({ ...itemInstance, count: item.count || 1 })
+          }
+        }
+
+        message += result.message;
+        next = result.next;
       }
     }
-  
-    return { message };
-  } catch(error) {
+
+    return { message, next, profile };
+  } catch (error) {
     throw error;
   }
 }
@@ -172,11 +238,11 @@ export const game = async (user: User, req: Request, res: Response) => {
     const option = scene?.options.find((option) => option.text === optionText);
 
     let message = '';
-    
+
     if (!option) {
       throw new Error('无效选项');
     }
-    
+
     if (option?.value && !valueText) {
       throw new Error('缺少数值');
     }
@@ -200,15 +266,15 @@ export const game = async (user: User, req: Request, res: Response) => {
           }
           if (condition.type === 'Fn') {
             const fn = new Function('profile', 'let result = true;\n' + condition.content + '\nreturn result;');
-            const result = fn(profile);
+            const result = fn(clone(profile));
             if (result !== true) {
               throw new Error(typeof result != 'string' ? `你还没准备好` : result);
             }
           }
           if (condition.type === 'Item') {
-            const item = await getItem(condition.content);
+            const item = await getItem(condition.name);
             if (!item) {
-              throw new Error(`物品未找到`);
+              throw new Error(`物品${condition.name}未找到`);
             }
             const inventory = profile.inventory.find((i) => i.key === condition.name);
             let count = parseInt(condition.content || '1');
@@ -246,16 +312,18 @@ export const game = async (user: User, req: Request, res: Response) => {
             }
           }
           if (condition.type === 'Attr') {
-            if (profile.attr[condition.content] === undefined) {
-              throw new Error(`你还没准备好.`);
-            }
-            if (typeof profile.attr[condition.content] === 'number') {
-              if (profile.attr[condition.content] < parseFloat(valueText)) {
+            for (const [key, value] of Object.entries(condition.content)) {
+              if (profile.attr[key] === undefined) {
                 throw new Error(`你还没准备好.`);
               }
-            } else {
-              if (profile.attr[condition.content] !== valueText) {
-                throw new Error(`你还没准备好.`);
+              if (typeof profile.attr[key] === 'number') {
+                if (profile.attr[key] < parseFloat((value as any).toString())) {
+                  throw new Error(`你还没准备好.`);
+                }
+              } else {
+                if (profile.attr[key] !== value) {
+                  throw new Error(`你还没准备好.`);
+                }
               }
             }
           }
@@ -278,7 +346,7 @@ export const game = async (user: User, req: Request, res: Response) => {
     let result = await runEffects(profile, option.effects || []);
     if (result.next) next = result.next;
     if (result.message) message += result.message;
-    if (result.profile) profile = profile;
+    if (result.profile) profile = result.profile;
 
     if (next === '<back>') {
       next = profile.from;
@@ -301,7 +369,7 @@ export const game = async (user: User, req: Request, res: Response) => {
       time: Date.now(),
     });
 
-    profile.from = scene!.name;
+    if (nextScene.name != scene!.name) profile.from = scene!.name;
     profile.scene = nextScene.name;
 
     nextScene!.options = await updateOptions(nextScene!, profile);

@@ -10,6 +10,7 @@
   const visible = ref(false);
   const data = ref<Item>(new Item());
   const attr = ref<{ key: string, value: string, name: string}[]>([]);
+  const formData = computed(() => ({ ...data.value, attr: attr.value }));
 
   const rules = {
     name: [{ required: true, message: '请输入名称', trigger: 'blur' }],
@@ -50,12 +51,13 @@
     });
     await (data.value.id ? updateItem : createItem)(props.storyId, data.value);
     emit('confirm', data.value);
+    visible.value = false;
   }
 
 </script>
 <template>
   <el-dialog :title="data.id ? '物品更新' : '物品创建'" v-model="visible" width="800px">
-    <el-form :model="data" label-width="auto" class="colon">
+    <el-form :model="formData" label-width="auto" class="colon" :rules="rules" ref="formRef">
       <el-form-item label="标识符" prop="key">
         <el-input v-model="data.key" clearable />
       </el-form-item>
@@ -72,7 +74,7 @@
       <el-table :data="attr" class="no-error-padding w-full">
         <el-table-column prop="key" label="标识符" align="center">
           <template #default="{ row, $index: i }">
-            <el-form-item :prop="`baseAttr.${i}.key`" :rules="rules.key">
+            <el-form-item :prop="`attr.${i}.key`" :rules="rules.key">
               <el-input v-model.trim="row.key" />
             </el-form-item>
           </template>
@@ -84,7 +86,7 @@
         </el-table-column>
         <el-table-column prop="value" label="值" align="center">
           <template #default="{ row, $index: i }">
-            <el-form-item :prop="`baseAttr.${i}.value`" :rules="rules.value">
+            <el-form-item :prop="`attr.${i}.value`" :rules="rules.value">
               <el-input v-model.trim="row.value" />
             </el-form-item>
           </template>

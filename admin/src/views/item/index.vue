@@ -47,14 +47,14 @@
     <el-header class="flex !py-2 justify-between" height="auto">
       <section class="flex space-x-2">
         <el-button type="primary" @click="add">添加</el-button>
+      </section>
+      <section class="flex space-x-2 justify-end items-center">
         <el-input v-model="query.type" clearable>
           <template #prefix> 物品类型： </template>
         </el-input>
         <el-input v-model="query.name" clearable>
           <template #prefix> 物品名称： </template>
         </el-input>
-      </section>
-      <section class="text-right">
         <el-button type="primary" @click="search">搜索</el-button>
       </section>
     </el-header>

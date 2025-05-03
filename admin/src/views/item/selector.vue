@@ -7,6 +7,7 @@
     story: number;
     multiple?: boolean;
     inventory?: boolean;
+    readonly?: boolean;
   }>();
 
   const query = reactive({
@@ -49,6 +50,7 @@
     } else {
       selected.value = [item];
       selectedResolve(item);
+      visible.value = false;
     }
   }
 
@@ -63,25 +65,25 @@
 </script>
 
 <template>
-  <el-dialog title="选择物品" v-model="visible" width="1000px">
+  <el-dialog title="物品" v-model="visible" width="1000px">
     <el-container>
       <el-header class="flex !py-2 justify-between" height="auto">
         <section class="flex space-x-2">
           <el-button type="primary" @click="add">添加</el-button>
+        </section>
+        <section class="flex space-x-2 justify-end items-center">
           <el-input v-model="query.type" clearable>
             <template #prefix> 物品类型： </template>
           </el-input>
           <el-input v-model="query.name" clearable>
             <template #prefix> 物品名称： </template>
           </el-input>
-        </section>
-        <section class="text-right">
           <el-button type="primary" @click="search">搜索</el-button>
         </section>
       </el-header>
       <el-main>
         <el-table row-key="id" :data="items" style="width: 100%" max-height="70vh">
-          <el-table-column label="#" width="50">
+          <el-table-column label="#" width="50" v-if="!readonly">
             <template #default="{ row }">
               <el-checkbox
                 :model-value="selected.some((r) => r.id == row.id)"

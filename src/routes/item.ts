@@ -93,7 +93,7 @@ router.delete("/:id/item/:itemId", async (req, res) => {
 });
 
 // 获取物品详情
-router.get("/:id/item/:itemId", async (req, res) => {
+router.get("/:id/item/:key", async (req, res) => {
   const storyRepository = AppDataSource.getRepository(Story);
   const story = await storyRepository.findOneBy({ id: Number(req.params.id) });
   if (!story) {
@@ -101,12 +101,31 @@ router.get("/:id/item/:itemId", async (req, res) => {
   }
 
   const itemRepository = AppDataSource.getRepository(Item);
-  const item = await itemRepository.findOneBy({ id: Number(req.params.itemId), storyId: Number(req.params.id) });
+  const item = await itemRepository.findOneBy({ key: req.params.key, storyId: Number(req.params.id) });
   if (!item) {
     return error(res, "物品不存在" );
   }
 
   json(res, item);
 });
+
+router.get("/:id/item/types", async (req, res) => {
+  const storyRepository = AppDataSource.getRepository(Story);
+  const story = await storyRepository.findOneBy({ id: Number(req.params.id) });
+  if (!story) {
+    return error(res, "故事不存在" );
+  }
+
+  const itemRepository = AppDataSource.getRepository(Item);
+  const items = await itemRepository.find({
+    where: { 
+      storyId: Number(req.params.id)
+    }
+  });
+
+  const types = [...new Set(items.map(item => item.type))];
+  json(res, types);
+});
+
 
 export default router;

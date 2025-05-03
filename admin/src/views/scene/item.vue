@@ -83,7 +83,7 @@
 
 <template>
   <el-dialog :title="data.id ? '场景编辑' : '场景创建'" v-model="visible" width="600px">
-    <el-form ref="formRef" :model="data" label-width="auto" :rules="rules">
+    <el-form ref="formRef" :model="data" label-width="auto" :rules="rules" class="colon">
       <el-form-item label="场景名称" prop="name">
         <el-input v-model="data.name" placeholder="请输入场景名称" />
       </el-form-item>
@@ -93,7 +93,7 @@
       <el-form-item label="场景选项" />
       <el-table :data="data.options" border stripe>
         <el-table-column prop="text" label="选项" />
-        <el-table-column prop="append" label="追加内容" />
+        <el-table-column prop="append" label="追加内容" show-overflow-tooltip />
         <el-table-column prop="next" label="下一个场景" />
         <el-table-column label="操作" width="100px" align="center">
           <template #header>
@@ -111,7 +111,7 @@
           </template>
         </el-table-column>
       </el-table>
-      <OptionForm ref="optionRef" :scenes="scenes" />
+      <OptionForm ref="optionRef" :scenes="scenes" :story="story" />
     </el-form>
     <template #footer>
       <el-button @click="visible = false">取消</el-button>

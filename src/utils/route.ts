@@ -47,9 +47,14 @@ class Render {
     return this;
   }
 
+  logo(logo: string) {
+    this.params.logo = logo;
+  }
+
   render(params: any = {}) {
     this.res.render(this.name, {
       name: this.name,
+      logo: this.params.logo || this.config.name,
       config: this.config,
       body: this.req?.body,
       query: this.req?.query,

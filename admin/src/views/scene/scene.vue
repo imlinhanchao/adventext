@@ -6,9 +6,10 @@
     story: number;
     scene: Scene;
     sceneMap: Recordable<Scene>;
+    start?: boolean;
   }>();
 
-  const emit = defineEmits(['next', 'edit', 'remove']);
+  const emit = defineEmits(['next', 'edit', 'remove', 'start']);
   const data = ref<Scene>(props.scene);
 
   const isMove = ref(false);
@@ -45,22 +46,25 @@
 </script>
 <template>
   <section
-    class="absolute transition-none"
+    class="absolute transition-none group"
     :style="{ left: scene.position.x + 'px', top: scene.position.y + 'px' }"
   >
     <el-card class="scene min-w-[400px]" :header="scene.name" header-class="!flex justify-between">
       <template #header>
         <span class="text-lg font-bold select-none cursor-move" @mousedown.stop="beginMove">{{
           scene.name
-        }}</span>
+        }}<Icon title="起始场景" :size="20" color="#f63832" v-if="start" icon="i-lets-icons:flag-fill" /></span>
         <span>
+          <el-button class="!group-hover:inline !hidden" v-if="!start" link @click="$emit('start', scene)" title="设置为起始场景">
+            <Icon icon="i-lets-icons:flag-duotone" />
+          </el-button>
           <el-button type="danger" link icon="el-icon-delete" @click="$emit('remove', scene)" />
           <el-button type="primary" link icon="el-icon-edit" @click="$emit('edit', scene)" />
         </span>
       </template>
       <p class="my-2">
         <span class="font-bold">{{ scene.content }}</span>
-        <span v-for="(item, index) in scene.options" :key="index">
+        <span v-for="(item, index) in scene.options" :key="index" :title="`来自选项：${item.text}`" class="hover:font-bold">
           {{ item.append || '' }}
         </span>
       </p>

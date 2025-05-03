@@ -6,7 +6,7 @@
       Copyright © {{ new Date().getFullYear() }}
       <br />
       All Rights Reserved. Power by
-      <a href="https://github.com/imlinhanchao/text-rpg" target="_blank">Text RPG</a> Open Source.
+      <a href="https://github.com/imlinhanchao/text-game" target="_blank">Text RPG</a> Open Source.
     </p>
   </el-footer>
 </template>

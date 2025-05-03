@@ -1,10 +1,14 @@
 <%- include('header') %>
 
-<h1>故事列表</h1>
-<ul>
-  <% stories.forEach(function(story) { %>
-    <li><%= story.title %></li>
-  <% }); %>
-</ul>
-
+<article>
+  <section>
+    <ol class="list-decimal">
+      <% stories.forEach(function(story) { %>
+        <li>
+          <a href="/<%=story.id-%>"><%= story.name %></a>
+        </li>
+      <% }); %>
+    </ol>
+  </section>
+</article>
 <%- include('footer') %>

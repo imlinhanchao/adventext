@@ -1,3 +1,4 @@
+import { ErrorMessageMode } from '#/axios';
 import { defHttp } from '@/utils/http';
 
 
@@ -41,6 +42,10 @@ export class Item {
    * 属性名称
    */
   attrName: Recordable<string> = {};
+
+  constructor(name: string = '') {
+    this.name = name;
+  }
 }
 
 export interface IItemQuery {
@@ -55,10 +60,10 @@ export function getItemList(storyId: number, params?: IItemQuery) {
   });
 }
 
-export function getItem(storyId: number, id: number) {
+export function getItem(storyId: number, name: string, mode: ErrorMessageMode = 'message') {
   return defHttp.get<Item>({
-    url: `/story/${storyId}/item/${id}`,
-  });
+    url: `/story/${storyId}/item/${name}`,
+  }, { errorMessageMode: mode });
 }
 
 export function createItem(storyId: number, item: Item) {
@@ -78,5 +83,11 @@ export function updateItem(storyId: number, item: Item) {
 export function deleteItem(storyId: number, id: number) {
   return defHttp.delete({
     url: `/story/${storyId}/item/${id}`,
+  });
+}
+
+export function getItemTypes() {
+  return defHttp.get<string[]>({
+    url: '/story/item/types',
   });
 }

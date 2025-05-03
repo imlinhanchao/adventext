@@ -46,6 +46,16 @@ router.delete("/:id", async (req, res) => {
   json(res, { message: "故事删除成功" });
 });
 
+// 获取故事详情
+router.get("/:id", async (req, res) => {
+  const storyRepository = AppDataSource.getRepository(Story);
+  const story = await storyRepository.findOneBy({ id: Number(req.params.id) });
+  if (!story) {
+    return error(res, "故事不存在" );
+  }
+  json(res, story);
+});
+
 // 获取故事场景
 router.get("/:id/scenes", async (req, res) => {
   const storyRepository = AppDataSource.getRepository(Story);
