@@ -48,6 +48,10 @@ import { getItem, Item } from '@/api/item';
     const scenes = props.scenes.filter(
       (item) => item.name.includes(query) || item.content.includes(query),
     );
+    scenes.unshift({
+      name: '<back>',
+      content: '返回上一个场景',
+    } as Scene);
     cb(scenes)
   }
 

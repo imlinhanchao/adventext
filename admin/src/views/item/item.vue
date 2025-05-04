@@ -37,7 +37,7 @@
     open,
   });
 
-  const emit = defineEmits(['confirm']);
+  const emit = defineEmits(['confirm', 'close']);
   async function save() {
     if (!(await formRef.value?.validate())) {
       return;
@@ -57,7 +57,7 @@
   
 </script>
 <template>
-  <el-dialog :title="data.id ? '物品更新' : '物品创建'" v-model="visible" width="800px">
+  <el-dialog :title="data.id ? '物品更新' : '物品创建'" v-model="visible" width="800px" @close="emit('close')">
     <el-form :model="formData" label-width="auto" class="colon" :rules="rules" ref="formRef">
       <el-form-item label="标识符" prop="key">
         <el-input v-model="data.key" clearable />

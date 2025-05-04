@@ -214,7 +214,7 @@
         <p class="mb-3">{{ dlgMessage }}</p>
         <p>
           <el-tag
-            class="cursor-pointer"
+            class="cursor-pointer m-1"
             v-for="item in itemToSelect"
             :key="item.id"
             @click="selectItemResolve(`item:${item.key}`)"

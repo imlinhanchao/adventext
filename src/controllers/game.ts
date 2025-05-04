@@ -4,6 +4,7 @@ import { render, json, error } from "../utils/route";
 import { Condition, Effect } from '../entities/Scene';
 import { clone } from '../utils';
 import { Inventory } from '../entities/Profile';
+import { isNumber } from '../utils/is';
 
 async function gameState(userId: number, storyId: number) {
   const stateRepository = AppDataSource.getRepository(Profile);
@@ -50,10 +51,7 @@ async function updateOptions(story: Scene, state: Profile) {
       order: { time: 'DESC' }, // 按 time 字段降序排序
       take: 1, // 只取一条记录
     });
-    if (!record) continue;
-    if (option.loop !== undefined && record && (option.loop < 0 || Date.now() - record.time < option.loop * 1000)) {
-      option.disabled = true;
-    }
+    option.disabled = option.loop !== undefined && record && (option.loop < 0 || Date.now() - record.time < option.loop * 1000);
   }
   return story.options.filter((option) => !option.disabled);
 }
@@ -90,7 +88,21 @@ export const init = async (user: User, req: Request, res: Response) => {
   }
 }
 
-function getCount(content: string) {
+function getCount(content: string, target?: any) {
+  if (isNumber(content)) return content;
+  if (content.includes('$')) {
+    const mat = content.match(/\$(\w+)/g);
+    if (mat) {
+      for (const m of mat) {
+        const key = m.replace('$', '');
+        if (target && target[key] !== undefined) {
+          content = content.replace(m, target[key]);
+        } else {
+          throw new Error(`属性 ${m} 未找到`);
+        }
+      }
+    }
+  }
   content = content.replace(/\s/g, '')
   while (content.includes('rand') || content.includes('percent')) {
     let mat = content.match(/rand\(([\d-]+),([\d-]+)\)/);
@@ -110,10 +122,12 @@ export async function runEffects(profile: Profile, effects: Effect[], itemTake?:
     let message = '', next = null;
     for (const effect of effects) {
       if (effect.type === 'Item') {
-        const item = await getItem(effect.name);
+        let item;
+        if (effect.name !== '$item') item = await getItem(effect.name);
+        else item = itemTake;
         if (!item) throw new Error(`物品 ${effect.name} 未找到.`)
         const inventory = profile.inventory.find((i) => i.key === effect.name);
-        let count = getCount(effect.content || '1');
+        let count = getCount(effect.content || '1', itemTake?.attributes || profile.attr);
         if (isNaN(count)) throw new Error(`Item ${effect.name} 效果获取数量失败！`)
         if (inventory) {
           inventory.count += count;
@@ -133,8 +147,8 @@ export async function runEffects(profile: Profile, effects: Effect[], itemTake?:
           profile.attr[effect.name] = isNaN(parseFloat(effect.content)) ? effect.content : parseFloat(effect.content);
         }
         else if (typeof profile.attr[effect.name] === 'number') {
-          let count = getCount(effect.content || '1');
-          if (isNaN(count)) throw new Error(`Item ${effect.name} 效果获取数量失败！`)
+          let count = getCount(effect.content || '1', profile.attr);
+          if (isNaN(count)) throw new Error(`Attr ${effect.name} 效果获取数量失败！`)
             profile.attr[effect.name] += count;
         }
         else {
@@ -174,7 +188,7 @@ export async function runEffects(profile: Profile, effects: Effect[], itemTake?:
           if (itemTake.attributes[effect.name] === undefined) {
             throw new Error(`物品 ${itemTake.name} 不包含属性 ${effect.name}.`);
           }
-          let count = getCount(effect.content || '1');
+          let count = getCount(effect.content || '1', itemTake.attributes);
           if (isNaN(count)) throw new Error(`ItemAttr ${effect.name} 效果获取数量失败！`)
           const itemCount = Math.ceil(count / itemTake.attributes[effect.name]);
           if (itemCount > itemTake.count) {
@@ -378,6 +392,7 @@ export const gameExcute = async (profile: Profile, scene: Scene, { option: optio
               const attrs = Object.keys(condition.content);
               const inventory = profile.inventory.some((i) => {
                 return attrs.every((attr) => {
+                  if (condition.content[attr] === '') return !!i.attributes[attr];
                   if (i.attributes[attr] === undefined) {
                     return false;
                   }
@@ -394,6 +409,7 @@ export const gameExcute = async (profile: Profile, scene: Scene, { option: optio
             } else {
               const attrs = Object.keys(condition.content);
               const inventory = attrs.every((attr) => {
+                if (condition.content[attr] === '') return !!itemTake.attributes[attr];
                 if (itemTake.attributes[attr] === undefined) {
                   return false;
                 }

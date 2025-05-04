@@ -44,7 +44,7 @@ export class Item {
   attrName: Recordable<string> = {};
 
   constructor(name: string = '') {
-    this.name = name;
+    this.key = name;
   }
 }
 

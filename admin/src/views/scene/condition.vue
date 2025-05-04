@@ -48,7 +48,6 @@
     name: [{ required: true, message: '请输入', trigger: 'blur' }],
     content: [{ required: true, message: '请输入', trigger: 'blur' }],
     key: [{ required: true, message: '请输入', trigger: 'blur' }],
-    value: [{ required: true, message: '请输入', trigger: 'blur' }],
   }));
 
   async function save() {
@@ -158,8 +157,8 @@
           </el-table-column>
           <el-table-column prop="value" label="值" align="center">
             <template #default="{ row, $index: i }">
-              <el-form-item :prop="`attr.${i}.value`" :rules="rules.value">
-                <el-input v-model.trim="row.value" />
+              <el-form-item :prop="`attr.${i}.value`">
+                <el-input v-model.trim="row.value" placeholder="留空则不检查值" />
               </el-form-item>
             </template>
           </el-table-column>

@@ -9,6 +9,7 @@
   import { ItemsContext, ScenesContext, StoryContext } from './index';
   import ItemSelector from '@/views/item/selector.vue';
   import Virtual from './virtual.vue';
+  import StoryForm from '@/views/story/item.vue';
 
   const route = useRoute();
   const storyId = Number(route.params.story);
@@ -22,16 +23,22 @@
 
   onMounted(() => {
     loadScene();
-    getStory(storyId).then((data) => {
-      story.value = data;
-    });
-    getItemList(storyId).then((data) => {
-      items.value = data;
-    });
+    loadStory();
+    loadItem();
   });
   function loadScene() {
     getSceneList(storyId).then((data) => {
       scenes.value = data;
+    });
+  }
+  function loadStory() {
+    getStory(storyId).then((data) => {
+      story.value = data;
+    });
+  }
+  function loadItem() {
+    getItemList(storyId).then((data) => {
+      items.value = data;
     });
   }
 
@@ -75,6 +82,11 @@
         ElMessage.success('设置成功');
       });
     });
+  }
+
+  const storyFormRef = ref<InstanceType<typeof StoryForm>>();
+  function editStory() {
+    storyFormRef.value?.open(story.value);
   }
 
   const scenePanelRef = ref<HTMLElement>();
@@ -164,6 +176,9 @@
     <el-container>
       <el-header class="flex !py-2 justify-between" height="auto">
         <section>
+          <el-button type="primary" @click="editStory" plain>
+            <Icon icon="i-uil:setting" /><span>故事设置</span>
+          </el-button>
           <el-button type="primary" @click="addScene" plain>
             <Icon icon="i-mdi:movie-open-plus-outline" /><span>添加场景</span>
           </el-button>
@@ -215,8 +230,10 @@
           </section>
         </section>
       </el-main>
-      <ItemSelector ref="itemListRef" :story="storyId" readonly />
+      <ItemSelector ref="itemListRef" :story="storyId" readonly @close="loadItem" />
       <SceneForm ref="sceneFormRef" :story="storyId" :scenes="scenes" />
+      <StoryForm ref="storyFormRef" @confirm="loadStory" />
+
     </el-container>
     <el-aside v-if="isVirtual" width="500px" class="border-l">
       <Virtual @next="highlightScene" />
