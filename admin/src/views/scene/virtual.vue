@@ -134,6 +134,7 @@
     currentScene.value = targetScene;
     profile.value.scene = targetScene.name;
     jumpScene.value = '';
+    message.value = '';
     emit('next', currentScene.value.name);
   }
 </script>
@@ -143,11 +144,11 @@
     <el-header class="flex !py-2 justify-between" height="auto">
       <section class="w-full flex justify-between items-center">
         <h1 class="font-bold text-xl inline-block">{{ story.name }}</h1>
-        <el-select v-model="jumpScene" placeholder="跳转场景" size="small" class="max-w-30" @change="jumpToScene">
+        <el-select v-model="jumpScene" placeholder="跳转场景" size="small" class="max-w-30" @change="jumpToScene" filterable>
           <el-option
             v-for="scene in scenes"
             :key="scene.name"
-            :label="scene.name"
+            :label="scene.content"
             :value="scene.name"
             class="!h-auto !pr-0 w-60"
           >
