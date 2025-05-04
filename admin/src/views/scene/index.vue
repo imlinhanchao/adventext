@@ -164,12 +164,21 @@
     <el-container>
       <el-header class="flex !py-2 justify-between" height="auto">
         <section>
-          <el-button type="primary" @click="addScene" plain>添加场景</el-button>
-          <el-button type="primary" @click="viewItemList" plain>管理物品</el-button>
-          <el-button type="success" @click="virtualRun" :plain="!isVirtual">模拟运行</el-button>
+          <el-button type="primary" @click="addScene" plain>
+            <Icon icon="i-mdi:movie-open-plus-outline" /><span>添加场景</span>
+          </el-button>
+          <el-button type="warning" @click="viewItemList" plain>
+            <Icon icon="i-ph:sword" /><span>管理物品</span>
+          </el-button>
+          <el-button type="success" @click="virtualRun" :plain="!isVirtual">
+            <template v-if="!isVirtual"><Icon icon="i-solar:play-bold" /><span>模拟运行</span></template>
+            <template v-else><Icon icon="i-solar:stop-bold" /><span>结束运行</span></template>
+          </el-button>
         </section>
         <section>
-          <el-button type="primary" @click="save">保存布局</el-button>
+          <el-button type="primary" @click="save">
+            <Icon icon="i-lucide:save" /><span>保存布局</span>
+          </el-button>
         </section>
       </el-header>
       <el-main class="!h-full">
@@ -209,8 +218,8 @@
       <ItemSelector ref="itemListRef" :story="storyId" readonly />
       <SceneForm ref="sceneFormRef" :story="storyId" :scenes="scenes" />
     </el-container>
-    <el-aside v-if="isVirtual" width="500px">
-      <Virtual />
+    <el-aside v-if="isVirtual" width="500px" class="border-l">
+      <Virtual @next="highlightScene" />
     </el-aside>
   </el-container>
 </template>

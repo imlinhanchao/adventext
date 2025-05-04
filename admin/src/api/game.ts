@@ -105,5 +105,5 @@ export function updateOptions(story: Scene, records: SceneRecord[]) {
       option.disabled = true;
     }
   }
-  return story.options.filter((option) => !option.disabled);
+  return story.options;
 }

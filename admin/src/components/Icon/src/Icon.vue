@@ -43,7 +43,7 @@
 </script>
 
 <template>
-  <i class="com-icon" :style="{ fontSize, color }">
+  <i class="com-icon el-icon" :style="{ fontSize, color }">
     <!-- 组件：对象/函数/ant-icon-xxx -->
     <component v-if="isComp" :is="icon" />
 

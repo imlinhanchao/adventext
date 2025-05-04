@@ -1,6 +1,7 @@
 <script lang="ts" setup>
   import { deleteItem, getItemList, Item } from '@/api/item';
   import { Inventory } from '@/api/story';
+import { clone } from '@/utils';
   import ItemForm from '@/views/item/item.vue';
 import { ElMessageBox } from 'element-plus';
 
@@ -34,10 +35,13 @@ import { ElMessageBox } from 'element-plus';
   let selectedResolve: (item: (Item | Inventory)[] | (Item | Inventory)) => void;
   function open(items?: (Item | Inventory)[]) {
     visible.value = true;
-    selected.value = items || [];
+    selected.value = clone(items || []);
     search();
     return new Promise((resolve) => {
-      selectedResolve = resolve;
+      selectedResolve = (data) => {
+        resolve(data);
+        visible.value = false;
+      }
     });
   }
 

@@ -2,8 +2,7 @@ import { Request, Response } from 'express';
 import { Record, Story, Profile, Scene, User, AppDataSource, Item, End } from "../entities";
 import { render, json, error } from "../utils/route";
 import { Condition, Effect } from '../entities/Scene';
-import { clone, omit } from '../utils';
-import { getGameState } from './profile';
+import { clone } from '../utils';
 
 async function gameState(userId: number, storyId: number) {
   const stateRepository = AppDataSource.getRepository(Profile);
@@ -117,7 +116,7 @@ export async function runEffects(profile: Profile, effects: Effect[]) {
           });
         }
 
-        message += `获得 ${item.name}×${count}.\n`;
+        message += `${count > 0 ? '获得' : '扣除'} ${item.name}×${Math.abs(count)}.\n`;
       }
       if (effect.type === 'Attr') {
         const oldValue = profile.attr[effect.name] || '';
@@ -286,7 +285,7 @@ export const gameExcute = async (profile: Profile, scene: Scene, { option: optio
 
     let itemTake;
     if (option?.value?.startsWith('item:')) {
-      const item = await getItem(valueText.split(':')[1]);
+      const item = profile.inventory.find((i) => i.key === valueText.split(':')[1]);
       if (!item) {
         throw new Error(`物品 ${option.value} 未找到.`);
       }
@@ -315,7 +314,7 @@ export const gameExcute = async (profile: Profile, scene: Scene, { option: optio
             }
             const inventory = profile.inventory.find((i) => i.key === condition.name);
             let count = parseInt(condition.content || '1');
-            if (option.value) {
+            if (option.value && !option.value?.startsWith('item:')) {
               count = parseInt(valueText) * count
             }
             if (!inventory || inventory.count < count) {
@@ -337,11 +336,26 @@ export const gameExcute = async (profile: Profile, scene: Scene, { option: optio
                     return false;
                   }
                   if (typeof i.attributes[attr] === 'number') {
-                    return i.attributes[attr] >= condition.content[attr];
+                    return i.attributes[attr] * i.count >= condition.content[attr];
                   } else {
                     return i.attributes[attr] === condition.content[attr];
                   }
                 });
+              });
+              if (!inventory) {
+                throw new Error(`你还没准备好.`);
+              }
+            } else {
+              const attrs = Object.keys(condition.content);
+              const inventory = attrs.every((attr) => {
+                if (itemTake.attributes[attr] === undefined) {
+                  return false;
+                }
+                if (typeof itemTake.attributes[attr] === 'number') {
+                  return itemTake.attributes[attr] * itemTake.count >= condition.content[attr];
+                } else {
+                  return itemTake.attributes[attr] === condition.content[attr];
+                }
               });
               if (!inventory) {
                 throw new Error(`你还没准备好.`);
