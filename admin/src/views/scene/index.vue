@@ -98,7 +98,7 @@
     if (!nextScene) {
       sceneFormRef.value?.open(new Scene(next)).then((scene: Scene) => {
         scenes.value.push(scene);
-        highlight.value = scene.name;
+        highlightScene(scene.name);
       });
       return;
     }
