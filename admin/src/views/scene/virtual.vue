@@ -37,14 +37,15 @@
   async function getValue(option: Option) {
     let value: string | false = '';
     if (option.value?.startsWith('item:')) {
-      const [_, message, type] = option.value.split(':');
+      const [_, msg, type] = option.value.split(':');
       let inventory = profile.value.inventory.filter((item) => (item.count || 0) > 0);
       if (type) inventory = inventory.filter((item) => item.type === type);
       if (inventory.length === 0) {
-        ElMessage.error(type ? `你没有${type}` : '先去别处转转吧');
+        msgType.value = 'error';
+        message.value = type ? `你没有${type}` : '先去别处转转吧';
         return false;
       }
-      value = await selectItem(inventory, message);
+      value = await selectItem(inventory, msg);
       if (!value) return false;
     } else if (option.value) {
       value = prompt(option.value) || '';
@@ -193,7 +194,7 @@
           </el-tooltip>
         </span>
       </section>
-      <el-alert v-if="message" :type="msgType">{{ message }}</el-alert>
+      <el-alert v-if="message" :type="msgType" :closable="false">{{ message }}</el-alert>
       <section>
         <span>{{ currentScene.content }}</span>
         <span v-for="o in currentScene.options.filter((o) => o.append)" :key="o.text">
