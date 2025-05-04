@@ -95,7 +95,13 @@
   const highlight = ref('');
   function highlightScene(next: string) {
     const nextScene = scenes.value.find((item) => item.name === next);
-    if (!nextScene) return;
+    if (!nextScene) {
+      sceneFormRef.value?.open(new Scene(next)).then((scene: Scene) => {
+        scenes.value.push(scene);
+        highlight.value = scene.name;
+      });
+      return;
+    }
 
     highlight.value = next;
     if (!scenePanelRef.value) return;

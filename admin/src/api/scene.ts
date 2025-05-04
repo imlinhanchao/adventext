@@ -142,6 +142,10 @@ export class Scene {
    * 面板位置
    */
   position: { x: number, y: number, w?: number, h?: number } = { x: 0, y: 0 };
+
+  constructor(name: string = '') {
+    this.name = name;
+  }
 }
 
 export function getSceneList(storyId: number) {

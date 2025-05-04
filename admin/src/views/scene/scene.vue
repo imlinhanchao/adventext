@@ -91,7 +91,14 @@
                 <Icon icon="i-icon-park-outline:loop-once" v-if="(item.loop ?? 0) > 0" :title="`循环/${item.loop}s`" />
               </span>
             </span>
-            <span ref="nextRef" :class="{ 'cursor-pointer': item.next != '<back>' && sceneMap[item.next], 'bg-red px-2 rounded font-bold': item.next != '<back>' && !sceneMap[item.next] }" @click="emit('next', item.next)">→{{ item.next }}</span>
+            <span 
+              ref="nextRef" 
+              :class="{ 
+                'cursor-pointer': item.next != '<back>', 
+                'bg-red px-2 rounded font-bold': item.next != '<back>' && !sceneMap[item.next] 
+              }" 
+              @click="item.next != '<back>' && emit('next', item.next)"
+            >→{{ item.next }}</span>
           </li>
         </ul>
       </section>
