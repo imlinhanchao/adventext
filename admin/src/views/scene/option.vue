@@ -118,7 +118,17 @@ import { getItem, Item } from '@/api/item';
         <span v-else>不可重复</span>
       </el-form-item>
       <el-form-item label="客户端输入提示" prop="value">
-        <el-input v-model="data.value" clearable placeholder="若要用户选择物品，可使用 item:提示内容:物品类型，物品类型非必须" type="textarea" />
+        <template #label>
+          <span>
+            <el-tooltip content="若要弹出选择物品，可使用 item:提示内容:物品类型，物品类型非必须" placement="top">
+              <Icon icon="i-ep:info-filled" :size="14" />
+            </el-tooltip>
+            客户端输入提示
+          </span>
+        </template>
+        <el-input v-model="data.value" clearable type="textarea" />
+        <el-button @click="data.value = `item:${data.value?.split(':')[1] || data.value ||'提示：'}`" size="small">物品弹窗</el-button>
+        <el-button @click="data.value = `item:${data.value?.split(':')[1] || data.value ||'提示：'}:类型`" size="small">物品弹窗(指定类型)</el-button>
       </el-form-item>
       <el-divider>条件列表</el-divider>
       <el-table :data="data.conditions" border stripe>

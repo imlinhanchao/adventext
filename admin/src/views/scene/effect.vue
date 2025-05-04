@@ -64,10 +64,26 @@
         <el-form-item label="属性值" prop="content">
           <template #label>
             <span>
-              <el-tooltip effect="dark" content="可以输入 rand(x,y) 表示 x~y 的随机数">
+              <el-tooltip effect="dark" content="可以输入 rand(x,y) 表示 x~y 的随机数，percent(x,y) 表示 x 的百分比增加 y，y 省略则表示 1，，两个函数可嵌套使用">
                 <Icon icon="i-ep:info-filled" :size="14" />
               </el-tooltip>
               属性值
+            </span>
+          </template>
+          <el-input v-model="data.content" :min="0" />
+        </el-form-item>
+      </template>
+      <template v-if="data.type === 'ItemAttr'">
+        <el-form-item label="物品属性名" prop="name">
+          <el-input v-model="data.name" clearable />
+        </el-form-item>
+        <el-form-item label="物品属性值" prop="content">
+          <template #label>
+            <span>
+              <el-tooltip effect="dark" content="此处设置表示消耗对应属性名的属性值之和的物品，可以设置选项物品弹窗来精确控制对应物品。可以输入 rand(x,y) 表示 x~y 的随机数，percent(x,y) 表示 x 的百分比 y，y 省略则表示 1，两个函数可嵌套使用">
+                <Icon icon="i-ep:info-filled" :size="14" />
+              </el-tooltip>
+              物品属性值
             </span>
           </template>
           <el-input v-model="data.content" :min="0" />
@@ -89,7 +105,7 @@
         <el-form-item label="数量" prop="content">
           <template #label>
             <span>
-              <el-tooltip effect="dark" content="可以输入数字，或 rand(x,y) 表示 x~y 的随机数">
+              <el-tooltip effect="dark" content="可以输入数字，或 rand(x,y) 表示 x~y 的随机数，percent(x,y) 表示 x 的百分比获得 y 个，y 省略则表示 1 个，两个函数可嵌套使用">
                 <Icon icon="i-ep:info-filled" />
               </el-tooltip>
               数量
@@ -122,6 +138,12 @@
             </span>
           </section>
         </el-form-item>
+      </template>
+      <template v-if="'Fn' != data.type">
+        <p>
+          <el-button @click="data.content = 'rand(1,100)'">随机数</el-button>
+          <el-button @click="data.content = 'percent(10,2)'">百分比</el-button>
+        </p>
       </template>
       <ItemSelector v-if="story" ref="itemSelectorRef" :story="story.id!" />
     </el-form>

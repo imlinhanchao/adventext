@@ -76,6 +76,7 @@ export class Condition {
 
 export const EffectType = {
   Item: '获得物品',
+  ItemAttr: '物品属性（消耗）',
   Attr: '属性变化',
   Fn: '函数调用',
 }
