@@ -33,7 +33,7 @@ export function listToTree<T = any>(list: any[], config: Partial<TreeHelperConfi
   return result;
 }
 
-export function treeToList<T = any>(tree: any, config: Partial<TreeHelperConfig> = {}): T {
+export function treeToList<T = any>(tree: any, config: Partial<TreeHelperConfig> = {}): T[] {
   config = getConfig(config);
   const { children } = config;
   const result: any = [...tree];

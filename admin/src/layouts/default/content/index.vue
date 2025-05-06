@@ -1,5 +1,5 @@
 <template>
-  <el-main class="h-full px-5 overflow-auto">
+  <el-main class="h-full !p-1 overflow-auto">
     <RouterView>
       <template #default="{ Component, route }">
         <transition

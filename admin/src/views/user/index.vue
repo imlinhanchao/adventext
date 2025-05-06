@@ -38,10 +38,10 @@ import { ElMessageBox } from 'element-plus';
   <el-container>
     <el-main>
       <el-table :data="userList" style="width: 100%">
-        <el-table-column prop="id" label="Id" align="center" />
-        <el-table-column prop="username" label="用户名" align="center" />
-        <el-table-column prop="isAdmin" label="是否管理员" />
-        <el-table-column label="操作" align="center" width="280">
+        <el-table-column prop="id" label="Id" align="center" width="80" />
+        <el-table-column prop="username" label="用户名" align="center" width="120" />
+        <el-table-column prop="isAdmin" label="是否管理员" width="120" align="center" />
+        <el-table-column label="操作" align="center" width="120">
           <template #default="{ row }">
             <el-button-group>
               <el-button type="primary" size="small" @click="edit(row)">编辑</el-button>

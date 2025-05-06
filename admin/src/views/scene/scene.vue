@@ -17,11 +17,17 @@
     x: 0,
     y: 0,
   });
-  function beginMove(e: MouseEvent) {
+
+  function beginMove(e: MouseEvent|TouchEvent) {
     isMove.value = true;
-    beginPos.value.x = e.clientX - data.value.position.x;
-    beginPos.value.y = e.clientY - data.value.position.y;
+    const client = {
+      x: (e as MouseEvent).clientX || (e as TouchEvent).touches[0].clientX,
+      y: (e as MouseEvent).clientY || (e as TouchEvent).touches[0].clientY,
+    }
+    beginPos.value.x = client.x - data.value.position.x;
+    beginPos.value.y = client.y - data.value.position.y;
   }
+
   useEventListener({
     el: document.body,
     name: 'mousemove',
@@ -36,7 +42,37 @@
 
   useEventListener({
     el: document.body,
+    name: 'touchmove',
+    listener: (e: TouchEvent) => {
+      if (isMove.value) {
+        data.value.position.x = e.touches[0].clientX - beginPos.value.x;
+        data.value.position.y = e.touches[0].clientY - beginPos.value.y;
+      }
+    },
+    wait: 0,
+  });
+
+  useEventListener({
+    el: document.body,
     name: 'mouseup',
+    listener: () => {
+      isMove.value = false;
+    },
+    wait: 0,
+  });
+
+  useEventListener({
+    el: document.body,
+    name: 'touchend',
+    listener: () => {
+      isMove.value = false;
+    },
+    wait: 0,
+  });
+
+  useEventListener({
+    el: document.body,
+    name: 'touchcancel',
     listener: () => {
       isMove.value = false;
     },
@@ -51,7 +87,7 @@
   >
     <el-card class="scene min-w-[400px]" :header="scene.name" header-class="!flex justify-between">
       <template #header>
-        <span class="text-lg font-bold select-none cursor-move" @mousedown.stop="beginMove">
+        <span class="text-lg font-bold select-none cursor-move" @mousedown.stop="beginMove" @touchstart.stop="beginMove">
           {{ scene.name }}
           <Icon title="起始场景" :size="20" color="#f63832" v-if="start" icon="i-lets-icons:flag-fill" />
           <Icon title="结局" :size="20" color="#1f8bf4" v-if="scene.isEnd" icon="i-carbon:circle-filled" />

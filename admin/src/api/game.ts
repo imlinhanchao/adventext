@@ -97,10 +97,11 @@ export function gameRun(data: { scene: Scene, profile: Profile, option: string, 
   });
 }
 
-export function updateOptions(story: Scene, records: SceneRecord[]) {
-  for (const option of story.options) {
-    const record = records.find((r) => r.scene == story.name && r.option == option.text);
-    option.disabled = option.loop !== undefined && record && (option.loop < 0 || Date.now() - record.time < option.loop * 1000)
-  }
-  return story.options;
+export function updateOptions(scene: Scene, profile: Profile, records: SceneRecord[]) {
+  return defHttp.post({
+    url: `/story/filter`,
+    data: { scene, profile, records, timezone: new Date().getTimezoneOffset() / -60 } 
+  }, {
+    errorMessageMode: 'none',
+  });
 }

@@ -12,5 +12,8 @@ export class User {
   password: string;
 
   @Column()
+  timezone: number;
+
+  @Column()
   isAdmin: boolean = false;
 }

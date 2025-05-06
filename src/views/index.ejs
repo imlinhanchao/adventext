@@ -1,9 +1,9 @@
 <%- include('header') %>
 
-<article>
+<article class="story">
   <% if (locals.state) { -%>
   <div id="profile" class="space-y-2">
-    <section>
+    <section id="attr">
       <section class="title">属性</section>
       <section class="attr">
         <% Object.entries(state.attrName).forEach(function([key, name]) { %>
@@ -12,7 +12,7 @@
         <% }); %>
       </section>
     </section>
-    <section>
+    <section id="item">
       <section class="title">物品</section>
       <section class="inventory">
         <% state.inventory.forEach(function(item) { %>
@@ -33,9 +33,6 @@
     <div id="options" class="space-x-2">
       
     </div>
-    <form action="/" id="form" method="POST">
-      <input type="hidden" name="option" id="option" />
-    </form>
   </div>
   <div id="dialog" class="dialog">
     <div id="dialog-container" class="container">
@@ -46,10 +43,7 @@
     </div>
   </div>
   <script>
-    const state = <%- JSON.stringify(locals.state || null) %>;
-    const scene = <%- JSON.stringify(locals.scene || null) %>;
-    const story = <%- locals.story %>;
-    if (scene && state) startGame(scene, state);
+    initGame(<%= locals.story?.id-%>);
   </script>
 </article>
 

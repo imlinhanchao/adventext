@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { gameVirtual } from "../controllers/game";
+import { gameVirtual, optionFilter } from "../controllers/game";
 import { AppDataSource, Scene, Story } from "../entities/";
 import { error, json } from "../utils/route";
 import ItemRoute from './item';
@@ -7,6 +7,7 @@ import ItemRoute from './item';
 const router = Router();
 
 router.post("/run", gameVirtual);
+router.post("/filter", optionFilter);
 
 // 获取所有故事
 router.get("/list", async (req, res) => {

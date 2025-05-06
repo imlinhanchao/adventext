@@ -14,7 +14,7 @@
 <template>
   <el-dropdown placement="bottom-end" arrow class="mx-3" @command="menuClick">
     <span class="flex items-center cursor-pointer">
-      <el-avatar class="bg-primary">{{ userStore.getUserInfo.username.slice(0, 1) }}</el-avatar>
+      <el-avatar size="small" class="bg-primary">{{ userStore.getUserInfo.username.slice(0, 1) }}</el-avatar>
     </span>
 
     <template #dropdown>

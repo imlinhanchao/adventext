@@ -72,6 +72,10 @@ export class Condition {
    * 条件失败时的提示
    */
   tip?: string;
+  /**
+   * 是否用于隐藏选项
+   */
+  isHide: boolean = false;
 }
 
 export const EffectType = {

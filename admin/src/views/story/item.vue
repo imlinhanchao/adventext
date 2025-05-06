@@ -71,6 +71,7 @@
     v-model="visible"
     width="700px"
     class="max-h-[80vh]"
+    append-to-body
   >
     <el-form ref="formRef" label-width="auto" :model="formData" :rules="rules" class="colon">
       <el-form-item label="名称" name="name">

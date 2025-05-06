@@ -226,6 +226,9 @@
       <el-form-item label="失败提示" prop="tip">
         <el-input v-model="data.tip" clearable type="textarea" />
       </el-form-item>
+      <el-form-item label="用于隐藏选项" prop="isHide">
+        <el-switch v-model="data.isHide" />
+      </el-form-item>
       <ItemSelector v-if="story" ref="itemSelectorRef" :story="story.id!" />
     </el-form>
     <template #footer>

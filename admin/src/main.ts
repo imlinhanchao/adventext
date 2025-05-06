@@ -3,7 +3,7 @@ import 'virtual:svg-icons-register';
 import '@unocss/reset/tailwind-compat.css';
 import '@/assets/style/main.less';
 import 'element-plus/dist/index.css';
-
+import 'element-plus/theme-chalk/dark/css-vars.css'
 import { createApp } from 'vue';
 
 import App from '@/layouts/App.vue';

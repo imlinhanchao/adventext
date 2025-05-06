@@ -131,10 +131,14 @@
     x: 0,
     y: 0,
   });
-  function beginMove(e: MouseEvent) {
+  function beginMove(e: MouseEvent|TouchEvent) {
     isMove.value = true;
-    beginPos.value.x = e.clientX - pos.value.x;
-    beginPos.value.y = e.clientY - pos.value.y;
+    const client = {
+      x: (e as MouseEvent).clientX || (e as TouchEvent).touches[0].clientX,
+      y: (e as MouseEvent).clientY || (e as TouchEvent).touches[0].clientY,
+    }
+    beginPos.value.x = client.x - pos.value.x;
+    beginPos.value.y = client.y - pos.value.y;
   }
   useEventListener({
     el: document.body,
@@ -144,6 +148,35 @@
         pos.value.x = e.clientX - beginPos.value.x;
         pos.value.y = e.clientY - beginPos.value.y;
       }
+    },
+    wait: 0,
+  });
+  useEventListener({
+    el: document.body,
+    name: 'touchmove',
+    listener: (e: TouchEvent) => {
+      if (isMove.value) {
+        pos.value.x = e.touches[0].clientX - beginPos.value.x;
+        pos.value.y = e.touches[0].clientY - beginPos.value.y;
+      }
+    },
+    wait: 0,
+  });
+
+  useEventListener({
+    el: document.body,
+    name: 'touchend',
+    listener: () => {
+      isMove.value = false;
+    },
+    wait: 0,
+  });
+
+  useEventListener({
+    el: document.body,
+    name: 'touchcancel',
+    listener: () => {
+      isMove.value = false;
     },
     wait: 0,
   });
@@ -183,29 +216,30 @@
       <el-header class="flex !py-2 justify-between" height="auto">
         <section>
           <el-button type="primary" @click="editStory" plain>
-            <Icon icon="i-uil:setting" /><span>故事设置</span>
+            <Icon icon="i-uil:setting" /><span class="btn-text">故事设置</span>
           </el-button>
           <el-button type="primary" @click="addScene" plain>
-            <Icon icon="i-mdi:movie-open-plus-outline" /><span>添加场景</span>
+            <Icon icon="i-mdi:movie-open-plus-outline" /><span class="btn-text">添加场景</span>
           </el-button>
           <el-button type="warning" @click="viewItemList" plain>
-            <Icon icon="i-ph:sword" /><span>管理物品</span>
+            <Icon icon="i-ph:sword" /><span class="btn-text">管理物品</span>
           </el-button>
           <el-button type="success" @click="virtualRun" :plain="!isVirtual">
-            <template v-if="!isVirtual"><Icon icon="i-solar:play-bold" /><span>模拟运行</span></template>
-            <template v-else><Icon icon="i-solar:stop-bold" /><span>结束运行</span></template>
+            <template v-if="!isVirtual"><Icon icon="i-solar:play-bold" /><span class="btn-text">模拟运行</span></template>
+            <template v-else><Icon icon="i-solar:stop-bold" /><span class="btn-text">结束运行</span></template>
           </el-button>
         </section>
         <section>
           <el-button type="primary" @click="save">
-            <Icon icon="i-lucide:save" /><span>保存布局</span>
+            <Icon icon="i-lucide:save" /><span class="btn-text">保存布局</span>
           </el-button>
         </section>
       </el-header>
       <el-main class="!h-full">
         <section
           @mousedown="beginMove"
-          class="relative overflow-hidden w-full h-full shadow shadow-lg border bg-light-50"
+          @touchstart="beginMove"
+          class="relative overflow-hidden w-full h-full dark:shadow-gray-800 shadow shadow-lg border dark:border-gray-600 bg-var(--el-bg-color)"
           ref="sceneViewRef"
         >
           <section
@@ -241,7 +275,7 @@
       <StoryForm ref="storyFormRef" @confirm="loadStory" />
 
     </el-container>
-    <el-aside v-if="isVirtual" width="500px" class="border-l">
+    <el-aside v-if="isVirtual" width="500px" class="border-l dark:border-gray-600">
       <Virtual @next="highlightScene" />
     </el-aside>
   </el-container>

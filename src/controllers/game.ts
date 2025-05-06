@@ -43,16 +43,27 @@ async function getStory(id: number) {
   return await storyRepository.findOneBy({ id });
 }
 
-async function updateOptions(story: Scene, state: Profile) {
+async function updateOptions(story: Scene, state: Profile, timezone: number, records?: Record[]) {
   const recordRepository = AppDataSource.getRepository(Record);
   for (const option of story.options) {
-    const [record] = await recordRepository.find({
-      where: { user: state.userId, scene: story.name, option: option.text, endId: state.endId },
-      order: { time: 'DESC' }, // 按 time 字段降序排序
-      take: 1, // 只取一条记录
-    });
+    let record;
+    if (!records) {
+      const [r] = await recordRepository.find({
+        where: { user: state.userId, scene: story.name, option: option.text, endId: state.endId },
+        order: { time: 'DESC' }, // 按 time 字段降序排序
+        take: 1, // 只取一条记录
+      });
+      record = r;
+    } else {
+      record = records.find((r) => r.scene == story.name && r.option == option.text);
+    }
     option.disabled = option.loop !== undefined && record && (option.loop < 0 || Date.now() - record.time < option.loop * 1000);
+    if (option.disabled) continue;
+    option.disabled = !(await checkConditions(option.conditions?.filter(c => c.isHide) || [], state, option, '', timezone).catch(() => false));
   }
+
+  if (records) return story.options;
+
   return story.options.filter((option) => !option.disabled);
 }
 
@@ -74,35 +85,36 @@ export const init = async (user: User, req: Request, res: Response) => {
     const { state, scene } = await gameState(userId, parseInt(req.params.storyId));
     const story = await getStory(parseInt(req.params.storyId));
 
-    scene!.options = await updateOptions(scene!, state);
+    scene!.options = await updateOptions(scene!, state, req.body?.timezone ?? new Date().getTimezoneOffset() / -60);
 
-    render(res, 'index', req).render({
+    return {
       state,
       scene,
-      story: req.params.storyId,
-      logo: story?.name,
-    })
+      story,
+    }
 
   } catch (error: any) {
-    render(res, 'index', req).error(error.message).render()
+    throw error;
   }
 }
 
-function getCount(content: string, target?: any) {
-  if (isNumber(content)) return content;
-  if (content.includes('$')) {
-    const mat = content.match(/\$(\w+)/g);
-    if (mat) {
-      for (const m of mat) {
-        const key = m.replace('$', '');
-        if (target && target[key] !== undefined) {
-          content = content.replace(m, target[key]);
-        } else {
-          throw new Error(`属性 ${m} 未找到`);
-        }
+function fillVar(content: string, type: string, target: any) {
+  const mat = content.match(new RegExp(`${type}(\S+)${type}`, 'g'));
+  if (mat) {
+    for (const m of mat) {
+      const key = m.replace('#', '');
+      if (target && target[key] !== undefined) {
+        content = content.replace(m, target[key]);
       }
     }
   }
+  return content;
+}
+
+function getCount(content: string, profileAttr: any, itemTakeAttr?: any) {
+  if (isNumber(content)) return content;
+  content = fillVar(content, '\\$', itemTakeAttr);
+  content = fillVar(content, '#', profileAttr);
   content = content.replace(/\s/g, '')
   while (content.includes('rand') || content.includes('percent')) {
     let mat = content.match(/rand\(([\d-]+),([\d-]+)\)/);
@@ -127,7 +139,7 @@ export async function runEffects(profile: Profile, effects: Effect[], itemTake?:
         else item = itemTake;
         if (!item) throw new Error(`物品 ${effect.name} 未找到.`)
         const inventory = profile.inventory.find((i) => i.key === effect.name);
-        let count = getCount(effect.content || '1', itemTake?.attributes || profile.attr);
+        let count = getCount(effect.content || '1', profile.attr, itemTake?.attributes);
         if (isNaN(count)) throw new Error(`Item ${effect.name} 效果获取数量失败！`)
         if (inventory) {
           inventory.count += count;
@@ -147,7 +159,7 @@ export async function runEffects(profile: Profile, effects: Effect[], itemTake?:
           profile.attr[effect.name] = isNaN(parseFloat(effect.content)) ? effect.content : parseFloat(effect.content);
         }
         else if (typeof profile.attr[effect.name] === 'number') {
-          let count = getCount(effect.content || '1', profile.attr);
+          let count = getCount(effect.content || '1', profile.attr, itemTake?.attributes);
           if (isNaN(count)) throw new Error(`Attr ${effect.name} 效果获取数量失败！`)
             profile.attr[effect.name] += count;
         }
@@ -168,7 +180,7 @@ export async function runEffects(profile: Profile, effects: Effect[], itemTake?:
           if (!inventorys.length) {
             throw new Error(`你没有包含${attr}的物品.`);
           }
-          let count = getCount(effect.content || '1');
+          let count = getCount(effect.content || '1', profile.attr);
           if (isNaN(count)) throw new Error(`ItemAttr ${effect.name} 效果获取数量失败！`)
           let total = 0;
           for (const inventory of inventorys) {
@@ -188,7 +200,7 @@ export async function runEffects(profile: Profile, effects: Effect[], itemTake?:
           if (itemTake.attributes[effect.name] === undefined) {
             throw new Error(`物品 ${itemTake.name} 不包含属性 ${effect.name}.`);
           }
-          let count = getCount(effect.content || '1', itemTake.attributes);
+          let count = getCount(effect.content || '1', profile.attr, itemTake.attributes);
           if (isNaN(count)) throw new Error(`ItemAttr ${effect.name} 效果获取数量失败！`)
           const itemCount = Math.ceil(count / itemTake.attributes[effect.name]);
           if (itemCount > itemTake.count) {
@@ -286,6 +298,112 @@ function conditionCheckTime(condition: Condition, timezone: number) {
   return true;
 }
 
+async function checkConditions(conditions: Condition[], profile: Profile, option: any, valueText: string, timezone: number, itemTake?: Inventory) {
+  for (const condition of conditions) {
+    try {
+      if (condition.type === 'Time') {
+        if (!conditionCheckTime(condition, timezone)) {
+          throw new Error(`还不是时候`);
+        }
+      }
+      if (condition.type === 'Fn') {
+        const fn = new Function('profile', 'let result = true;\n' + condition.content + '\nreturn result;');
+        const result = fn(clone(profile));
+        if (result !== true) {
+          throw new Error(typeof result != 'string' ? `你还没准备好` : result);
+        }
+      }
+      if (condition.type === 'Item') {
+        const item = await getItem(condition.name);
+        if (!item) {
+          throw new Error(`物品${condition.name}未找到`);
+        }
+        const inventory = profile.inventory.find((i) => i.key === condition.name);
+        let count = parseInt(condition.content || '1');
+        if (option.value && !option.value?.startsWith('item:')) {
+          count = parseInt(valueText) * count
+        }
+        if (!inventory || inventory.count < count) {
+          throw new Error(`你需要 ${item.name}×${count}.`);
+        }
+      }
+      if (condition.type === 'ItemType') {
+        const inventory = profile.inventory.some((i) => i.type === condition.content);
+        if (!inventory) {
+          throw new Error(`你需要 ${condition.content.toString()}.`);
+        }
+      }
+      if (condition.type === 'ItemAttr') {
+        if (!itemTake) {
+          const attrs = Object.keys(condition.content);
+          const inventory = profile.inventory.some((i) => {
+            return attrs.every((attr) => {
+              if (condition.content[attr] === '') return !!i.attributes[attr];
+              if (i.attributes[attr] === undefined) {
+                return false;
+              }
+              if (typeof i.attributes[attr] === 'number') {
+                return i.attributes[attr] * i.count >= condition.content[attr];
+              } else {
+                return i.attributes[attr] === condition.content[attr];
+              }
+            });
+          });
+          if (!inventory) {
+            throw new Error(`你还没准备好.`);
+          }
+        } else {
+          const attrs = Object.keys(condition.content);
+          const inventory = attrs.every((attr) => {
+            if (condition.content[attr] === '') return !!itemTake.attributes[attr];
+            if (itemTake.attributes[attr] === undefined) {
+              return false;
+            }
+            if (typeof itemTake.attributes[attr] === 'number') {
+              return itemTake.attributes[attr] * itemTake.count >= condition.content[attr];
+            } else {
+              return itemTake.attributes[attr] === condition.content[attr];
+            }
+          });
+          if (!inventory) {
+            throw new Error(`你还没准备好.`);
+          }
+        }
+      }
+      if (condition.type === 'Attr') {
+        for (const [key, value] of Object.entries(condition.content)) {
+          if (profile.attr[key] === undefined) {
+            throw new Error(`你还没准备好.`);
+          }
+          if (typeof profile.attr[key] === 'number') {
+            if (profile.attr[key] < parseFloat((value as any).toString())) {
+              throw new Error(`你还没准备好.`);
+            }
+          } else {
+            if (profile.attr[key] !== value) {
+              throw new Error(`你还没准备好.`);
+            }
+          }
+        }
+      }
+      if (condition.type === 'Value') {
+        if (condition.content !== valueText) {
+          throw new Error(`密码错误`);
+        }
+      }
+    } catch (error) {
+      if (!condition.tip) throw error;
+      else {
+        let tip = condition.tip.replace(/\$item/g, itemTake?.name || '').replace(/\$value/g, valueText || '');
+        tip = fillVar(tip, '\\$', itemTake?.attributes);
+        tip = fillVar(tip, '#', profile.attr);
+        throw new Error(tip);
+      }
+    }
+  }
+  return true;
+}
+
 export const addEnd = async (scene: Scene, profile: Profile) => {
   if (!scene.isEnd) return;
   const endRepository = AppDataSource.getRepository(End);
@@ -332,6 +450,7 @@ export const gameExcute = async (profile: Profile, scene: Scene, { option: optio
     const storyId = profile.storyId;
     const userId = profile.userId;
     const option = scene?.options.find((option) => option.text === optionText);
+    timezone = timezone ?? new Date().getTimezoneOffset() / -60;
 
     let message = '';
 
@@ -353,106 +472,7 @@ export const gameExcute = async (profile: Profile, scene: Scene, { option: optio
     }
 
     if (option.conditions) {
-      for (const condition of option.conditions) {
-        try {
-          if (condition.type === 'Time') {
-            if (!conditionCheckTime(condition, timezone)) {
-              throw new Error(`还不是时候`);
-            }
-          }
-          if (condition.type === 'Fn') {
-            const fn = new Function('profile', 'let result = true;\n' + condition.content + '\nreturn result;');
-            const result = fn(clone(profile));
-            if (result !== true) {
-              throw new Error(typeof result != 'string' ? `你还没准备好` : result);
-            }
-          }
-          if (condition.type === 'Item') {
-            const item = await getItem(condition.name);
-            if (!item) {
-              throw new Error(`物品${condition.name}未找到`);
-            }
-            const inventory = profile.inventory.find((i) => i.key === condition.name);
-            let count = parseInt(condition.content || '1');
-            if (option.value && !option.value?.startsWith('item:')) {
-              count = parseInt(valueText) * count
-            }
-            if (!inventory || inventory.count < count) {
-              throw new Error(`你需要 ${item.name}×${count}.`);
-            }
-          }
-          if (condition.type === 'ItemType') {
-            const inventory = profile.inventory.some((i) => i.type === condition.content);
-            if (!inventory) {
-              throw new Error(`你需要 ${condition.content.toString()}.`);
-            }
-          }
-          if (condition.type === 'ItemAttr') {
-            if (!itemTake) {
-              const attrs = Object.keys(condition.content);
-              const inventory = profile.inventory.some((i) => {
-                return attrs.every((attr) => {
-                  if (condition.content[attr] === '') return !!i.attributes[attr];
-                  if (i.attributes[attr] === undefined) {
-                    return false;
-                  }
-                  if (typeof i.attributes[attr] === 'number') {
-                    return i.attributes[attr] * i.count >= condition.content[attr];
-                  } else {
-                    return i.attributes[attr] === condition.content[attr];
-                  }
-                });
-              });
-              if (!inventory) {
-                throw new Error(`你还没准备好.`);
-              }
-            } else {
-              const attrs = Object.keys(condition.content);
-              const inventory = attrs.every((attr) => {
-                if (condition.content[attr] === '') return !!itemTake.attributes[attr];
-                if (itemTake.attributes[attr] === undefined) {
-                  return false;
-                }
-                if (typeof itemTake.attributes[attr] === 'number') {
-                  return itemTake.attributes[attr] * itemTake.count >= condition.content[attr];
-                } else {
-                  return itemTake.attributes[attr] === condition.content[attr];
-                }
-              });
-              if (!inventory) {
-                throw new Error(`你还没准备好.`);
-              }
-            }
-          }
-          if (condition.type === 'Attr') {
-            for (const [key, value] of Object.entries(condition.content)) {
-              if (profile.attr[key] === undefined) {
-                throw new Error(`你还没准备好.`);
-              }
-              if (typeof profile.attr[key] === 'number') {
-                if (profile.attr[key] < parseFloat((value as any).toString())) {
-                  throw new Error(`你还没准备好.`);
-                }
-              } else {
-                if (profile.attr[key] !== value) {
-                  throw new Error(`你还没准备好.`);
-                }
-              }
-            }
-          }
-          if (condition.type === 'Value') {
-            if (condition.content !== valueText) {
-              throw new Error(`密码错误`);
-            }
-          }
-        } catch (error) {
-          if (!condition.tip) throw error;
-          else {
-            const tip = condition.tip.replace(/{{item}}/g, itemTake?.name || '');
-            throw new Error(tip);
-          }
-        }
-      }
+      await checkConditions(option.conditions, profile, option, valueText, timezone, itemTake);
     }
 
     let next = option.next;
@@ -489,7 +509,7 @@ export const gameExcute = async (profile: Profile, scene: Scene, { option: optio
     profile.scene = nextScene.name;
     
     if (!virtual) {
-      nextScene!.options = await updateOptions(nextScene!, profile);
+      nextScene!.options = await updateOptions(nextScene!, profile, timezone);
 
       if (nextScene.isEnd) {
         await addEnd(nextScene, profile);
@@ -517,6 +537,22 @@ export const gameExcute = async (profile: Profile, scene: Scene, { option: optio
   }
 }
 
+export const optionFilter = async (req: Request, res: Response) => {
+  try {
+    const { scene, profile, timezone, records } = req.body;
+    if (!scene) {
+      throw new Error(`缺少运行场景！`);
+    }
+    if (!profile) {
+      throw new Error(`缺少游戏资料！`);
+    }
+    const result = await updateOptions(scene, profile, timezone ?? new Date().getTimezoneOffset() / -60, records || []);
+    json(res, result)
+  } catch (err: any) {
+    error(res, err.message)
+  }
+}
+
 export const gameVirtual = async (req: Request, res: Response) => {
   try {
     let { profile, scene } = req.body;
@@ -535,7 +571,6 @@ export const gameVirtual = async (req: Request, res: Response) => {
   } catch (err: any) {
     error(res, err.message)
   }
-
 }
 
 export const game = async (user: User, req: Request, res: Response) => {

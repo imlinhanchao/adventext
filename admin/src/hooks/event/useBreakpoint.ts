@@ -1,89 +1,73 @@
 import { ref, computed, ComputedRef, unref } from 'vue';
 import { useEventListener } from '@/hooks/event/useEventListener';
-import { screenMap, sizeEnum, screenEnum } from '@/enums/breakpointEnum';
+import { screenEnum, screenMap, sizeEnum } from '@/enums/breakpointEnum';
 
 let globalScreenRef: ComputedRef<sizeEnum | undefined>;
 let globalWidthRef: ComputedRef<number>;
 let globalRealWidthRef: ComputedRef<number>;
 
 export interface CreateCallbackParams {
-  screen: ComputedRef<sizeEnum | undefined>;
-  width: ComputedRef<number>;
-  realWidth: ComputedRef<number>;
-  screenEnum: typeof screenEnum;
-  screenMap: Map<sizeEnum, number>;
-  sizeEnum: typeof sizeEnum;
+  screenRef: ComputedRef<sizeEnum | undefined>;
+  widthRef: ComputedRef<number>;
+  realWidthRef: ComputedRef<number>;
 }
 
-export function useBreakpoint() {
+interface CreateCallbackParamsX extends CreateCallbackParams {
+  screenRef: ComputedRef<sizeEnum>;
+  screenXS: ComputedRef<boolean>;
+  screenSM: ComputedRef<boolean>;
+  screenMD: ComputedRef<boolean>;
+  screenLG: ComputedRef<boolean>;
+  screenXL: ComputedRef<boolean>;
+}
+
+export function useBreakpoint(): CreateCallbackParamsX {
+  const widthRef = computed(() => unref(globalWidthRef) || 0);
+  const realWidthRef = computed(() => unref(globalRealWidthRef) || 0);
+  const screenRef = computed(() => unref(globalScreenRef) || sizeEnum.MD);
   return {
-    screenRef: computed(() => unref(globalScreenRef)),
-    widthRef: globalWidthRef,
-    screenEnum,
-    realWidthRef: globalRealWidthRef,
+    widthRef,
+    realWidthRef,
+    screenRef,
+    screenXS: computed(() => unref(screenRef) === sizeEnum.XS),
+    screenSM: computed(() => unref(screenRef) === sizeEnum.SM),
+    screenMD: computed(() => unref(screenRef) === sizeEnum.MD),
+    screenLG: computed(() => unref(screenRef) === sizeEnum.LG),
+    screenXL: computed(() => unref(screenRef) === sizeEnum.XL),
   };
 }
 
-// Just call it once
-export function createBreakpointListen(fn?: (opt: CreateCallbackParams) => void) {
+/** 获取当前屏幕尺寸 */
+export function createBreakpointListen() {
+  if (globalScreenRef) return;
+
   const screenRef = ref<sizeEnum>(sizeEnum.XL);
   const realWidthRef = ref(window.innerWidth);
 
   function getWindowWidth() {
     const width = document.body.clientWidth;
+    realWidthRef.value = width;
+
     const xs = screenMap.get(sizeEnum.XS)!;
     const sm = screenMap.get(sizeEnum.SM)!;
     const md = screenMap.get(sizeEnum.MD)!;
     const lg = screenMap.get(sizeEnum.LG)!;
-    const xl = screenMap.get(sizeEnum.XL)!;
     if (width < xs) {
       screenRef.value = sizeEnum.XS;
-    } else if (width < sm) {
+    } else if (width >= xs && width < sm) {
       screenRef.value = sizeEnum.SM;
-    } else if (width < md) {
+    } else if (width >= sm && width < md) {
       screenRef.value = sizeEnum.MD;
-    } else if (width < lg) {
+    } else if (width >= md && width < lg) {
       screenRef.value = sizeEnum.LG;
-    } else if (width < xl) {
+    } else if (width >= lg) {
       screenRef.value = sizeEnum.XL;
-    } else {
-      screenRef.value = sizeEnum.XXL;
     }
-    realWidthRef.value = width;
   }
-
-  useEventListener({
-    el: window,
-    name: 'resize',
-
-    listener: () => {
-      getWindowWidth();
-      resizeFn();
-    },
-    // wait: 100,
-  });
-
   getWindowWidth();
+  useEventListener({ el: window, name: 'resize', listener: () => getWindowWidth() });
+
   globalScreenRef = computed(() => unref(screenRef));
-  globalWidthRef = computed((): number => screenMap.get(unref(screenRef)!)!);
+  globalWidthRef = computed((): screenEnum => screenMap.get(unref(screenRef)!)!);
   globalRealWidthRef = computed((): number => unref(realWidthRef));
-
-  function resizeFn() {
-    fn?.({
-      screen: globalScreenRef,
-      width: globalWidthRef,
-      realWidth: globalRealWidthRef,
-      screenEnum,
-      screenMap,
-      sizeEnum,
-    });
-  }
-
-  resizeFn();
-  return {
-    screenRef: globalScreenRef,
-    screenEnum,
-    widthRef: globalWidthRef,
-    realWidthRef: globalRealWidthRef,
-  };
 }

@@ -66,7 +66,7 @@
       option: option.text,
       profile: profile.value,
       scene: currentScene.value,
-      timezone: new Date().getTimezoneOffset() / 60,
+      timezone: new Date().getTimezoneOffset() / -60,
       value,
     }).catch((err) => {
       msgType.value = 'error';
@@ -78,8 +78,8 @@
 
     records.value.unshift(new SceneRecord(currentScene.value, option.text, profile.value.from));
 
+    sceneMap.value[next || scene.name].options = await updateOptions(sceneMap.value[next || scene.name], profile.value, records.value);
     currentScene.value = sceneMap.value[next || scene.name];
-    currentScene.value.options = updateOptions(currentScene.value, records.value);
 
     profile.value = state;
     message.value = msg;

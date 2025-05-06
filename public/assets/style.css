@@ -5,6 +5,22 @@
   --main-border-color: #ccc;
   --footer-text-color: #ccc;
   --disabled-color: #ccc;
+  --profile-label-bg-color: #333;
+  --profile-label-text-color: #fff;
+  --dialog-bg-color: rgba(0, 0, 0, 0.5);
+  --dialog-container-bg-color: #fff;
+}
+
+.dark {
+  --primary-color: #0357b1;
+  --main-bg-color: #131415;
+  --main-text-color: #d1d1d3;
+  --main-border-color: #555;
+  --footer-text-color: #ccc;
+  --disabled-color: #555;
+  --profile-label-bg-color: #999;
+  --profile-label-text-color: #333;
+  --dialog-bg-color: rgba(255, 255, 255, 0.2);
 }
 
 body {
@@ -54,6 +70,10 @@ a:hover {
   text-decoration: none;
 }
 
+.story {
+  max-width: 500px;
+}
+
 .form {
   border-radius: 8px;
   width: 100%;
@@ -82,7 +102,7 @@ a:hover {
 .form input {
   width: 100%;
   padding: 5px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--main-border-color);
   border-radius: 4px;
   box-sizing: border-box;
 }
@@ -95,7 +115,7 @@ a:hover {
 }
 
 .btn {
-  background-color: #007bff;
+  background-color: var(--primary-color);
   color: white;
   padding: 5px 0;
   border: none;
@@ -105,13 +125,13 @@ a:hover {
 }
 
 .btn:hover {
-  background-color: #0056b3;
+  background-color: var(--primary-color);
 }
 
 .link {
   display: inline-block;
   margin-top: 10px;
-  color: #007bff;
+  color: var(--primary-color);
   text-decoration: none;
   font-size: 80%;
 }
@@ -167,8 +187,8 @@ h2 {
 }
 
 #options button {
-  border: 2px solid #007bff;
-  color: #007bff;
+  border: 2px solid currentColor;
+  color: var(--primary-color);
   padding: 5px 10px;
   border-radius: 4px;
   cursor: pointer;
@@ -195,8 +215,8 @@ h2 {
 
 #profile .title {
   display: inline-block;
-  color: white;
-  background-color: #333;
+  color: var(--profile-label-text-color);
+  background-color: var(--profile-label-bg-color);
   padding: 2px 5px;
   border-radius: 5px;
 }
@@ -212,7 +232,7 @@ h2 {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: var(--dialog-bg-color);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -227,7 +247,7 @@ h2 {
 }
 
 .dialog .container {
-  background-color: white;
+  background-color: var(--main-bg-color);
   padding: 20px;
   border-radius: 8px;
   width: 80%;
@@ -236,7 +256,6 @@ h2 {
 
 .dialog .content {
   flex: 1;
-  background-color: white;
   padding: 20px;
   border-radius: 8px;
   width: 80%;
@@ -261,4 +280,8 @@ h2 {
 .item-list .item.selected {
   border-color: currentColor;
   color: var(--primary-color);
+}
+
+#attr, #item {
+  display: none;
 }

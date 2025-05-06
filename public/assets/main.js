@@ -1,4 +1,3 @@
-
 function startGame(scene, state) {
   const storyDiv = document.getElementById('story');
   const optionsDiv = document.getElementById('options');
@@ -67,7 +66,7 @@ function startGame(scene, state) {
           body: JSON.stringify({
             option: option.text,
             value,
-            timezone: new Date().getTimezoneOffset() / 60
+            timezone: new Date().getTimezoneOffset() / -60
           })
         }).then(res => res.json())
           .then(res => {
@@ -83,7 +82,6 @@ function startGame(scene, state) {
       optionsDiv.appendChild(button);
     });
   }
-
 
   showState(state)
 }
@@ -136,12 +134,16 @@ function showState(state) {
     attr.innerHTML += `<div class="item">${attrHTML}</div>`;
   })
 
+  document.getElementById('attr').style.display = Object.keys(state.attrName).length == 0 ? 'none' : 'block';
+
   inventory.innerHTML = '';
   state.inventory.forEach(function (item) {
     const itemHTML = `<span class="name">${item.name}</span>
         <span class="value">x ${item.count}</span>`
     inventory.innerHTML += `<div class="item" title="${item.description}">${itemHTML}</div>`;
   })
+
+  document.getElementById('item').style.display = state.inventory.length == 0 ? 'none' : 'block';
 }
 
 function showMessage(message, type) {
@@ -151,5 +153,47 @@ function showMessage(message, type) {
   messageCon.textContent = message;
 }
 
+function initGame(story) {
+  fetch(`/${story}/init`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    credentials: 'include',
+    body: JSON.stringify({
+      timezone: new Date().getTimezoneOffset() / -60
+    })
+  }).then(res => res.json())
+    .then(res => {
+      if (!res.code) {
+        startGame(res.data.scene, res.data.state);
+      } else {
+        showMessage(res.message, 'error')
+      }
+    });
+}
 
-console.log(startGame)
+function initDarkMode() {
+  const body = document.body;
+  const darkMode = localStorage.getItem('dark-mode');
+  if (darkMode === 'true') {
+    body.classList.add('dark');
+  } else if (!darkMode) {
+    if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+      body.classList.add('dark');
+      localStorage.setItem('dark-mode', 'true');
+    } 
+  }
+}
+
+function toggleDarkMode() {
+  const body = document.body;
+  let darkMode = localStorage.getItem('dark-mode');
+  if (darkMode === 'true') {
+    body.classList.remove('dark');
+    localStorage.setItem('dark-mode', 'false');
+  } else {
+    body.classList.add('dark');
+    localStorage.setItem('dark-mode', 'true');
+  }
+}
