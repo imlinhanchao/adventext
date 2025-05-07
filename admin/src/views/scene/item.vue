@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-  import { createScene, Option, Scene, sceneBatchSave, updateScene } from '@/api/scene';
+  import { createScene, Option, Scene, updateScene } from '@/api/scene';
   import { ElMessage, ElMessageBox, FormInstance } from 'element-plus';
   import OptionForm from './option.vue';
   import { clone } from '@/utils';
@@ -9,6 +9,7 @@
     scenes: Scene[];
   }>();
 
+  const emit = defineEmits(['updateName']);
   const visible = ref(false);
   const data = ref<Scene>(new Scene());
 
@@ -53,16 +54,7 @@
           .then(() => true)
           .catch(() => false)
       ) {
-        props.scenes.forEach((item) => {
-          item.options.forEach((option) => {
-            if (option.next === oldName.value) {
-              option.next = data.value.name;
-            }
-          });
-        });
-        sceneBatchSave(props.story, props.scenes).then(() => {
-          ElMessage.success('场景名称联动修改成功');
-        });
+        emit('updateName', oldName.value, data.value.name);
       }
     }
   }
@@ -88,7 +80,7 @@
         <el-input v-model="data.name" placeholder="请输入场景名称" />
       </el-form-item>
       <el-form-item label="场景内容" prop="content">
-        <el-input v-model="data.content" type="textarea" placeholder="请输入场景内容" />
+        <el-input v-model="data.content" type="textarea" placeholder="请输入场景内容，支持通过 ${属性标识符} 引用属性值" />
       </el-form-item>
       <el-form-item label="是否结局" prop="isEnd">
         <el-switch v-model="data.isEnd" />

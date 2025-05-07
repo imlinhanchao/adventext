@@ -29,6 +29,7 @@ export class Condition {
 export class Effect {
   name: string;
   type: string;
+  operator?: string;
   content: string;
 
   constructor(name: string, type: string, content: string) {

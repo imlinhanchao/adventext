@@ -41,6 +41,22 @@
       items.value = data;
     });
   }
+  function updateSceneName(oldName: string, name: string) {
+    scenes.value.forEach((item) => {
+      item.options.forEach((option) => {
+        if (option.next === oldName) {
+          option.next = name;
+        }
+      });
+    });
+    sceneBatchSave(story.value.id!, scenes.value).then(() => {
+      ElMessage.success('场景名称联动修改成功');
+    });
+    if (story.value.start == oldName) {
+      story.value.start = name;
+      updateStory(story.value);
+    }
+  }
 
   const pos = ref({
     x: 0,
@@ -271,7 +287,7 @@
         </section>
       </el-main>
       <ItemSelector ref="itemListRef" :story="storyId" readonly @close="loadItem" />
-      <SceneForm ref="sceneFormRef" :story="storyId" :scenes="scenes" />
+      <SceneForm ref="sceneFormRef" :story="storyId" :scenes="scenes" @update-name="updateSceneName" />
       <StoryForm ref="storyFormRef" @confirm="loadStory" />
 
     </el-container>

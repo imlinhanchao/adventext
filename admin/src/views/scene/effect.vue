@@ -103,7 +103,17 @@
               属性值
             </span>
           </template>
-          <el-input v-model="data.content" :min="0" />
+          <el-input v-model="data.content">
+            <template #prepend>
+              <el-select v-model="data.operator">
+                <el-option label="=" value="=" />
+                <el-option label="+" value="+" />
+                <el-option label="-" value="-" />
+                <el-option label="*" value="*" />
+                <el-option label="/" value="/" />
+              </el-select>
+            </template>
+          </el-input>
         </el-form-item>
       </template>
       <template v-if="data.type === 'ItemAttr'">
@@ -119,7 +129,7 @@
               物品属性值
             </span>
           </template>
-          <el-input v-model="data.content" :min="0" />
+          <el-input v-model="data.content" />
         </el-form-item>
       </template>
       <template v-if="data.type === 'Item'">

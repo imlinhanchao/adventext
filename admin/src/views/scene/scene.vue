@@ -118,7 +118,7 @@
       </template>
       <p class="my-2">
         <!-- eslint-disable-next-line vue/no-v-html -->
-        <span v-html="content"></span>
+        <span class="whitespace-pre-wrap" v-html="content"></span>
       </p>
       <section>
         <ul>

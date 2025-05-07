@@ -95,14 +95,19 @@ export class Effect {
    */
   type: string;
   /**
+   * 操作符号
+   */
+  operator: string;
+  /**
    * 值
    */
   content: string;
 
-  constructor(name: string = '', type: string = '', content: string = '') {
+  constructor(name: string = '', type: string = '', content: string = '', operator: string = '=') {
     this.name = name;
     this.type = type;
     this.content = content;
+    this.operator = operator;
   }
 }
 

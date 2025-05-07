@@ -2,6 +2,13 @@ function startGame(scene, state) {
   const storyDiv = document.getElementById('story');
   const optionsDiv = document.getElementById('options');
   showMessage('', 'info')
+
+  Object.entries(state.attr).forEach(([key, value]) => {
+    if (scene.content.includes(`\${${key}}`)) {
+      scene.content = scene.content.replaceAll(`\${${key}}`, value);
+    }
+  });
+
   storyDiv.textContent = scene.content;
   optionsDiv.innerHTML = '';
 
@@ -61,7 +68,7 @@ function startGame(scene, state) {
           value = prompt(option.value)
           if (!value) return;
         }
-        fetch(`/${story}/choose`, {
+        fetch(`/${window.storyId}/choose`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -158,6 +165,7 @@ function showMessage(message, type) {
 }
 
 function initGame(story) {
+  window.storyId = story;
   fetch(`/${story}/init`, {
     method: 'POST',
     headers: {

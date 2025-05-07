@@ -144,7 +144,7 @@
       if (option.append) {
         if (content.includes('${' + option.text + '}')) {
           content = content.replaceAll('${' + option.text + '}', !option.disabled ? option.append : '');
-        } else {
+        } else if (!option.disabled) {
           content += option.append;
         }
       }
@@ -211,7 +211,7 @@
       </section>
       <el-alert v-if="message" :type="msgType" :closable="false">{{ message }}</el-alert>
       <section>
-        <span>{{ content }}</span>
+        <span class="whitespace-pre-wrap">{{ content }}</span>
       </section>
       <section>
         <template v-for="o in currentScene.options" :key="o.text">

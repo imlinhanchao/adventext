@@ -134,10 +134,40 @@ function getCount(content: string, profileAttr: any, value: string, itemTakeAttr
   return parseFloat(content);
 }
 
+function operatorData(left: string | number, right: string | number, operator: string) {
+  if (typeof right === 'string' || typeof left === 'string') {
+    switch (operator) {
+      case '=':
+        return right;
+      case '+':
+        return left + '' + right;
+      default:
+        throw new Error(`数据不支持 ${operator} 操作`);
+    }
+  } else {
+    switch (operator) {
+      case '=':
+        return right;
+      case '+':
+        return left + right;
+      case '-':
+        return left - right;
+      case '*':
+        return left * right;
+      case '/':
+        return left / right;
+      default:
+        throw new Error(`无效操作符 ${operator}`);
+    }
+  }
+
+}
+
 export async function runEffects(profile: Profile, effects: Effect[], value: string, itemTake?: Inventory) {
   try {
     let message = '', next = null;
     for (const effect of effects) {
+      effect.operator = effect.operator || '=';
       if (effect.type === 'Item') {
         let item;
         if (effect.name !== '$item') item = await getItem(effect.name);
@@ -166,7 +196,7 @@ export async function runEffects(profile: Profile, effects: Effect[], value: str
         else if (typeof profile.attr[effect.name] === 'number') {
           let count = getCount(effect.content || '1', profile.attr, value, itemTake?.attributes);
           if (isNaN(count)) throw new Error(`Attr ${effect.name} 效果获取数量失败！`)
-            profile.attr[effect.name] += count;
+            operatorData(profile.attr[effect.name], count, effect.operator);
         }
         else {
           profile.attr[effect.name] = effect.content;
