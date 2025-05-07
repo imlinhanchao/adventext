@@ -10,7 +10,9 @@
   import ItemSelector from '@/views/item/selector.vue';
   import Virtual from './virtual.vue';
   import StoryForm from '@/views/story/item.vue';
-import { useBreakpoint } from '@/hooks/event/useBreakpoint';
+  import { useBreakpoint } from '@/hooks/event/useBreakpoint';
+
+  const { screenSM: isMobile } = useBreakpoint();
 
   const route = useRoute();
   const storyId = Number(route.params.story);
@@ -61,7 +63,7 @@ import { useBreakpoint } from '@/hooks/event/useBreakpoint';
 
   const pos = ref({
     x: 0,
-    y: 0,
+    y: 90,
   });
 
   async function save() {
@@ -225,90 +227,101 @@ import { useBreakpoint } from '@/hooks/event/useBreakpoint';
   function virtualRun() {
     isVirtual.value = !isVirtual.value;
   }
-
-  const { screenSM: isMobile } = useBreakpoint();
   
 </script>
 
 <template>
-  <el-container :direction="isMobile ? 'vertical' : 'horizontal'">
-    <el-container>
-      <el-header class="flex !py-2 justify-between" height="auto">
-        <section>
-          <el-button-group class="mr-3">
-            <el-button type="primary" @click="editStory" plain>
-              <Icon icon="i-uil:setting" /><span class="btn-text">故事设置</span>
-            </el-button>
-            <el-tooltip content="跳转到起始场景">
-              <el-button type="primary" @click="highlightScene(story.start)" plain style="--el-button-divide-border-color: var(--el-primary-color)">
-                <Icon icon="i-lets-icons:flag-fill" />
+  <section>
+    <Teleport to="body">
+      <el-container
+        @mousedown="beginMove"
+        @touchstart="beginMove"
+        :direction="isMobile ? 'vertical' : 'horizontal'" 
+        :class="{'left-200px': !isMobile, 'left-0': isMobile }" 
+        class="story-panel absolute z-1 top-0 bottom-0 right-0 overflow-hidden" 
+        :style="`--panel-offset-x: ${pos.x}px; --panel-offset-y: ${pos.y}px;`"
+      >
+        <el-container class="pt-60px">
+          <el-header class="flex !p-3 justify-between z-2" height="auto">
+            <el-form class="!space-x-2" :size="isMobile ? 'small' : 'default'">
+              <el-button-group>
+                <el-button type="primary" @click="editStory" plain>
+                  <Icon icon="i-uil:setting" /><span class="btn-text">故事设置</span>
+                </el-button>
+                <el-tooltip content="跳转到起始场景">
+                  <el-button type="primary" @click="highlightScene(story.start)" plain style="--el-button-divide-border-color: var(--el-color-primary)">
+                    <Icon icon="i-lets-icons:flag-fill" />
+                  </el-button>
+                </el-tooltip>
+              </el-button-group>
+              <el-button type="primary" @click="addScene" plain>
+                <Icon icon="i-mdi:movie-open-plus-outline" /><span class="btn-text">添加场景</span>
               </el-button>
-            </el-tooltip>
-          </el-button-group>
-          <el-button type="primary" @click="addScene" plain>
-            <Icon icon="i-mdi:movie-open-plus-outline" /><span class="btn-text">添加场景</span>
-          </el-button>
-          <el-button type="warning" @click="viewItemList" plain>
-            <Icon icon="i-ph:sword" /><span class="btn-text">管理物品</span>
-          </el-button>
-          <el-button type="success" @click="virtualRun" :plain="!isVirtual">
-            <template v-if="!isVirtual"><Icon icon="i-solar:play-bold" /><span class="btn-text">模拟运行</span></template>
-            <template v-else><Icon icon="i-solar:stop-bold" /><span class="btn-text">结束运行</span></template>
-          </el-button>
-        </section>
-        <section>
-          <el-button type="primary" @click="save">
-            <Icon icon="i-lucide:save" /><span class="btn-text">保存布局</span>
-          </el-button>
-        </section>
-      </el-header>
-      <el-main class="!h-full">
-        <section
-          @mousedown="beginMove"
-          @touchstart="beginMove"
-          class="story-panel relative overflow-hidden w-full h-full dark:shadow-gray-800 shadow shadow-lg border dark:border-gray-600 bg-var(--el-bg-color)"
-          :class="{ 'cursor-move': isMove }"
-          ref="sceneViewRef"
-          :style="`--panel-offset-x: ${pos.x}px; --panel-offset-y: ${pos.y}px;`"
-        >
-          <section
-            id="scenePanel"
-            ref="scenePanelRef"
-            class="absolute"
-            :class="{ 'transition-all duration-200': !isMove }"
-            :style="{ top: pos.y + 'px', left: pos.x + 'px' }"
-          >
-            <SceneItem
-              v-for="(scene, index) in scenes"
-              :ref="(el) => (sceneRef[scene.name] = el)"
-              :key="index"
-              :story="storyId"
-              :scene="scene"
-              :sceneMap="sceneMap"
-              @next="highlightScene"
-              @edit="editScene"
-              @remove="removeScene"
-              @start="setStart"
-              @mousedown.stop
-              class="transition-all duration-200"
-              :class="{
-                'border-2 border-blue-500': highlight === scene.name,
-                'w-80vw': isMobile,
-              }"
-              :start="story.start === scene.name"
-            />
-          </section>
-        </section>
-      </el-main>
-      <ItemSelector ref="itemListRef" :story="storyId" readonly @close="loadItem" />
-      <SceneForm ref="sceneFormRef" :story="storyId" :scenes="scenes" @update-name="updateSceneName" />
-      <StoryForm ref="storyFormRef" @confirm="loadStory" />
+              <el-button type="warning" @click="viewItemList" plain>
+                <Icon icon="i-ph:sword" /><span class="btn-text">管理物品</span>
+              </el-button>
+              <el-button type="success" @click="virtualRun" :plain="!isVirtual">
+                <template v-if="!isVirtual"><Icon icon="i-solar:play-bold" /><span class="btn-text">模拟运行</span></template>
+                <template v-else><Icon icon="i-solar:stop-bold" /><span class="btn-text">结束运行</span></template>
+              </el-button>
+            </el-form>
+            <el-form :size="isMobile ? 'small' : 'default'">
+              <el-button type="primary" @click="save">
+                <Icon icon="i-lucide:save" /><span class="btn-text">保存布局</span>
+              </el-button>
+            </el-form>
+          </el-header>
+          <el-main class="!h-full">
+            <section
+              class="overflow-hidden w-full h-full "
+              :class="{ 'cursor-move': isMove }"
+              ref="sceneViewRef"
+              
+            >
+              <section
+                id="scenePanel"
+                ref="scenePanelRef"
+                class="absolute"
+                :class="{ 'transition-all duration-200': !isMove }"
+                :style="{ top: pos.y + 'px', left: pos.x + 'px' }"
+              >
+                <SceneItem
+                  v-for="(scene, index) in scenes"
+                  :ref="(el) => (sceneRef[scene.name] = el)"
+                  :key="index"
+                  :story="storyId"
+                  :scene="scene"
+                  :sceneMap="sceneMap"
+                  @next="highlightScene"
+                  @edit="editScene"
+                  @remove="removeScene"
+                  @start="setStart"
+                  @mousedown.stop
+                  class="transition-all duration-200"
+                  :class="{
+                    'border-2 border-blue-500': highlight === scene.name,
+                  }"
+                  :start="story.start === scene.name"
+                />
+              </section>
+            </section>
 
-    </el-container>
-    <el-aside v-if="isVirtual" :width="isMobile ? '100%' : '500px'" class="dark:border-gray-600 virtual-panel" :class="{ 'border-l': !isMobile}">
-      <Virtual @next="highlightScene" />
-    </el-aside>
-  </el-container>
+          </el-main>
+          <ItemSelector ref="itemListRef" :story="storyId" readonly @close="loadItem" />
+          <SceneForm ref="sceneFormRef" :story="storyId" :scenes="scenes" @update-name="updateSceneName" />
+          <StoryForm ref="storyFormRef" @confirm="loadStory" />
+
+        </el-container>
+        <el-aside 
+          v-if="isVirtual" 
+          :width="isMobile ? '100%' : '500px'" 
+          class="dark:border-gray-600 virtual-panel bg-[var(--el-bg-color)] z-5 relative" 
+          :class="{ 'border-l pt-15': !isMobile, 'isMobile pt-3': isMobile }">
+          <Virtual @next="highlightScene" />
+        </el-aside>
+      </el-container>
+    </Teleport>
+  </section>
 </template>
 <style lang="less" scoped>
 .story-panel {
@@ -318,5 +331,8 @@ import { useBreakpoint } from '@/hooks/event/useBreakpoint';
       linear-gradient(to bottom, var(--grid-line-color) 1px, transparent 1px);
   background-size: 20px 20px;
   background-position: var(--panel-offset-x) var(--panel-offset-y);
+}
+.isMobile.el-aside {
+  box-shadow: 0 0 10px rgba(100, 100, 100, 0.5);
 }
 </style>

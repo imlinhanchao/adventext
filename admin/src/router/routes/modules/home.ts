@@ -6,7 +6,7 @@ export default [
     redirect: '/home',
     meta: {
       order: 0,
-      icon: 'i-ph:sword',
+      icon: 'i-ic:round-home',
       title: '首页',
     },
     children: [

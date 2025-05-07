@@ -19,12 +19,12 @@
 </script>
 <template>
   <el-container class="h-full">
-    <el-aside v-if="!screenSM" width="200px" class="border-r border-light-700 dark:border-gray-700">
+    <el-aside v-if="!screenSM" width="200px" class="border-r border-light-700 dark:border-gray-700 z-3 bg-[--el-bg-color]">
       <Menu />
     </el-aside>
-    <el-container class="h-full w-full" direction="vertical">
-      <Header />
-      <Content />
+    <el-container id="main-container" class="h-full w-full relative" direction="vertical">
+      <Header class="z-2 bg-gradient-to-b from-[var(--el-bg-color)] to-transparent" />
+      <Content class="z-0" />
       <Footer />
     </el-container>
   </el-container>

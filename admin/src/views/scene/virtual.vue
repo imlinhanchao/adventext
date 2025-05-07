@@ -165,7 +165,7 @@
 <template>
   <el-container class="h-full">
     <el-header class="flex !py-2 justify-between" height="auto">
-      <section class="w-full flex justify-between items-center">
+      <section class="w-full flex space-x-2 items-center">
         <h1 class="font-bold text-xl inline-block">{{ story.name }}</h1>
         <el-select v-model="jumpScene" placeholder="跳转场景" size="small" class="max-w-30" @change="jumpToScene" filterable>
           <el-option

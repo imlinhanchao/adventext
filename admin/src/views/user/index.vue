@@ -39,7 +39,7 @@ import { ElMessageBox } from 'element-plus';
     <el-main>
       <el-table :data="userList" style="width: 100%">
         <el-table-column prop="id" label="Id" align="center" width="80" />
-        <el-table-column prop="username" label="用户名" align="center" width="120" />
+        <el-table-column prop="username" label="用户名" align="center" min-width="120" />
         <el-table-column prop="isAdmin" label="是否管理员" width="120" align="center" />
         <el-table-column label="操作" align="center" width="120">
           <template #default="{ row }">
