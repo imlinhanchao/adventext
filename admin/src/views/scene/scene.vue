@@ -101,10 +101,11 @@
     class="absolute transition-none group"
     :style="{ left: scene.position.x + 'px', top: scene.position.y + 'px' }"
   >
-    <el-card class="scene min-w-[400px]" :header="scene.name" header-class="!flex justify-between">
+    <el-card class="scene w-[400px]" :header="scene.name" header-class="!flex justify-between">
       <template #header>
-        <span class="text-lg font-bold select-none cursor-move" @mousedown.stop="beginMove" @touchstart.stop="beginMove">
-          {{ scene.name }}
+        <span class="text-lg font-bold select-none cursor-move flex items-center space-x-1" @mousedown.stop="beginMove" @touchstart.stop="beginMove">
+          <Icon icon="i-tdesign:move" />
+          <span>{{ scene.name }}</span>
           <Icon title="起始场景" :size="20" color="#f63832" v-if="start" icon="i-lets-icons:flag-fill" />
           <Icon title="结局" :size="20" color="#1f8bf4" v-if="scene.isEnd" icon="i-carbon:circle-filled" />
         </span>

@@ -231,9 +231,16 @@
     <el-container>
       <el-header class="flex !py-2 justify-between" height="auto">
         <section>
-          <el-button type="primary" @click="editStory" plain>
-            <Icon icon="i-uil:setting" /><span class="btn-text">故事设置</span>
-          </el-button>
+          <el-button-group class="mr-3">
+            <el-button type="primary" @click="editStory" plain>
+              <Icon icon="i-uil:setting" /><span class="btn-text">故事设置</span>
+            </el-button>
+            <el-tooltip content="跳转到起始场景">
+              <el-button type="primary" @click="highlightScene(story.start)" plain style="--el-button-divide-border-color: var(--el-primary-color)">
+                <Icon icon="i-lets-icons:flag-fill" />
+              </el-button>
+            </el-tooltip>
+          </el-button-group>
           <el-button type="primary" @click="addScene" plain>
             <Icon icon="i-mdi:movie-open-plus-outline" /><span class="btn-text">添加场景</span>
           </el-button>
@@ -255,8 +262,10 @@
         <section
           @mousedown="beginMove"
           @touchstart="beginMove"
-          class="relative overflow-hidden w-full h-full dark:shadow-gray-800 shadow shadow-lg border dark:border-gray-600 bg-var(--el-bg-color)"
+          class="story-panel relative overflow-hidden w-full h-full dark:shadow-gray-800 shadow shadow-lg border dark:border-gray-600 bg-var(--el-bg-color)"
+          :class="{ 'cursor-move': isMove }"
           ref="sceneViewRef"
+          :style="`--panel-offset-x: ${pos.x}px; --panel-offset-y: ${pos.y}px;`"
         >
           <section
             id="scenePanel"
@@ -296,3 +305,13 @@
     </el-aside>
   </el-container>
 </template>
+<style lang="less" scoped>
+.story-panel {
+  background-color: var(--background-color); /* 背景底色 */
+  background-image: 
+      linear-gradient(to right, var(--grid-line-color) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--grid-line-color) 1px, transparent 1px);
+  background-size: 20px 20px;
+  background-position: var(--panel-offset-x) var(--panel-offset-y);
+}
+</style>
