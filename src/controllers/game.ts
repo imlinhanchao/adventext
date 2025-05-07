@@ -5,6 +5,7 @@ import { Condition, Effect } from '../entities/Scene';
 import { clone } from '../utils';
 import { Inventory } from '../entities/Profile';
 import { isNumber } from '../utils/is';
+import { options } from 'svg-captcha';
 
 async function gameState(userId: number, storyId: number) {
   const stateRepository = AppDataSource.getRepository(Profile);
@@ -60,6 +61,9 @@ async function updateOptions(story: Scene, state: Profile, timezone: number, rec
     option.disabled = option.loop !== undefined && record && (option.loop < 0 || Date.now() - record.time < option.loop * 1000);
     if (option.disabled) continue;
     option.disabled = !(await checkConditions(option.conditions?.filter(c => c.isHide) || [], state, option, '', timezone).catch(() => false));
+    if (option.disabled && story.content.includes('${' + option.text + '}'))  {
+      story.content = story.content.replace('${' + option.text + '}', '');
+    }
   }
 
   if (records) return story.options;

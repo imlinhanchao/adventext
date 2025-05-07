@@ -42,10 +42,6 @@ function startGame(scene, state) {
         }
       }
 
-      if (storyDiv.textContent.includes('${' + option.text + '}')) {
-        storyDiv.textContent = storyDiv.textContent.replaceAll('${' + option.text + '}', '');
-      }
-
       button.onclick = async () => {
         button.disabled = true;
         let value;
