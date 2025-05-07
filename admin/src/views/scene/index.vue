@@ -10,6 +10,7 @@
   import ItemSelector from '@/views/item/selector.vue';
   import Virtual from './virtual.vue';
   import StoryForm from '@/views/story/item.vue';
+import { useBreakpoint } from '@/hooks/event/useBreakpoint';
 
   const route = useRoute();
   const storyId = Number(route.params.story);
@@ -224,10 +225,13 @@
   function virtualRun() {
     isVirtual.value = !isVirtual.value;
   }
+
+  const { screenSM: isMobile } = useBreakpoint();
+  
 </script>
 
 <template>
-  <el-container>
+  <el-container :direction="isMobile ? 'vertical' : 'horizontal'">
     <el-container>
       <el-header class="flex !py-2 justify-between" height="auto">
         <section>
@@ -289,6 +293,7 @@
               class="transition-all duration-200"
               :class="{
                 'border-2 border-blue-500': highlight === scene.name,
+                'w-80vw': isMobile,
               }"
               :start="story.start === scene.name"
             />
@@ -300,7 +305,7 @@
       <StoryForm ref="storyFormRef" @confirm="loadStory" />
 
     </el-container>
-    <el-aside v-if="isVirtual" width="500px" class="border-l dark:border-gray-600">
+    <el-aside v-if="isVirtual" :width="isMobile ? '100%' : '500px'" class="dark:border-gray-600 virtual-panel" :class="{ 'border-l': !isMobile}">
       <Virtual @next="highlightScene" />
     </el-aside>
   </el-container>

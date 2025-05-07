@@ -98,10 +98,10 @@
 </script>
 <template>
   <section
-    class="absolute transition-none group"
+    class="absolute transition-none group w-[400px]"
     :style="{ left: scene.position.x + 'px', top: scene.position.y + 'px' }"
   >
-    <el-card class="scene w-[400px]" :header="scene.name" header-class="!flex justify-between">
+    <el-card class="scene w-full" :header="scene.name" header-class="!flex justify-between">
       <template #header>
         <span class="text-lg font-bold select-none cursor-move flex items-center space-x-1" @mousedown.stop="beginMove" @touchstart.stop="beginMove">
           <Icon icon="i-tdesign:move" />
