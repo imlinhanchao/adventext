@@ -47,6 +47,39 @@
 <template>
   <el-dialog title="效果" v-model="visible" width="600px">
     <el-form ref="formRef" :model="formData" label-width="auto" :rules="rules">
+      <el-alert v-if="data.type" :closable="false" class="!mb-2">
+        <span v-if="data.type == 'Attr'">
+          对玩家的指定属性进行修改，若值为数字，则会加上。若非数字，则直接赋值。因此，若要减少，可以直接填写负数。
+        </span>
+        <span v-else-if="data.type == 'ItemAttr'">
+          值只能是正数，会从背包<b>扣除</b>指定属性名的值之和等于设定值的物品，若<b>客户端输入值</b>设置了选择物品，则会将扣除范围限定在选择的物品上。
+        </span>
+        <span v-else-if="data.type == 'Item'">
+          会从背包修改指定物品的数量，设置正值则新增，负值则扣除，若<b>客户端输入值</b>设置了选择物品，可以通过 <code>$item</code> 指代选择的物品。
+        </span>
+        <div v-else-if="data.type == 'Fn'">
+          <p>
+            直接执行函数，函数参数为 <code>profile</code>：当前玩家的 Profile 对象，<code>addItem</code>：添加物品的函数，<code>setAttr</code>：设置属性的函数。
+          </p>
+          <ul class="list-inside list-disc">
+            <li>
+              <code>profile</code>： 对象的属性包括 <code>attr</code>（属性对象 Map）、<code>inventory</code>（背包物品数组）、<code>scene</code>（当前场景对象）。
+            </li>
+            <li>
+              <code>addItem</code> 函数的参数为物品名称和数量，<code>setAttr</code> 函数的参数为属性对象，属性对象的 key 为属性名，name 为属性名称，value 为属性值。
+            </li>
+            <li>
+              <code>inventory</code>：当前玩家的背包物品列表，包含属性<code>key</code>（物品标识符）、<code>name</code>（物品名称）、<code>count</code>（物品数量）、<code>attr</code>（物品属性对象 Map）。
+            </li>
+            <li>
+              <code>scene</code>：当前场景对象，包含属性<code>name</code>（场景名称）、<code>content</code>（场景内容）、<code>options</code>（场景选项数组）。
+            </li>
+            <li>
+              返回值：<code>next</code> 为下一个场景的名称，<code>message</code> 为提示信息，<code>next</code> 和 <code>message</code> 都是可选的。
+            </li>
+          </ul>
+        </div>
+      </el-alert>
       <el-form-item label="效果类型" prop="type">
         <el-select v-model="data.type">
           <el-option
@@ -64,7 +97,7 @@
         <el-form-item label="属性值" prop="content">
           <template #label>
             <span>
-              <el-tooltip effect="dark" content="可以输入 rand(x,y) 表示 x~y 的随机数，percent(x,y) 表示 x 的百分比增加 y，y 省略则表示 1，，两个函数可嵌套使用">
+              <el-tooltip effect="dark" content="可以使用 $value 表示输入值，rand(x,y) 表示 x~y 的随机数，percent(x,y) 表示 x% 的概率增加 y，y 省略则表示 1，，两个函数可嵌套使用">
                 <Icon icon="i-ep:info-filled" :size="14" />
               </el-tooltip>
               属性值
@@ -80,7 +113,7 @@
         <el-form-item label="物品属性值" prop="content">
           <template #label>
             <span>
-              <el-tooltip effect="dark" content="此处设置表示消耗对应属性名的属性值之和的物品，可以设置选项物品弹窗来精确控制对应物品。可以输入 rand(x,y) 表示 x~y 的随机数，percent(x,y) 表示 x 的百分比 y，y 省略则表示 1，两个函数可嵌套使用">
+              <el-tooltip effect="dark" content="此处设置表示消耗对应属性名的属性值之和的物品，可以设置选项物品弹窗来精确控制对应物品。可以使用 $value 表示输入值，rand(x,y) 表示 x~y 的随机数，percent(x,y) 表示 x% 的概率为 y，y 省略则表示 1，两个函数可嵌套使用">
                 <Icon icon="i-ep:info-filled" :size="14" />
               </el-tooltip>
               物品属性值
@@ -91,7 +124,7 @@
       </template>
       <template v-if="data.type === 'Item'">
         <el-form-item label="物品" prop="name">
-          <el-input v-model="data.name" clearable>
+          <el-input v-model="data.name" clearable placeholder="可使用 $item 表示选择的物品。">
             <template #suffix>
               <el-button
                 type="text"
@@ -105,7 +138,7 @@
         <el-form-item label="数量" prop="content">
           <template #label>
             <span>
-              <el-tooltip effect="dark" content="可以输入数字，或 rand(x,y) 表示 x~y 的随机数，percent(x,y) 表示 x 的百分比获得 y 个，y 省略则表示 1 个，两个函数可嵌套使用">
+              <el-tooltip effect="dark" content="可以输入数字，或 rand(x,y) 表示 x~y 的随机数，percent(x,y) 表示 x% 的概率获得 y 个，y 省略则表示 1 个，两个函数可嵌套使用">
                 <Icon icon="i-ep:info-filled" />
               </el-tooltip>
               数量
@@ -117,7 +150,7 @@
       <template v-if="data.type === 'Fn'">
         <el-form-item label="函数" prop="content">
           <section class="flex flex-col w-full">
-            <span class="bg-gray-100 flex flex-col">
+            <span class="bg-gray-100 dark:bg-gray-900 flex flex-col px-2 rounded-tl rounded-tr border border-b-0 border-[var(--el-border-color)]">
               <code>function check(</code>
               <code>　　profile: Profile, </code>
               <code>　　addItem: (name: string, count: number) => void, </code>
@@ -130,19 +163,22 @@
               clearable
               type="textarea"
               :autosize="{ minRows: 3 }"
-              placeholder="可对用户的 Profile 直接修改，比如属性值与背包物品(通过 getItem 获取 Item 对象)等，也可以根据运算重新设置下一场景(next)，返回提示信息(message)等"
+              placeholder="可对玩家的 Profile 直接修改，比如属性值与背包物品(通过 getItem 获取 Item 对象)等，也可以根据运算重新设置下一场景(next)，返回提示信息(message)等"
+              class="border-l border-r border-[var(--el-border-color)]"
+              style="--el-input-border-radius: 0;--el-input-border-color:transparent;"
             />
-            <span class="bg-gray-100 flex flex-col">
+            <span class="bg-gray-100 dark:bg-gray-900 flex flex-col px-2 rounded-bl rounded-br border border-t-0 border-[var(--el-border-color)]">
               <code>　　return { message, next };</code>
               <code>}</code>
             </span>
           </section>
         </el-form-item>
       </template>
-      <template v-if="'Fn' != data.type">
+      <template v-if="data.type && 'Fn' != data.type">
         <p>
           <el-button @click="data.content = 'rand(1,100)'">随机数</el-button>
-          <el-button @click="data.content = 'percent(10,2)'">百分比</el-button>
+          <el-button @click="data.content = 'percent(10,2)'">概率数</el-button>
+          <el-button @click="data.content = '$value'">输入值</el-button>
         </p>
       </template>
       <ItemSelector v-if="story" ref="itemSelectorRef" :story="story.id!" />

@@ -6,6 +6,7 @@ import { unref, nextTick, watch, computed, ref } from 'vue';
 import { useEventListener } from '@/hooks/event/useEventListener';
 import { useBreakpoint } from '@/hooks/event/useBreakpoint';
 import echarts from '@/utils/lib/echarts';
+import { screenEnum } from '@/enums/breakpointEnum';
 
 export function useECharts(
   elRef: Ref<HTMLDivElement>,
@@ -44,7 +45,7 @@ export function useECharts(
       listener: resizeFn,
     });
     removeResizeFn = removeEvent;
-    const { widthRef, screenEnum } = useBreakpoint();
+    const { widthRef } = useBreakpoint();
     if (unref(widthRef) <= screenEnum.MD || el.offsetHeight === 0) {
       useTimeoutFn(() => {
         resizeFn();

@@ -50,6 +50,16 @@
   }
 }
 
+.el-dialog {
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  .el-dialog__body {
+    overflow: auto;
+    flex: 1;
+  }
+}
+
 .isMobile {
   .btn-text {
     display: none;

@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "ts-node src/index.ts --files"
+    "start": "ts-node src/index.ts --files",
+    "build": "tsc --project tsconfig.json",
+    "admin:dev": "cd admin && npm run dev",
+    "admin:build": "cd admin && npm run build"
   },
   "keywords": [],
   "author": "",

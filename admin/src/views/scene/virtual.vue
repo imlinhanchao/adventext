@@ -137,6 +137,20 @@
     message.value = '';
     emit('next', currentScene.value.name);
   }
+
+  const content = computed(() => {
+    let content = currentScene.value.content;
+    currentScene.value.options.forEach((option) => {
+      if (option.append) {
+        if (content.includes('${' + option.text + '}')) {
+          content = content.replaceAll('${' + option.text + '}', !option.disabled ? option.append : '');
+        } else {
+          content += option.append;
+        }
+      }
+    });
+    return content;
+  });
 </script>
 
 <template>
@@ -197,10 +211,7 @@
       </section>
       <el-alert v-if="message" :type="msgType" :closable="false">{{ message }}</el-alert>
       <section>
-        <span>{{ currentScene.content }}</span>
-        <span v-for="o in currentScene.options.filter((o) => o.append)" :key="o.text">
-          {{ o.append }}
-        </span>
+        <span>{{ content }}</span>
       </section>
       <section>
         <template v-for="o in currentScene.options" :key="o.text">

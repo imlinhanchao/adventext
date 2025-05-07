@@ -5,7 +5,7 @@
   import ConditionForm from './condition.vue';
   import EffectForm from './effect.vue';
   import ItemForm from '@/views/item/item.vue';
-import { getItem, Item } from '@/api/item';
+  import { getItem, Item } from '@/api/item';
 
   const props = defineProps<{
     scenes: Scene[];
@@ -102,6 +102,17 @@ import { getItem, Item } from '@/api/item';
         <el-input v-model="data.text" clearable />
       </el-form-item>
       <el-form-item label="追加内容" prop="append">
+        <template #label>
+          <span>
+            <el-tooltip placement="top">
+              <template #content>
+                <p>追加到场景内容的文本。在场景内容，可以通过<code>${选项}</code>来控制追加内容的位置。</p>
+              </template>
+              <Icon icon="i-ep:info-filled" :size="14" />
+            </el-tooltip>
+            追加内容
+          </span>
+        </template>
         <el-input v-model="data.append" type="textarea" />
       </el-form-item>
       <el-form-item label="下个场景" prop="next">
@@ -115,16 +126,46 @@ import { getItem, Item } from '@/api/item';
         </el-autocomplete>
       </el-form-item>
       <el-form-item label="单次触发">
+        <template #label>
+          <span>
+            <el-tooltip placement="top">
+              <template #content>
+                <p>开启后，选项将在首次成功触发后隐藏。</p>
+              </template>
+              <Icon icon="i-ep:info-filled" :size="14" />
+            </el-tooltip>
+            单次触发
+          </span>
+        </template>
         <el-switch v-model="data.loop" :active-value="-1" :inactive-value="0" />
       </el-form-item>
       <el-form-item label="重复触发间隔（秒）" prop="loop">
+        <template #label>
+          <span>
+            <el-tooltip placement="top">
+              <template #content>
+                <p>开启后，选项将在上次触发后指定时间内隐藏。</p>
+              </template>
+              <Icon icon="i-ep:info-filled" :size="14" />
+            </el-tooltip>
+            重复触发间隔（秒）
+          </span>
+        </template>
         <el-input type="number" v-if="(data.loop ?? 0) >= 0" v-model="data.loop" :min="0" />
         <span v-else>不可重复</span>
       </el-form-item>
       <el-form-item label="客户端输入提示" prop="value">
         <template #label>
           <span>
-            <el-tooltip content="若要弹出选择物品，可使用 item:提示内容:物品类型，物品类型非必须" placement="top">
+            <el-tooltip placement="top">
+              <template #content>
+                <p>
+                  用于在玩家选择选项时弹出一个输入框，其值用于类型为<b>输入值</b>的条件判断。
+                </p>
+                <p>
+                  若条件与影响有需要指定物品，则可使用 item:提示内容:物品类型（物品类型非必须）弹出选择物品。
+                </p>
+              </template>
               <Icon icon="i-ep:info-filled" :size="14" />
             </el-tooltip>
             客户端输入提示
@@ -134,7 +175,17 @@ import { getItem, Item } from '@/api/item';
         <el-button @click="data.value = `item:${data.value?.split(':')[1] || data.value ||'提示：'}`" size="small">物品弹窗</el-button>
         <el-button @click="data.value = `item:${data.value?.split(':')[1] || data.value ||'提示：'}:类型`" size="small">物品弹窗(指定类型)</el-button>
       </el-form-item>
-      <el-divider>条件列表</el-divider>
+      <el-divider>
+        条件列表
+        <el-tooltip placement="top">
+          <template #content>
+            <p>
+              用于对玩家选择选项的前置判断，确认玩家是否满足触发影响的条件。也可以通过勾选<b>用于隐藏选项</b>，在获取选项阶段用于过滤选项。
+            </p>
+          </template>
+          <Icon icon="i-ep:info-filled" :size="14" />
+        </el-tooltip>
+      </el-divider>
       <el-table :data="data.conditions" border stripe>
         <el-table-column prop="type" label="类型" :formatter="({type}) => ConditionType[type]" />
         <el-table-column prop="name" label="条件对象" />
@@ -157,7 +208,17 @@ import { getItem, Item } from '@/api/item';
         </el-table-column>
       </el-table>
       <ConditionForm ref="conditionRef" />
-      <el-divider>效果列表</el-divider>
+      <el-divider>
+        效果列表
+        <el-tooltip placement="top">
+          <template #content>
+            <p>
+              用于设置玩家选择选项后属性或背包的修改。通过配置不同的类型，可以修改玩家的属性、物品和下一个场景等。
+            </p>
+          </template>
+          <Icon icon="i-ep:info-filled" :size="14" />
+        </el-tooltip>
+      </el-divider>
       <el-table :data="data.effects" border stripe>
         <el-table-column prop="type" label="类型" :formatter="({type}) => EffectType[type]" />
         <el-table-column prop="name" label="效果对象">

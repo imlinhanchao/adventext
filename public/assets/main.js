@@ -35,7 +35,15 @@ function startGame(scene, state) {
       button.textContent = option.text;
 
       if (option.append) {
-        storyDiv.textContent += option.append;
+        if (storyDiv.textContent.includes('${' + option.text + '}')) {
+          storyDiv.textContent = storyDiv.textContent.replaceAll('${' + option.text + '}', option.append);
+        } else {
+          storyDiv.textContent += option.append;
+        }
+      }
+
+      if (storyDiv.textContent.includes('${' + option.text + '}')) {
+        storyDiv.textContent = storyDiv.textContent.replaceAll('${' + option.text + '}', '');
       }
 
       button.onclick = async () => {

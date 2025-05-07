@@ -79,6 +79,22 @@
     wait: 0,
   });
 
+  const content = computed(() => {
+    let content = `<b>${data.value.content}</b>`;
+    data.value.options.forEach((option) => {
+      if (option.append) {
+        if (content.includes('${' + option.text + '}')) {
+          content = content.replaceAll(
+            '${' + option.text + '}', 
+            `</b><span title="来自选项：${option.text}" class="hover:font-bold">${option.append}</span><b>`
+          );
+        } else {
+          content += `<span title="来自选项：${option.text}" class="hover:font-bold">${option.append}</span>`;
+        }
+      }
+    });
+    return content;
+  });
 </script>
 <template>
   <section
@@ -101,10 +117,8 @@
         </span>
       </template>
       <p class="my-2">
-        <span class="font-bold">{{ scene.content }}</span>
-        <span v-for="(item, index) in scene.options" :key="index" :title="`来自选项：${item.text}`" class="hover:font-bold">
-          {{ item.append || '' }}
-        </span>
+        <!-- eslint-disable-next-line vue/no-v-html -->
+        <span v-html="content"></span>
       </p>
       <section>
         <ul>

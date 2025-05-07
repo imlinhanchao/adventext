@@ -111,8 +111,9 @@ function fillVar(content: string, type: string, target: any) {
   return content;
 }
 
-function getCount(content: string, profileAttr: any, itemTakeAttr?: any) {
+function getCount(content: string, profileAttr: any, value: string, itemTakeAttr?: any) {
   if (isNumber(content)) return content;
+  content = content.replace(/\$value/g, value);
   content = fillVar(content, '\\$', itemTakeAttr);
   content = fillVar(content, '#', profileAttr);
   content = content.replace(/\s/g, '')
@@ -129,7 +130,7 @@ function getCount(content: string, profileAttr: any, itemTakeAttr?: any) {
   return parseFloat(content);
 }
 
-export async function runEffects(profile: Profile, effects: Effect[], itemTake?: Inventory) {
+export async function runEffects(profile: Profile, effects: Effect[], value: string, itemTake?: Inventory) {
   try {
     let message = '', next = null;
     for (const effect of effects) {
@@ -139,7 +140,7 @@ export async function runEffects(profile: Profile, effects: Effect[], itemTake?:
         else item = itemTake;
         if (!item) throw new Error(`物品 ${effect.name} 未找到.`)
         const inventory = profile.inventory.find((i) => i.key === effect.name);
-        let count = getCount(effect.content || '1', profile.attr, itemTake?.attributes);
+        let count = getCount(effect.content || '1', profile.attr, value, itemTake?.attributes);
         if (isNaN(count)) throw new Error(`Item ${effect.name} 效果获取数量失败！`)
         if (inventory) {
           inventory.count += count;
@@ -159,7 +160,7 @@ export async function runEffects(profile: Profile, effects: Effect[], itemTake?:
           profile.attr[effect.name] = isNaN(parseFloat(effect.content)) ? effect.content : parseFloat(effect.content);
         }
         else if (typeof profile.attr[effect.name] === 'number') {
-          let count = getCount(effect.content || '1', profile.attr, itemTake?.attributes);
+          let count = getCount(effect.content || '1', profile.attr, value, itemTake?.attributes);
           if (isNaN(count)) throw new Error(`Attr ${effect.name} 效果获取数量失败！`)
             profile.attr[effect.name] += count;
         }
@@ -180,7 +181,7 @@ export async function runEffects(profile: Profile, effects: Effect[], itemTake?:
           if (!inventorys.length) {
             throw new Error(`你没有包含${attr}的物品.`);
           }
-          let count = getCount(effect.content || '1', profile.attr);
+          let count = getCount(effect.content || '1', profile.attr, value);
           if (isNaN(count)) throw new Error(`ItemAttr ${effect.name} 效果获取数量失败！`)
           let total = 0;
           for (const inventory of inventorys) {
@@ -200,7 +201,7 @@ export async function runEffects(profile: Profile, effects: Effect[], itemTake?:
           if (itemTake.attributes[effect.name] === undefined) {
             throw new Error(`物品 ${itemTake.name} 不包含属性 ${effect.name}.`);
           }
-          let count = getCount(effect.content || '1', profile.attr, itemTake.attributes);
+          let count = getCount(effect.content || '1', profile.attr, value, itemTake.attributes);
           if (isNaN(count)) throw new Error(`ItemAttr ${effect.name} 效果获取数量失败！`)
           const itemCount = Math.ceil(count / itemTake.attributes[effect.name]);
           if (itemCount > itemTake.count) {
@@ -307,8 +308,8 @@ async function checkConditions(conditions: Condition[], profile: Profile, option
         }
       }
       if (condition.type === 'Fn') {
-        const fn = new Function('profile', 'let result = true;\n' + condition.content + '\nreturn result;');
-        const result = fn(clone(profile));
+        const fn = new Function('profile', 'value', 'itemSelect', 'let result = true;\n' + condition.content + '\nreturn result;');
+        const result = fn(clone(profile), valueText, itemTake?.name);
         if (result !== true) {
           throw new Error(typeof result != 'string' ? `你还没准备好` : result);
         }
@@ -328,7 +329,7 @@ async function checkConditions(conditions: Condition[], profile: Profile, option
         }
       }
       if (condition.type === 'ItemType') {
-        const inventory = profile.inventory.some((i) => i.type === condition.content);
+        const inventory = profile.inventory.some((i) => i.type === condition.content && i.count > 0);
         if (!inventory) {
           throw new Error(`你需要 ${condition.content.toString()}.`);
         }
@@ -476,7 +477,7 @@ export const gameExcute = async (profile: Profile, scene: Scene, { option: optio
     }
 
     let next = option.next;
-    let result = await runEffects(profile, option.effects || [], itemTake);
+    let result = await runEffects(profile, option.effects || [], valueText, itemTake);
     if (result.next) next = result.next;
     if (result.message) message += result.message;
     if (result.profile) profile = result.profile;
