@@ -140,6 +140,11 @@
 
   const content = computed(() => {
     let content = currentScene.value.content;
+    Object.entries(profile.value.attr).forEach(([key, value]) => {
+      if (content.includes(`\${${key}}`)) {
+        content = content.replaceAll(`\${${key}}`, value + '');
+      }
+    });
     currentScene.value.options.forEach((option) => {
       if (option.append) {
         if (content.includes('${' + option.text + '}')) {
