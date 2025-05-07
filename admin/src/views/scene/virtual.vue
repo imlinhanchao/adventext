@@ -34,6 +34,10 @@
   const message = ref('');
   const records = ref<SceneRecord[]>([]);
 
+  onMounted(async () => {
+    currentScene.value.options = await updateOptions(currentScene.value, profile.value, records.value);
+  })
+
   async function getValue(option: Option) {
     let value: string | false = '';
     if (option.value?.startsWith('item:')) {
