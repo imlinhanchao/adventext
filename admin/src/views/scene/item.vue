@@ -1,6 +1,7 @@
 <script lang="ts" setup>
+  import Sortable from 'sortablejs';
   import { createScene, Option, Scene, updateScene } from '@/api/scene';
-  import { ElMessage, ElMessageBox, FormInstance } from 'element-plus';
+  import { ElMessage, ElMessageBox, ElTable, FormInstance } from 'element-plus';
   import OptionForm from './option.vue';
   import { clone } from '@/utils';
 
@@ -19,6 +20,7 @@
     visible.value = true;
     data.value = clone(scene || new Scene());
     oldName.value = data.value.name;
+    nextTick(() => rowDrop());
 
     return new Promise((resolve) => {
       saveResolve = resolve;
@@ -63,6 +65,7 @@
   function addOption() {
     optionRef.value?.open().then((option: Option) => {
       data.value.options.push(option);
+      nextTick(() => rowDrop());
     });
   }
 
@@ -71,16 +74,39 @@
       Object.assign(option, data);
     });
   }
+
+  const optionTableRef = ref<InstanceType<typeof ElTable>>();
+  const optionsKey = ref(0);
+  function rowDrop() {
+    if (!optionTableRef.value) return;
+    const tbody = optionTableRef.value.$el.querySelector('.el-table__body-wrapper tbody');
+    Sortable.create(tbody, {
+      handle: '.move',
+      animation: 300,
+      ghostClass: 'ghost',
+      onEnd: ({ newIndex, oldIndex }) => {
+        const tableData = data.value.options;
+        const currRow = tableData.splice(oldIndex, 1)[0];
+        tableData.splice(newIndex, 0, currRow);
+        optionsKey.value++;
+        nextTick(() => rowDrop());
+      },
+    });
+  }
 </script>
 
 <template>
   <el-dialog :title="data.id ? '场景编辑' : '场景创建'" v-model="visible" width="600px">
-    <el-form ref="formRef" :model="data" label-width="auto" :rules="rules" class="colon">
+    <el-form ref="formRef" :model="data" label-width="auto" :rules="rules" class="colon" @mousedown.stop>
       <el-form-item label="场景名称" prop="name">
         <el-input v-model="data.name" placeholder="请输入场景名称" />
       </el-form-item>
       <el-form-item label="场景内容" prop="content">
-        <el-input v-model="data.content" type="textarea" placeholder="请输入场景内容，支持通过 ${属性标识符} 引用属性值" />
+        <el-input
+          v-model="data.content"
+          type="textarea"
+          placeholder="请输入场景内容，支持通过 ${属性标识符} 引用属性值"
+        />
       </el-form-item>
       <el-form-item label="是否结局" prop="isEnd">
         <el-switch v-model="data.isEnd" />
@@ -90,7 +116,12 @@
       </el-form-item>
       <template v-else>
         <el-form-item label="场景选项" />
-        <el-table :data="data.options" border stripe>
+        <el-table ref="optionTableRef" :key="optionsKey" :data="data.options" border stripe>
+          <el-table-column label="#" width="50" align="center">
+            <template #default>
+              <el-button type="primary" link class="move cursor-move" icon="el-icon-d-caret" />
+            </template>
+          </el-table-column>
           <el-table-column prop="text" label="选项" />
           <el-table-column prop="append" label="追加内容" show-overflow-tooltip />
           <el-table-column prop="next" label="下一个场景" />

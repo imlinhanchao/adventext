@@ -24,6 +24,7 @@
     "lodash-es": "^4.17.21",
     "pinia": "^2.1.7",
     "qs": "^6.12.3",
+    "sortablejs": "^1.15.6",
     "vue": "^3.4.29",
     "vue-json-pretty": "^2.4.0",
     "vue-router": "^4.3.3",
