@@ -63,7 +63,7 @@
 
   const pos = ref({
     x: 0,
-    y: 90,
+    y: 120,
   });
 
   async function save() {
