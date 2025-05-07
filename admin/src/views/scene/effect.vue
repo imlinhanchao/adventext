@@ -103,9 +103,9 @@
               属性值
             </span>
           </template>
-          <el-input v-model="data.content">
+          <el-input v-model="data.content" placeholder="可以输入 \n 表示换行">
             <template #prepend>
-              <el-select v-model="data.operator">
+              <el-select v-model="data.operator" class="!w-60px">
                 <el-option label="=" value="=" />
                 <el-option label="+" value="+" />
                 <el-option label="-" value="-" />

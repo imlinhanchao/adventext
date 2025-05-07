@@ -193,7 +193,7 @@
             controls-position="right"
             class="!w-20"
           />
-          <el-input v-else v-model="profile.attr[key]" size="small" class="!w-20" />
+          <el-input v-else v-model="profile.attr[key]" size="small" class="!w-20" :type="profile.attr[key].includes('\n') ? 'textarea' : 'text'" />
         </span>
       </section>
       <section class="space-x-2">

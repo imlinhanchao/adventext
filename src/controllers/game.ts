@@ -117,7 +117,6 @@ function fillVar(content: string, type: string, target: any) {
 
 function getCount(content: string, profileAttr: any, value: string, itemTakeAttr?: any) {
   if (isNumber(content)) return content;
-  content = content.replace(/\$value/g, value);
   content = fillVar(content, '\\$', itemTakeAttr);
   content = fillVar(content, '#', profileAttr);
   content = content.replace(/\s/g, '')
@@ -168,6 +167,8 @@ export async function runEffects(profile: Profile, effects: Effect[], value: str
     let message = '', next = null;
     for (const effect of effects) {
       effect.operator = effect.operator || '=';
+      effect.content = effect.content.replace(/\$value/g, value);
+      effect.content = effect.content.replaceAll('\\n', '\n');
       if (effect.type === 'Item') {
         let item;
         if (effect.name !== '$item') item = await getItem(effect.name);
@@ -196,10 +197,10 @@ export async function runEffects(profile: Profile, effects: Effect[], value: str
         else if (typeof profile.attr[effect.name] === 'number') {
           let count = getCount(effect.content || '1', profile.attr, value, itemTake?.attributes);
           if (isNaN(count)) throw new Error(`Attr ${effect.name} 效果获取数量失败！`)
-            operatorData(profile.attr[effect.name], count, effect.operator);
+            profile.attr[effect.name] = operatorData(profile.attr[effect.name], count, effect.operator);
         }
         else {
-          profile.attr[effect.name] = effect.content;
+          profile.attr[effect.name] = operatorData(profile.attr[effect.name], effect.content, effect.operator);
         }
         if (profile.attrName[effect.name]) {
           message += `${profile.attrName[effect.name]} ${oldValue} → ${effect.content}.\n`;
