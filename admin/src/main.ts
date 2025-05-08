@@ -1,8 +1,8 @@
 import 'virtual:uno.css';
 import 'virtual:svg-icons-register';
 import '@unocss/reset/tailwind-compat.css';
-import 'element-plus/theme-chalk/dark/css-vars.css'
 import 'element-plus/dist/index.css';
+import 'element-plus/theme-chalk/dark/css-vars.css'
 import '@/assets/style/main.less';
 import { createApp } from 'vue';
 

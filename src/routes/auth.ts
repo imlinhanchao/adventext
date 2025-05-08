@@ -3,7 +3,6 @@ import svgCaptcha from "svg-captcha";
 import { Router } from "express";
 import { login, register } from "../controllers/auth";
 import { render } from '../utils/route';
-import { omit } from '../utils';
 
 const router = Router();
 
@@ -11,19 +10,10 @@ const router = Router();
 router.post("/login", async (req, res) => {
   try {
     const { user } = await login(req.body);
-    req.session.user = omit(user, ["password"]);
+    req.session.user = user;
     res.redirect("/");
   } catch (error: any) {
     render(res, 'login', req).title('登录').error(error.message).render();
-  }
-});
-
-router.post("/token", async (req, res) => {
-  try {
-    const { token } = await login(req.body, true);
-    res.json({ code: 0, data: token });
-  } catch (error: any) {
-    res.json({ code: -1, message: error.message });
   }
 });
 

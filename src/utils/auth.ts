@@ -22,8 +22,13 @@ export function authenticate (subApplication: (payload: JwtPayload, req: Request
   return (req: Request, res: Response, next: NextFunction) => {
     try {
       const token = req.headers.authorization?.split(' ')[1];
-      if (!token) {
+      if (!token && !req.session.user) {
         throw new Error('Unauthorized: No token provided');
+      }
+
+      if (!token) {
+        subApplication({ id: req.session.user.id }, req, res, next)
+        return;
       }
 
       const payload = verifyToken(token);
@@ -33,7 +38,7 @@ export function authenticate (subApplication: (payload: JwtPayload, req: Request
 
       subApplication(payload, req, res, next)
     } catch (err: any) {
-      error(res, err.message)
+      error(res, err.message, 403)
     }
   }
 }

@@ -52,9 +52,26 @@ export function getUserInfo() {
 }
 
 export function doLogout() {
-  return '';
+  return defHttp.post<string>(
+    {
+      url: '/logout',
+    },
+    {
+      errorMessageMode: 'none',
+    },
+  );
 }
 
+export function generateToken() {
+  return defHttp.post<string>(
+    {
+      url: '/token',
+    },
+    {
+      errorMessageMode: 'none',
+    },
+  ).catch(() => '');
+}
 
 export interface User {
   id: number;

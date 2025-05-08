@@ -2,12 +2,12 @@ import crypto from "crypto";
 import { AppDataSource } from '../entities';
 import { User } from '../entities/User';
 import { generateToken } from "../utils/auth";
-import utils from '../utils';
+import utils, { omit } from '../utils';
 
 export async function login(params: { username: string; password: string }, needToken = false) {
   const { username, password } = params;
   const userRepository = AppDataSource.getRepository(User);
-  const user = await userRepository.findOne({ where: { username } });
+  let user = await userRepository.findOne({ where: { username } });
 
   if (!user) {
     throw new Error("用户名或密码错误");
@@ -21,12 +21,15 @@ export async function login(params: { username: string; password: string }, need
     throw new Error("用户名或密码错误");
   }
 
+  user.lastLogin = Date.now();
+  await userRepository.save(user);
+
   if (needToken) {
-    const token = generateToken({ id: user.id });
-    return { user, token };
+    const token = generateToken({ id: user!.id });
+    return { user: omit(user, User.unsafeKey), token };
   }
 
-  return { user };
+  return { user: omit(user, User.unsafeKey) };
 }
 
 export async function register(params: { username: string; password: string }) {
@@ -50,5 +53,7 @@ export async function profile(userId: number) {
   if (!user) {
     throw new Error("用户不存在");
   }
-  return user;
+  user.lastLogin = Date.now();
+  await userRepository.save(user);
+  return omit(user, User.unsafeKey);
 }

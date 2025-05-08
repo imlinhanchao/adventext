@@ -3,6 +3,8 @@
   import { useUserStore } from '@/store/modules/user';
   import { ElNotification, FormInstance, FormRules } from 'element-plus';
   import Logo from '@/layouts/components/logo/index.vue';
+import { generateToken } from '@/api/user';
+import { useDark } from '@vueuse/core';
 
   const formData = reactive({
     username: '',
@@ -42,11 +44,20 @@
       ElNotification.success({
         title: '登录成功',
         message: `欢迎回来: ${userInfo.nickname || userInfo.username}`,
-        duration: 3,
+        duration: 2000,
       });
       setTimeout(() => router.replace(PageEnum.BASE_HOME), 1000);
     }
   }
+
+  generateToken().then((token) => {
+    if (!token) return;
+    userStore.setToken(token);
+    userStore.getUserInfoAction();
+    router.replace(PageEnum.BASE_HOME)
+  });
+
+  useDark();
 </script>
 <template>
   <el-container class="flex items-center justify-center h-full w-full">

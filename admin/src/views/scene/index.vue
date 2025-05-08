@@ -237,8 +237,7 @@
         @mousedown="beginMove"
         @touchstart="beginMove"
         :direction="isMobile ? 'vertical' : 'horizontal'" 
-        :class="{'left-200px': !isMobile, 'left-0': isMobile }" 
-        class="story-panel absolute z-1 top-0 bottom-0 right-0 overflow-hidden" 
+        class="story-panel absolute z-1 top-0 bottom-0 right-0 left-0 overflow-hidden" 
         :style="`--panel-offset-x: ${pos.x}px; --panel-offset-y: ${pos.y}px;`"
       >
         <el-container class="pt-60px">

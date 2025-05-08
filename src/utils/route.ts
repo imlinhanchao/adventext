@@ -74,6 +74,6 @@ export function json(res: Response, data: any, message?: string) {
   res.json({ code: 0, data, message });
 }
 
-export function error(res: Response, message: string) {
-  res.json({ code: -1, message });
+export function error(res: Response, message: string, code=-1) {
+  res.json({ code, message });
 }

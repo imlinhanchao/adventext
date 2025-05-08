@@ -15,11 +15,13 @@
   }
 
   addDeviceClass(screenSM.value);
+
+  const { currentRoute } = useRouter();
   
 </script>
 <template>
   <el-container class="h-full">
-    <el-aside v-if="!screenSM" width="200px" class="border-r border-light-700 dark:border-gray-700 z-3 bg-[--el-bg-color]">
+    <el-aside v-if="!screenSM && currentRoute.name != 'StoryScene'" width="200px" class="border-r border-light-700 dark:border-gray-700 z-3 bg-[--el-bg-color]">
       <Menu />
     </el-aside>
     <el-container id="main-container" class="h-full w-full relative" direction="vertical">
