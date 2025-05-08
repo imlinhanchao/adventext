@@ -315,7 +315,9 @@
           v-if="isVirtual" 
           :width="isMobile ? '100%' : '500px'" 
           class="dark:border-gray-600 virtual-panel bg-[var(--el-bg-color)] z-5 relative" 
-          :class="{ 'border-l pt-15': !isMobile, 'isMobile pt-3': isMobile }">
+          :class="{ 'border-l pt-15': !isMobile, 'isMobile pt-3': isMobile }"
+          @mousedown.stop
+        >
           <Virtual @next="highlightScene" />
         </el-aside>
       </el-container>

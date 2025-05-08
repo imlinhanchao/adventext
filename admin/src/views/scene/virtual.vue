@@ -80,12 +80,12 @@
 
     if (!scene) return;
 
+    profile.value = state;
     records.value.unshift(new SceneRecord(currentScene.value, option.text, profile.value.from));
 
     sceneMap.value[next || scene.name].options = await updateOptions(sceneMap.value[next || scene.name], profile.value, records.value);
     currentScene.value = sceneMap.value[next || scene.name];
 
-    profile.value = state;
     message.value = msg;
     msgType.value = 'info';
 
