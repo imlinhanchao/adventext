@@ -41,7 +41,7 @@ router.post("/:storyId/init", userSession(async (user: User, req: Request, res: 
     error(res, err.message)
   }
 }));
-router.post("/:storyId/choose", userSession(game.game));
-router.post("/:storyId/restart", userSession(game.restartGame));
+router.post("/:storyId/choose", userSession((user: User, req: Request, res: Response) => game.game(user, req, res)));
+router.post("/:storyId/restart", userSession((user: User, req: Request, res: Response) => game.restartGame(user, req, res)));
 
 export default router;

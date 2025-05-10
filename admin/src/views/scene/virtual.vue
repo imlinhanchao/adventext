@@ -6,6 +6,9 @@
   import { Item } from '@/api/item';
   import { isNumber } from '@/utils';
 
+  defineProps<{
+    type: string;
+  }>();
   const emit = defineEmits(['next']);
 
   const scenes = inject(ScenesContext)!;
@@ -35,8 +38,12 @@
   const records = ref<SceneRecord[]>([]);
 
   onMounted(async () => {
-    currentScene.value.options = await updateOptions(currentScene.value, profile.value, records.value);
-  })
+    currentScene.value.options = await updateOptions(
+      currentScene.value,
+      profile.value,
+      records.value,
+    );
+  });
 
   async function getValue(option: Option) {
     let value: string | false = '';
@@ -83,7 +90,11 @@
     profile.value = state;
     records.value.unshift(new SceneRecord(currentScene.value, option.text, profile.value.from));
 
-    sceneMap.value[next || scene.name].options = await updateOptions(sceneMap.value[next || scene.name], profile.value, records.value);
+    sceneMap.value[next || scene.name].options = await updateOptions(
+      sceneMap.value[next || scene.name],
+      profile.value,
+      records.value,
+    );
     currentScene.value = sceneMap.value[next || scene.name];
 
     message.value = msg;
@@ -152,7 +163,10 @@
     currentScene.value.options.forEach((option) => {
       if (option.append) {
         if (content.includes('${' + option.text + '}')) {
-          content = content.replaceAll('${' + option.text + '}', !option.disabled ? option.append : '');
+          content = content.replaceAll(
+            '${' + option.text + '}',
+            !option.disabled ? option.append : '',
+          );
         } else if (!option.disabled) {
           content += option.append;
         }
@@ -167,7 +181,14 @@
     <el-header class="flex !py-2 justify-between" height="auto">
       <section class="w-full flex space-x-2 items-center">
         <h1 class="font-bold text-xl inline-block">{{ story.name }}</h1>
-        <el-select v-model="jumpScene" placeholder="跳转场景" size="small" class="max-w-30" @change="jumpToScene" filterable>
+        <el-select
+          v-model="jumpScene"
+          placeholder="跳转场景"
+          size="small"
+          class="max-w-30"
+          @change="jumpToScene"
+          filterable
+        >
           <el-option
             v-for="scene in scenes"
             :key="scene.name"
@@ -186,7 +207,14 @@
     <el-main class="!h-full space-y-2">
       <section class="space-x-2">
         <label class="bg-black text-white p-1 mr-1 rounded">
-          <el-button link icon="el-icon-plus" class="!text-inherit" title="手动添加" @click="addAttr" /> 属性
+          <el-button
+            link
+            icon="el-icon-plus"
+            class="!text-inherit"
+            title="手动添加"
+            @click="addAttr"
+          />
+          属性
         </label>
         <span v-for="(value, key) in profile.attr" :key="key" class="inline-block my-1">
           {{ (profile.attrName[key] || key) + (profile.attrName[key] ? `(${key})` : '') }}:
@@ -197,12 +225,25 @@
             controls-position="right"
             class="!w-20"
           />
-          <el-input v-else v-model="profile.attr[key]" size="small" class="!w-20" :type="profile.attr[key].includes('\n') ? 'textarea' : 'text'" />
+          <el-input
+            v-else
+            v-model="profile.attr[key]"
+            size="small"
+            class="!w-20"
+            :type="profile.attr[key].includes('\n') ? 'textarea' : 'text'"
+          />
         </span>
       </section>
       <section class="space-x-2">
         <label class="bg-black text-white p-1 mr-1 rounded">
-          <el-button link icon="el-icon-plus" class="!text-inherit" title="手动添加" @click="addInventory" /> 物品
+          <el-button
+            link
+            icon="el-icon-plus"
+            class="!text-inherit"
+            title="手动添加"
+            @click="addInventory"
+          />
+          物品
         </label>
         <span v-for="item in profile.inventory" :key="item.id">
           <el-tooltip :content="`[${item.type}]${item.description}`">
@@ -229,7 +270,7 @@
           </el-button>
         </template>
       </section>
-      <ItemSelector ref="itemRef" :story="story.id!" multiple inventory />
+      <ItemSelector ref="itemRef" :story="story.id!" multiple inventory :type="type" />
       <el-dialog v-model="itemSelector" width="400px">
         <p class="mb-3">{{ dlgMessage }}</p>
         <p>

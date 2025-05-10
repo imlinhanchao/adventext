@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, Request, Response } from "express";
 import GameController from "../controllers/game";
 import { AppDataSource, Draft } from "../entities/";
 import { error, json } from "../utils/route";
@@ -8,8 +8,8 @@ import ItemRoute from './item';
 const draftRepository = AppDataSource.getRepository(Draft);
 
 const router = Router();
-router.post("/run", new GameController('draft').gameVirtual);
-router.post("/filter", new GameController('draft').optionFilter);
+router.post("/run", (req: Request, res: Response) => new GameController('draft').gameVirtual(req, res));
+router.post("/filter", (req: Request, res: Response) => new GameController('draft').optionFilter(req, res));
 
 router.use((req, res, next) => {
   if (req.user) {
@@ -42,7 +42,7 @@ router.post("/", async (req, res) => {
 router.use('/:id', async (req, res, next) => {
   const story = await draftRepository.findOneBy({ id: req.params.id });
   if (!story) {
-    return error(res, "故事不存在" );
+    return error(res, "故事不存在");
   }
   if (story.author !== req.user?.username && !req.user?.isAdmin) {
     return error(res, "没有该故事的权限", 403);

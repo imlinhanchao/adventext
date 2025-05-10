@@ -329,7 +329,7 @@ import { Story } from '@/api/story';
           :class="{ 'border-l pt-15': !isMobile, 'isMobile pt-3': isMobile }"
           @mousedown.stop
         >
-          <Virtual @next="highlightScene" />
+          <Virtual @next="highlightScene" :type="type" />
         </el-aside>
       </el-container>
     </Teleport>

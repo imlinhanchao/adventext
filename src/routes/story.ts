@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, Request, Response } from "express";
 import GameController from "../controllers/game";
 import { AppDataSource, Story } from "../entities/";
 import { error, json } from "../utils/route";
@@ -8,8 +8,8 @@ import ItemRoute from './item';
 const storyRepository = AppDataSource.getRepository(Story);
 
 const router = Router();
-router.post("/run", new GameController('story').gameVirtual);
-router.post("/filter", new GameController('story').optionFilter);
+router.post("/run", (req: Request, res: Response) => new GameController('story').gameVirtual(req, res));
+router.post("/filter", (req: Request, res: Response) => new GameController('story').optionFilter(req, res));
 
 router.use((req, res, next) => {
   if (req.user?.isAdmin) {
