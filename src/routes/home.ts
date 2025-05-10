@@ -7,18 +7,17 @@ import { User } from '../entities';
 import { isNumber } from '../utils/is';
 
 const router = Router();
-const game = new GameController('story');
 
-router.get("/", userSession((user: User, req: Request, res: Response) => game.storyList(req, res)));
-router.get("/profile", userSession(async (user: User, req: Request, res: Response) => {
-  render(res, "profile", req).title(user.username).render()
-}));
-router.get("/:storyId", userSession(async (user: User, req: Request, res: Response, next) => {
+router.get("/", userSession((user: User, req: Request, res: Response) => new GameController('story').storyList(req, res)));
+router.get("{/:type}/:storyId", userSession(async (user: User, req: Request, res: Response, next) => {
   try {
     if (!isNumber(Number(req.params.storyId))) {
       next?.();
       return;
     }
+    if (req.params.type !== 'd' && req.params.type) return next();
+    const type = req.params.type == 'd' ? 'draft' : 'story';
+    const game = new GameController(type);
     const { state, story, scene } = await game.init(user, req, res);
     render(res, "index", req).title(story!.name).render({
       logo: story!.name,
@@ -30,8 +29,10 @@ router.get("/:storyId", userSession(async (user: User, req: Request, res: Respon
     render(res, 'index', req).error(error.message).render()
   }
 }));
-router.post("/:storyId/init", userSession(async (user: User, req: Request, res: Response) => {
+router.post("{/:type}/:storyId/init", userSession(async (user: User, req: Request, res: Response) => {
   try {
+    const type = req.params.type == 'd' ? 'draft' : 'story';
+    const game = new GameController(type);
     const { state, scene } = await game.init(user, req, res);
     json(res, {
       scene,
@@ -41,7 +42,15 @@ router.post("/:storyId/init", userSession(async (user: User, req: Request, res: 
     error(res, err.message)
   }
 }));
-router.post("/:storyId/choose", userSession((user: User, req: Request, res: Response) => game.game(user, req, res)));
-router.post("/:storyId/restart", userSession((user: User, req: Request, res: Response) => game.restartGame(user, req, res)));
+router.post("{/:type}/:storyId/choose", userSession((user: User, req: Request, res: Response) => {
+  const type = req.params.type == 'd' ? 'draft' : 'story';
+  const game = new GameController(type);
+  game.game(user, req, res)
+}));
+router.post("{/:type}/:storyId/restart", userSession((user: User, req: Request, res: Response) => {
+  const type = req.params.type == 'd' ? 'draft' : 'story';
+  const game = new GameController(type);
+  game.restartGame(user, req, res)
+}));
 
 export default router;

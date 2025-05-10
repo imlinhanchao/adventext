@@ -18,7 +18,7 @@ function startGame(scene, state) {
     button.textContent = '重新开始';
     button.onclick = async () => {
       button.disabled = true;
-      fetch(`/${story}/restart`, {
+      fetch(`./${story}/restart`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -68,7 +68,7 @@ function startGame(scene, state) {
           value = prompt(option.value)
           if (!value) return;
         }
-        fetch(`/${window.storyId}/choose`, {
+        fetch(`./${window.storyId}/choose`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -166,7 +166,7 @@ function showMessage(message, type) {
 
 function initGame(story) {
   window.storyId = story;
-  fetch(`/${story}/init`, {
+  fetch(`./${story}/init`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'

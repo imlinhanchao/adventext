@@ -6,6 +6,7 @@
       <% stories.forEach(function(story) { %>
         <li>
           <a href="/<%=story.id-%>"><%= story.name %></a>
+          <span class="text-gray-500 dark:text-light-900"><%= story.description %></span>
         </li>
       <% }); %>
     </ol>

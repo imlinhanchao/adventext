@@ -4,6 +4,7 @@ import express from "express";
 import authRoutes from "./routes/auth";
 import adminRoutes from "./routes/admin";
 import homeRoutes from "./routes/home";
+import profileRoutes from "./routes/profile";
 import configRoutes from "./routes/config";
 import path from "path";
 import { AppDataSource } from "./entities";
@@ -40,9 +41,10 @@ if (utils.config) {
   );
 
   // 路由
-  app.use("/auth", authRoutes);
-  app.use("/api", adminRoutes);
   app.use("/", homeRoutes);
+  app.use("/auth", authRoutes);
+  app.use("/u", profileRoutes);
+  app.use("/api", adminRoutes);
 
   // 数据库连接
   AppDataSource.initialize()

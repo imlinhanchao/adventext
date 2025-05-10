@@ -451,7 +451,7 @@ export default class GameController {
       }
 
       state.isEnd = true;
-      await stateRepository.update(state.id, state);
+      await stateRepository.save(state);
 
       json(res, { message: '游戏已重置' })
     } catch (error: any) {
@@ -531,7 +531,7 @@ export default class GameController {
         const currentState = await stateRepository.findOneBy({ userId, storyId, isEnd: false });
         if (currentState) {
           Object.assign(currentState, profile);
-          await stateRepository.update(currentState.id, currentState);
+          await stateRepository.save(currentState);
         } else {
           await stateRepository.save(profile);
         }

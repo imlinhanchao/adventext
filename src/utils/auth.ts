@@ -43,7 +43,7 @@ export function authenticate (subApplication: (payload: JwtPayload, req: Request
   }
 }
 
-export function userSession (subApplication: (user: User, req: Request, res: Response, next?: NextFunction) => any) {
+export function userSession (subApplication: (user: User, req: Request, res: Response, next: NextFunction) => any) {
   return (req: Request, res: Response, next: NextFunction) => {
     if (!req.session.user) {
       res.redirect('/auth/login');
