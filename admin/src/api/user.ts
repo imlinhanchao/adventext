@@ -75,6 +75,7 @@ export function generateToken() {
 
 export interface User {
   id: number;
+  nickname: string;
   username: string;
   password: string;
   isAdmin: boolean;
