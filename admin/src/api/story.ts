@@ -7,16 +7,10 @@ export class Story extends Draft {
    * 来源故事ID
    */
   sourceId: number;
-
-  /**
-   * 故事状态
-   */
-  status: number;
   
   constructor() {
     super()
     this.sourceId = 0;
-    this.status = 0;
   }
 }
 

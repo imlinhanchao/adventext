@@ -13,6 +13,7 @@ export default [
       {
         path: 'home',
         name: 'Home',
+        redirect: '/my',
         component: () => import('/@/views/draft/index.vue'),
         meta: {
           title: '首页',

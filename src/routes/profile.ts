@@ -1,13 +1,10 @@
 import { Request, Response } from 'express';
 import { Router } from "express";
-import GameController from "../controllers/game";
 import { userSession } from "../utils/auth";
-import { error, json, render } from "../utils/route";
+import { error, render } from "../utils/route";
 import { AppDataSource, Draft, Story, User } from '../entities';
-import { isNumber } from '../utils/is';
 
 const router = Router();
-const game = new GameController('story');
 
 router.get("/:username", userSession(async (user: User, req: Request, res: Response) => {
   const username = req.params.username;

@@ -8,6 +8,12 @@ export function omit(obj: any, keys: string[]) {
   );
 }
 
+export function pick(obj: any, keys: string[]) {
+  return Object.fromEntries(
+    Object.entries(obj).filter(([key]) => keys.includes(key))
+  );
+}
+
 let cfg: any = null
 const configPath = path.join(__dirname, '..', 'config.json');
 

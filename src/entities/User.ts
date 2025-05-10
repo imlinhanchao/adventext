@@ -26,4 +26,10 @@ export class User {
   static get unsafeKey() {
     return ['password', 'attr'];
   }
+
+  constructor(username: string = '', password: string = '') {
+    this.username = username;
+    this.nickname = username;
+    this.password = password;
+  }
 }

@@ -39,7 +39,7 @@ router.post("/", async (req, res) => {
 router.use('/:id', async (req, res, next) => {
   const story = await storyRepository.findOneBy({ id: req.params.id });
   if (!story) {
-    return error(res, "故事不存在" );
+    return next();
   }
   req.story = story;
 
@@ -53,7 +53,7 @@ router.get("/:id", async (req, res) => {
 
 // 更新故事
 router.put("/:id", async (req, res) => {
-  const story = req.story!;
+  const story = req.story! as Story;
   storyRepository.merge(story!, req.body);
   const result = await storyRepository.save(story);
   json(res, result);

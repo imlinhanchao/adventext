@@ -1,12 +1,16 @@
 <%- include('header') %>
 
-<article>
+<article class="w-100">
   <section>
     <ol class="list-decimal">
       <% stories.forEach(function(story) { %>
         <li>
-          <a href="/<%=story.id-%>"><%= story.name %></a>
-          <span class="text-gray-500 dark:text-light-900"><%= story.description %></span>
+          <section class="flex flex-col">
+            <span><a class="truncate" href="<%=query.type === 'draft' ? '/d' : ''-%>/<%=story.id-%>"><%= story.name %></a></span>
+            <span class="text-gray-500 dark:text-light-900 text-sm truncate" title="<%= story.description %>">
+              <%= story.description %>
+            </span>
+          </section>
         </li>
       <% }); %>
     </ol>

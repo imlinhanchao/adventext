@@ -1,7 +1,16 @@
-import { Router } from "express";
-import { AppDataSource, Scene, Story } from "../entities";
+import { Request, Router } from "express";
+import { AppDataSource, Draft, Scene, Story } from "../entities";
 import { error, json } from "../utils/route";
 import ItemRoute from './item';
+
+export function updateStoryStatus(req: Request) {
+  if (!req.baseUrl.includes('/draft/')) return;
+
+  const story = req.story!;
+  const storyRepository = AppDataSource.getRepository(Draft);
+  story.status = 0;
+  return storyRepository.save(story);
+}
 
 const sceneRepository = AppDataSource.getRepository(Scene);
 
@@ -37,6 +46,8 @@ router.post("/scene", async (req, res) => {
   
   const newScene = sceneRepository.create({ ...req.body, storyId: story.id });
   const result = await sceneRepository.save(newScene);
+
+  updateStoryStatus(req);
   json(res, result);
 });
 
@@ -55,6 +66,8 @@ router.put("/scene/:sceneId", async (req, res) => {
   
   sceneRepository.merge(scene, req.body);
   const result = await sceneRepository.save(scene);
+
+  updateStoryStatus(req);
   json(res, result);
 });
 
@@ -67,6 +80,8 @@ router.delete("/scene/:sceneId", async (req, res) => {
   if (result.affected === 0) {
     return error(res, "场景不存在");
   }
+
+  updateStoryStatus(req);
   json(res, { message: "场景删除成功" });
 });
 
@@ -95,6 +110,8 @@ router.post("/scenes", async (req, res) => {
         await sceneRepository.delete({ id: scene.id, storyId: story.id });
       }
     })
+
+    updateStoryStatus(req);
     json(res, scenes);
   } catch (err: any) {
     error(res, err.message);

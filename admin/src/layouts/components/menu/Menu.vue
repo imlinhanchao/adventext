@@ -3,7 +3,7 @@
   import SubMenuItem from './SubMenuItem.vue';
   import { transformRouteToMenu } from '@/helper/menuHelper';
   import Logo from '@/layouts/components/logo/index.vue';
-import router from '@/router';
+  import { useUserStore } from '@/store/modules/user';
   
   withDefaults(defineProps<{
     collapsed?: boolean;
@@ -11,12 +11,13 @@ import router from '@/router';
     collapsed: false,
   })
 
+  const { getUserInfo } = useUserStore();
   const menus = computed(() => transformRouteToMenu(routeModuleList));
   function getActiveMenu() {
     menus.value.forEach((menu) => {
       if (menu.children && menu.children.length > 1) {
         menu.children.forEach((child) => {
-          if (child.name === route.name && !route.meta.hidden) {
+          if (child.name === route.name && !route.meta.hidden && (getUserInfo.isAdmin || !child.meta.isAdmin)) {
             selectedKeys.value = child.path;
             openKeys.value = [menu.path];
           } else if (child.name === route.name) {
@@ -43,6 +44,7 @@ import router from '@/router';
   }
 
   const emit = defineEmits(['menuClick']);
+  const router = useRouter();
   function handleMenuClick(index) {
     emit('menuClick', index);
     router.push(index)
@@ -65,7 +67,7 @@ import router from '@/router';
       >
         <template v-for="item in menus" :key="item.name">
           <SubMenuItem
-            v-if="!item.meta.hidden"
+            v-if="!item.meta.hidden && (getUserInfo.isAdmin || !item.meta.isAdmin)"
             :item="item"
             :name="item.meta.title"
             :icon="item.meta.icon"

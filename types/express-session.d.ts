@@ -2,7 +2,7 @@ import 'express-session';
 import { User } from '../entities/User';
 import { GameState } from '../entities/GameState';
 import { Request } from "express";
-import { Story } from '../src/entities';
+import { Story, Draft } from '../src/entities';
 
 declare module 'express-session' {
   interface SessionData {

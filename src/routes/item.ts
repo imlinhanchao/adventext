@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { error, json } from "../utils/route";
 import { AppDataSource, Item, Story } from "../entities/";
+import { updateStoryStatus } from "./scene";
 
 const itemRepository = AppDataSource.getRepository(Item);
 const router = Router();
@@ -46,6 +47,7 @@ router.post("/item", async (req, res) => {
   const newItem = itemRepository.create({ ...req.body, storyId: story.id });
   const result = await itemRepository.save(newItem);
 
+  updateStoryStatus(req);
   json(res, result);
 });
 
@@ -57,13 +59,15 @@ router.put("/item/:itemId", async (req, res) => {
     return error(res, "物品名称已存在" );
   }
   
-  const item = await itemRepository.findOneBy({ id: story.id, storyId: story.id });
+  const item = await itemRepository.findOneBy({ id: Number(req.params.itemId), storyId: story.id });
   if (!item) {
     return error(res, "物品不存在" );
   }
 
   itemRepository.merge(item, req.body);
   const result = await itemRepository.save(item);
+
+  updateStoryStatus(req);
   json(res, result);
 });
 
@@ -74,6 +78,8 @@ router.delete("/item/:itemId", async (req, res) => {
   if (result.affected === 0) {
     return error(res, "物品不存在");
   }
+  
+  updateStoryStatus(req);
   json(res, { message: "物品删除成功" });
 });
 

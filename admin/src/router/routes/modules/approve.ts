@@ -1,38 +1,28 @@
 import { LAYOUT } from '@/router/constant';
 export default [
   {
-    path: '/manage',
+    path: '/approve',
     component: LAYOUT,
     meta: {
       order: 1,
-      icon: 'i-ph:sword',
-      title: '故事管理',
+      icon: 'i-material-symbols:rate-review-rounded',
+      title: '待审故事',
       isAdmin: true,
     },
     children: [
       {
         path: '',
-        name: 'manageStory',
+        name: 'approveStory',
         component: () => import('/@/views/draft/index.vue'),
         meta: {
           title: '故事',
           type: 'draft',
-          query: { all: true },
-        },
-      },
-      {
-        path: ':story/item',
-        name: 'manageStoryItem',
-        component: () => import('/@/views/item/index.vue'),
-        meta: {
-          title: '物品',
-          type: 'draft',
-          hidden: true,
+          query: { status: 1, all: true }
         },
       },
       {
         path: ':story/scene',
-        name: 'manageStoryScene',
+        name: 'approveStoryScene',
         component: () => import('/@/views/scene/index.vue'),
         meta: {
           title: '场景',

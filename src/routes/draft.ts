@@ -1,9 +1,10 @@
 import { Router, Request, Response } from "express";
 import GameController from "../controllers/game";
-import { AppDataSource, Draft } from "../entities/";
+import { AppDataSource, Draft, Story } from "../entities/";
 import { error, json } from "../utils/route";
 import SceneRoute from './scene';
 import ItemRoute from './item';
+import { omit, pick } from "../utils";
 
 const draftRepository = AppDataSource.getRepository(Draft);
 
@@ -21,10 +22,17 @@ router.use((req, res, next) => {
 
 // 获取所有故事
 router.get("/list", async (req, res) => {
-  const query: any = {};
+  let query: any = req.query;
   if (!req.user?.isAdmin || req.query.all != 'true') {
     query.author = req.user?.username;
   }
+  if (query.name) {
+    query.name = { $like: `%${query.name}%` };
+  }
+  if (query.description) {
+    query.description = { $like: `%${query.description}%` };
+  }
+  query = pick(query, ['name', 'author', 'status', 'description']);
   const stories = await draftRepository.find({
     where: query
   });
@@ -34,7 +42,7 @@ router.get("/list", async (req, res) => {
 // 添加新故事
 router.post("/", async (req, res) => {
   req.body.author = req.user?.username;
-  const newStory = draftRepository.create(req.body);
+  const newStory = draftRepository.create(omit(req.body, ['status', 'comment']));
   const result = await draftRepository.save(newStory);
   json(res, result);
 });
@@ -60,7 +68,9 @@ router.get("/:id", async (req, res) => {
 // 更新故事
 router.put("/:id", async (req, res) => {
   const story = req.story!;
-  draftRepository.merge(story!, req.body);
+
+  draftRepository.merge(story!, omit(req.body, ['status', 'comment']));
+  story.status = 0;
   const result = await draftRepository.save(story);
   json(res, result);
 });
@@ -73,6 +83,46 @@ router.delete("/:id", async (req, res) => {
     return error(res, "故事不存在");
   }
   json(res, { message: "故事删除成功" });
+});
+
+// 推送故事
+router.post("/:id/publish", async (req, res) => {
+  const story = req.story!;
+  story.status = 1;
+  const result = await draftRepository.save(story);
+
+  json(res, result);
+});
+
+// 审核故事
+router.post("/:id/approve", async (req, res) => {
+  if (!req.user?.isAdmin) {
+    return error(res, "权限不足", 403);
+  }
+  
+  const draft = req.story!;
+  if (!req.body.pass) {
+    draft.status = 3;
+    draft.comment = req.body.reason;
+    const result = await draftRepository.save(draft);
+    return json(res, result);
+  }
+
+  const story = new Story();
+  const storyRepository = AppDataSource.getRepository(Story);
+  storyRepository.merge(story, draft);
+
+  story.status = 2;
+  story.sourceId = draft.id;
+
+  const newStory = storyRepository.create(story);
+  const result = await storyRepository.save(newStory);
+
+  draft.status = 2;
+  draft.comment = req.body.reason;
+  draftRepository.save(draft);
+
+  json(res, result);
 });
 
 router.use('/:id', SceneRoute);

@@ -41,10 +41,10 @@ if (utils.config) {
   );
 
   // 路由
-  app.use("/", homeRoutes);
   app.use("/auth", authRoutes);
   app.use("/u", profileRoutes);
   app.use("/api", adminRoutes);
+  app.use("/", homeRoutes);
 
   // 数据库连接
   AppDataSource.initialize()

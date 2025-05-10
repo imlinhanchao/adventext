@@ -8,6 +8,7 @@ export default [
       order: 1,
       icon: 'i-bi:app',
       title: '投稿故事',
+      isAdmin: true,
     },
     children: [
       {

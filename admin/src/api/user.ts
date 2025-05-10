@@ -48,7 +48,7 @@ export function login(params: LoginParams, mode: ErrorMessageMode = 'modal') {
  * @description: getUserInfo
  */
 export function getUserInfo() {
-  return defHttp.get<GetUserInfoModel>({ url: '/profile' }, { errorMessageMode: 'none' });
+  return defHttp.get<User>({ url: '/profile' }, { errorMessageMode: 'none' });
 }
 
 export function doLogout() {

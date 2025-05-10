@@ -1,7 +1,8 @@
 <script setup lang="ts">
-  import { deleteStory, getStoryList, Draft } from '@/api/draft';
+  import { deleteStory, getStoryList, Draft, publishStory } from '@/api/draft';
   import { ElMessageBox } from 'element-plus';
   import Item from '@/views/draft/item.vue';
+  import Approve from './approve.vue';
 
   const storyList = ref<Draft[]>([]);
   onMounted(() => {
@@ -10,13 +11,13 @@
 
   const route = useRoute();
   function loadStory() {
-    getStoryList(route.name == 'manageStory').then((data) => {
+    getStoryList(route.meta.query).then((data) => {
       storyList.value = data;
     });
   }
 
   const path = computed(() => {
-    return route.name == 'manageStory' ? '/manage' : '/my';
+    return route.path;
   });
 
   const itemRef = ref<InstanceType<typeof Item>>();
@@ -36,6 +37,27 @@
       });
     });
   }
+  function publish(row: Draft) {
+    ElMessageBox.confirm('确定推荐这个故事吗?审核通过将可以公开游玩。', '提示', {
+      type: 'warning',
+      showCancelButton: true,
+      cancelButtonText: '取消',
+      confirmButtonText: '确定',
+    }).then(() => {
+      publishStory(row.id!).then(() => {
+        ElMessage.success('推荐成功');
+        loadStory();
+      });
+    });
+  }
+
+  const approveRef = ref<InstanceType<typeof Approve>>();
+  function approve(row: Draft) {
+    approveRef.value?.open(row);
+  }
+  
+  const isAdmin = route.meta.isAdmin || false;
+  const isApprove = !!route.meta.query;
 </script>
 
 <template>
@@ -47,19 +69,39 @@
             <el-button type="primary" link @click="add" icon="el-icon-circle-plus" />
           </template>
           <template #default="{ row }">
+            <el-button link type="primary" @click="approve(row)" v-if="row.status == 1 && isApprove">
+              <Icon icon="i-pajamas:check-sm" />
+            </el-button>
+            <el-button link type="primary" @click="publish(row)" v-if="row.status == 0">
+              <Icon icon="i-material-symbols:publish" />
+            </el-button>
             <el-button link type="danger" icon="el-icon-remove" @click="remove(row)" />
           </template>
         </el-table-column>
+        <el-table-column prop="author" label="作者" v-if="isAdmin" width="200" align="center" />
         <el-table-column prop="name" label="名称" width="280" align="center">
           <template #default="{ row }">
-            <router-link :to="`${path}/${row.id}/scene`">
+            <router-link class="text-primary" :to="`${path}/${row.id}/scene`">
               {{ row.name }}
             </router-link>
           </template>
         </el-table-column>
         <el-table-column prop="description" label="描述" />
+        <el-table-column label="状态" width="200" align="center">
+          <template #default="{ row }">
+            <el-tag type="info" v-if="row.status == 0">草稿</el-tag>
+            <el-tag type="warning" v-else-if="row.status == 1">审核中</el-tag>
+            <el-tooltip :content="row.comment" v-else-if="row.status == 2" :disabled="!row.comment">
+              <el-tag type="success">已发布</el-tag>
+            </el-tooltip>
+            <el-tooltip :content="row.comment" v-else-if="row.status == 3">
+              <el-tag type="danger">已拒绝</el-tag>
+            </el-tooltip>
+          </template>
+        </el-table-column>
       </el-table>
       <Item ref="itemRef" @confirm="loadStory" />
+      <Approve v-if="isApprove" ref="approveRef" @confirm="loadStory" />
     </el-main>
   </el-container>
 </template>

@@ -11,7 +11,7 @@ router.post("/login", async (req, res) => {
   try {
     const { user } = await login(req.body);
     req.session.user = user;
-    res.redirect("/");
+    setTimeout(() => res.redirect("/"), 10);
   } catch (error: any) {
     render(res, 'login', req).title('登录').error(error.message).render();
   }
@@ -30,7 +30,7 @@ router.post("/register", async (req, res) => {
 
     await register({ username, password });
 
-    render(res, 'login').title('登录').success("Registration successful, please log in").render();
+    render(res, 'login').title('登录').success("注册成功！请登录账号。").render();
   } catch (error: any) {
     render(res, 'register', req).title('注册').error(error.message).render();
   }

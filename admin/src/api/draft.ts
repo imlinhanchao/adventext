@@ -45,6 +45,16 @@ export class Draft {
    */
   inventory: Inventory[];
   
+  /**
+   * 故事状态
+   */
+  status: number;
+
+  /**
+   * 审核备注
+   */
+  comment: string;
+
   constructor() {
     this.name = '';
     this.description = '';
@@ -52,15 +62,15 @@ export class Draft {
     this.attr = {};
     this.attrName = {};
     this.inventory = [];
+    this.status = 0;
+    this.comment = '';
   }
 }
 
-export function getStoryList(all?: boolean) {
+export function getStoryList(params: any = {}) {
   return defHttp.get<Draft[]>({
     url: '/draft/list',
-    params: {
-      all,
-    }
+    params
   });
 }
 
@@ -90,3 +100,15 @@ export function deleteStory(id: string) {
   });
 }
 
+export function publishStory(id: string) {
+  return defHttp.post({
+    url: `/draft/${id}/publish`,
+  });
+}
+
+export function approveStory(id: string, data: { pass: boolean; reason: string }) {
+  return defHttp.post({
+    url: `/draft/${id}/approve`,
+    data
+  });
+}

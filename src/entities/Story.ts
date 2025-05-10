@@ -4,8 +4,8 @@ import { Draft } from './Draft';
 @Entity()
 export class Story extends Draft {
 
-  @Column('int', { comment: '来源故事ID' })
-  sourceId: number;
+  @Column('varchar', { length: 255, comment: '来源故事ID' })
+  sourceId: string;
 
   constructor() {
     super()

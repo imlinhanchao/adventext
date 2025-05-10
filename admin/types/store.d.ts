@@ -1,3 +1,4 @@
+import { User } from '@/api/user';
 import { ErrorTypeEnum } from '/@/enums/exceptionEnum';
 import { MenuModeEnum, MenuTypeEnum } from '/@/enums/menuEnum';
 
@@ -29,16 +30,7 @@ export interface ErrorLogInfo {
   time?: string;
 }
 
-export interface UserInfo {
-  // 用户id
-  id: string | number;
-  // 用户名
-  username: string;
-  // 真实名字
-  nickname: string;
-  // 邮箱
-  email: string;
-}
+export type UserInfo = User;
 
 export interface BeforeMiniState {
   menuCollapsed?: boolean;

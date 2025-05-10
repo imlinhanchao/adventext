@@ -4,7 +4,7 @@ import { defineStore } from 'pinia';
 import { store } from '@/store';
 import { TOKEN_KEY, USER_INFO_KEY } from '@/enums/cacheEnum';
 import { getAuthCache, setAuthCache } from '@/utils/auth';
-import { GetUserInfoModel, LoginParams, doLogout, getUserInfo, login } from '@/api/user';
+import { LoginParams, doLogout, getUserInfo, login } from '@/api/user';
 import router from '@/router';
 import { ElMessageBox } from 'element-plus';
 
@@ -57,7 +57,7 @@ export const useUserStore = defineStore({
         goHome?: boolean;
         mode?: ErrorMessageMode;
       },
-    ): Promise<GetUserInfoModel | null> {
+    ): Promise<UserInfo | null> {
       try {
         const { mode, ...loginParams } = params;
         const token = await login(loginParams, mode);

@@ -43,7 +43,7 @@ export async function register(params: { username: string; password: string }) {
   const sha256 = crypto.createHash('sha256');
   const hashedPassword = sha256.update(password + utils.config.secret.salt).digest('hex');
 
-  const newUser = userRepository.create({ username, password: hashedPassword });
+  const newUser = userRepository.create(new User(username, hashedPassword));
   return await userRepository.save(newUser);
 }
 

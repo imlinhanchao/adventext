@@ -7,6 +7,7 @@ export default [
       order: 1,
       icon: 'i-mdi:users',
       title: '用户管理',
+      isAdmin: true,
     },
     children: [
       {
