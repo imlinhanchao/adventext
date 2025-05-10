@@ -6,6 +6,14 @@ import utils, { omit } from "../utils";
 
 const router = Router();
 
+router.use((req, res, next) => {
+  if (req.user?.isAdmin) {
+    next();
+  } else {
+    error(res, "权限不足", 403);
+  }
+})
+
 router.get('/list', async (req, res) => {
   try {
     const userRepository = AppDataSource.getRepository(User);

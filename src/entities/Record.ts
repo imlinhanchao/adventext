@@ -8,8 +8,8 @@ export class Record {
   @Column('int', { comment: '用户 ID' })
   user: number;
 
-  @Column('int', { comment: '故事 ID' })
-  storyId: number;
+  @Column('varchar', { length: 255, comment: '故事 ID' })
+  storyId: string;
 
   @Column('varchar', { length: 255, comment: '场景' })
   scene: string;

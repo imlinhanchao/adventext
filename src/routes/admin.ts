@@ -4,6 +4,8 @@ import { login, profile } from '../controllers/auth';
 import { json, error } from '../utils/route';
 import { authenticate, generateToken } from '../utils/auth';
 import { JwtPayload } from 'jsonwebtoken';
+import { AppDataSource, User } from '../entities';
+import DraftRoute from './draft';
 import StoryRoute from './story';
 import UserRoute from './user';
 
@@ -49,12 +51,23 @@ router.get("/profile", authenticate(async (payload: JwtPayload, req, res) => {
   }
 }));
 
-router.use(authenticate((payload: JwtPayload, req, res, next) => {
-  next();
+router.use(authenticate(async (payload: JwtPayload, req, res, next) => {
+  try {
+    const userRepository = AppDataSource.getRepository(User);
+    const user = await userRepository.findOne({ where: { id: payload.id } });
+    if (!user) {
+      throw new Error("用户不存在");
+    }
+    req.user = user;
+
+    next();
+  } catch (err: any) {
+    error(res, err.message);
+  }
 }))
 
 router.use("/user", UserRoute);
+router.use("/draft", DraftRoute);
 router.use("/story", StoryRoute);
-
 
 export default router;

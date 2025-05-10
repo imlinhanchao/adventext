@@ -11,7 +11,7 @@
   const scenes = inject(ScenesContext)!;
   const story = inject(StoryContext)!;
   const profile = ref<Profile>({
-    storyId: story?.value.id || 0,
+    storyId: story?.value.id || '',
     userId: 0,
     scene: story?.value.start || '',
     from: '',

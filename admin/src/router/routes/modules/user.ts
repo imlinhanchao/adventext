@@ -6,7 +6,7 @@ export default [
     meta: {
       order: 1,
       icon: 'i-mdi:users',
-      title: '用户',
+      title: '用户管理',
     },
     children: [
       {

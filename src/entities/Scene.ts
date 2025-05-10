@@ -44,8 +44,8 @@ export class Scene {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column('int', { comment: '故事 ID' })
-  storyId: number;
+  @Column('varchar', { length: 255, comment: '故事 ID' })
+  storyId: string;
 
   @Column('varchar', { length: 255, comment: '场景名称' })
   name: string;

@@ -3,7 +3,7 @@
   import { useEventListener } from '@/hooks/event/useEventListener';
 
   const props = defineProps<{
-    story: number;
+    story: string;
     scene: Scene;
     sceneMap: Recordable<Scene>;
     start?: boolean;

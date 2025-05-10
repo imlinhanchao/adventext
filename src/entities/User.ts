@@ -21,7 +21,7 @@ export class User {
   lastLogin: number = 0;
 
   @Column('json', { comment: "第三方信息" })
-  attr: any;
+  attr: any = {};
 
   static get unsafeKey() {
     return ['password', 'attr'];

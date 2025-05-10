@@ -1,4 +1,6 @@
 import { defHttp } from '@/utils/http';
+import { getStory, updateStory } from './story';
+import { getStory as getDraft, updateStory as updateDraft } from './draft';
 
 
 export class Option {
@@ -6,7 +8,7 @@ export class Option {
    * 选项文本
    */
   text: string;
-  /**
+  /**as
    * 追加内容
    */
   append?: string;
@@ -120,7 +122,7 @@ export class Scene {
   /**
    * 故事Id
    */
-  storyId?: number;
+  storyId?: string;
 
   /**
    * 场景名称
@@ -157,41 +159,72 @@ export class Scene {
   }
 }
 
-export function getSceneList(storyId: number) {
-  return defHttp.get<Scene[]>({
-    url: `/story/${storyId}/scenes`,
-  });
-}
+export class SceneApi {
+  private storyId: string;
+  private type: string;
 
-export function getScene(storyId: number, id: number) {
-  return defHttp.get<Scene>({
-    url: `/story/${storyId}/scene/${id}`,
-  });
-}
+  constructor(storyId: string, type: string) {
+    this.storyId = storyId;
+    this.type = type;
+  }
 
-export function createScene(storyId: number, scene: Scene) {
-  return defHttp.post<Scene>({
-    url: `/story/${storyId}/scene`,
-    data: scene,
-  });
-}
+  getStory(id: string) {
+    if (this.type === 'draft') {
+      return getDraft(id);
+    }
+    return getStory(id);
+  }
 
-export function updateScene(storyId: number, scene: Scene) {
-  return defHttp.put<Scene>({
-    url: `/story/${storyId}/scene/${scene.id}`,
-    data: scene,
-  });
-}
+  updateStory(story: any) {
+    if (this.type === 'draft') {
+      return updateDraft(story);
+    }
+    return updateStory(story);
+  }
 
-export function deleteScene(storyId: number, id: number) {
-  return defHttp.delete({
-    url: `/story/${storyId}/scene/${id}`,
-  });
-}
+  getList() {
+    return defHttp.get<Scene[]>({
+      url: `/${this.type}/${this.storyId}/scenes`,
+    });
+  }
 
-export function sceneBatchSave(storyId: number, scenes: Scene[]) {
-  return defHttp.post<Scene[]>({
-    url: `/story/${storyId}/scenes`,
-    data: scenes,
-  });
+  get(id: number) {
+    return defHttp.get<Scene>({
+      url: `/${this.type}/${this.storyId}/scene/${id}`,
+    });
+  }
+
+  create(scene: Scene) {
+    return defHttp.post<Scene>({
+      url: `/${this.type}/${this.storyId}/scene`,
+      data: scene,
+    });
+  }
+
+  update(scene: Scene) {
+    return defHttp.put<Scene>({
+      url: `/${this.type}/${this.storyId}/scene/${scene.id}`,
+      data: scene,
+    });
+  }
+
+  save(scene: Scene) {
+    if (scene.id) {
+      return this.update(scene);
+    }
+    return this.create(scene);
+  }
+
+  delete(id: number) {
+    return defHttp.delete({
+      url: `/${this.type}/${this.storyId}/scene/${id}`,
+    });
+  }
+
+  batchSave(scenes: Scene[]) {
+    return defHttp.post<Scene[]>({
+      url: `/${this.type}/${this.storyId}/scenes`,
+      data: scenes,
+    });
+  }
 }

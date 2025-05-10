@@ -13,10 +13,10 @@ export default [
       {
         path: 'home',
         name: 'Home',
-        redirect: '/story',
-        component: () => import('/@/views/story/index.vue'),
+        component: () => import('/@/views/draft/index.vue'),
         meta: {
           title: '首页',
+          type: 'draft',
         },
       }
     ],

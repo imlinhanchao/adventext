@@ -5,15 +5,17 @@
   import ConditionForm from './condition.vue';
   import EffectForm from './effect.vue';
   import ItemForm from '@/views/item/item.vue';
-  import { getItem, Item } from '@/api/item';
+  import { ItemApi, Item } from '@/api/item';
 
   const props = defineProps<{
     scenes: Scene[];
-    story: number;
+    story: string;
+    type: string;
   }>();
 
   const visible = ref(false);
   const data = ref<Option>(new Option('', ''));
+  const itemApi = computed(() => new ItemApi(props.story, props.type));
 
   const formRef = ref<FormInstance>();
   const rules = computed(() => ({
@@ -83,7 +85,7 @@
 
   const itemRef = ref<InstanceType<typeof ItemForm>>();
   async function editItem(name: string) {
-    const item = await getItem(props.story, name, 'none').catch(() => new Item(name));
+    const item = await itemApi.value.get(name, 'none').catch(() => new Item(name));
     itemRef.value?.open(item);
   }
 
@@ -207,7 +209,7 @@
           </template>
         </el-table-column>
       </el-table>
-      <ConditionForm ref="conditionRef" />
+      <ConditionForm ref="conditionRef" :type="type" />
       <el-divider>
         效果列表
         <el-tooltip placement="top">
@@ -244,8 +246,8 @@
           </template>
         </el-table-column>
       </el-table>
-      <EffectForm ref="effectRef" />
-      <ItemForm ref="itemRef" :storyId="story" />
+      <EffectForm ref="effectRef" :type="type" />
+      <ItemForm ref="itemRef" :storyId="story" :type="type" />
     </el-form>
     <template #footer>
       <el-button @click="visible = false">取消</el-button>

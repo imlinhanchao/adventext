@@ -2,15 +2,20 @@ import { Router } from "express";
 import { error, json } from "../utils/route";
 import { AppDataSource, Item, Story } from "../entities/";
 
+const itemRepository = AppDataSource.getRepository(Item);
 const router = Router();
 
-// 获取故事所有物品
-router.get("/:id/items", async (req, res) => {
-  const storyRepository = AppDataSource.getRepository(Story);
-  const story = await storyRepository.findOneBy({ id: Number(req.params.id) });
-  if (!story) {
-    return error(res, "故事不存在" );
+router.use((req, res, next) => {
+  if (req.user && req.story) {
+    next();
+  } else {
+    error(res, "请先登录", 403);
   }
+})
+
+// 获取故事所有物品
+router.get("/items", async (req, res) => {
+  const story = req.story!;
 
   const query: any = {};
   if (req.query.type) {
@@ -20,10 +25,9 @@ router.get("/:id/items", async (req, res) => {
     query.name = { $like: `%${req.query.name}%` };
   }
 
-  const itemRepository = AppDataSource.getRepository(Item);
   const items = await itemRepository.find({
     where: { 
-      storyId: Number(req.params.id),
+      storyId: story.id,
       ...query
     }
   });
@@ -31,42 +35,29 @@ router.get("/:id/items", async (req, res) => {
 });
 
 // 添加新物品
-router.post("/:id/item", async (req, res) => {
-  const storyRepository = AppDataSource.getRepository(Story);
-  const story = await storyRepository.findOneBy({ id: Number(req.params.id) });
-  if (!story) {
-    return error(res, "故事不存在" );
-  }
+router.post("/item", async (req, res) => {
+  const story = req.story!;
 
-  const itemRepository = AppDataSource.getRepository(Item);
-
-  const existingItem = await itemRepository.findOneBy({ name: req.body.name, storyId: Number(req.params.id) });
+  const existingItem = await itemRepository.findOneBy({ name: req.body.name, storyId: story.id });
   if (existingItem) {
     return error(res, "物品名称已存在" );
   }
 
-  const newItem = itemRepository.create({ ...req.body, storyId: Number(req.params.id) });
+  const newItem = itemRepository.create({ ...req.body, storyId: story.id });
   const result = await itemRepository.save(newItem);
 
   json(res, result);
 });
 
 // 更新物品
-router.put("/:id/item/:itemId", async (req, res) => {
-  const storyRepository = AppDataSource.getRepository(Story);
-  const story = await storyRepository.findOneBy({ id: Number(req.params.id) });
-  if (!story) {
-    return error(res, "故事不存在" );
-  }
-
-  const itemRepository = AppDataSource.getRepository(Item);
-
-  const existingItem = await itemRepository.findOneBy({ name: req.body.name, storyId: Number(req.params.id) });
+router.put("/item/:itemId", async (req, res) => {
+  const story = req.story!;
+  const existingItem = await itemRepository.findOneBy({ name: req.body.name, storyId: story.id });
   if (existingItem && existingItem.id !== Number(req.params.itemId)) {
     return error(res, "物品名称已存在" );
   }
   
-  const item = await itemRepository.findOneBy({ id: Number(req.params.itemId), storyId: Number(req.params.id) });
+  const item = await itemRepository.findOneBy({ id: story.id, storyId: story.id });
   if (!item) {
     return error(res, "物品不存在" );
   }
@@ -77,15 +68,9 @@ router.put("/:id/item/:itemId", async (req, res) => {
 });
 
 // 删除物品
-router.delete("/:id/item/:itemId", async (req, res) => {
-  const storyRepository = AppDataSource.getRepository(Story);
-  const story = await storyRepository.findOneBy({ id: Number(req.params.id) });
-  if (!story) {
-    return error(res, "故事不存在" );
-  }
-
-  const itemRepository = AppDataSource.getRepository(Item);
-  const result = await itemRepository.delete({ id: Number(req.params.itemId), storyId: Number(req.params.id) });
+router.delete("/item/:itemId", async (req, res) => {
+  const story = req.story!;
+  const result = await itemRepository.delete({ id: Number(req.params.itemId), storyId: story.id });
   if (result.affected === 0) {
     return error(res, "物品不存在");
   }
@@ -93,15 +78,9 @@ router.delete("/:id/item/:itemId", async (req, res) => {
 });
 
 // 获取物品详情
-router.get("/:id/item/:key", async (req, res) => {
-  const storyRepository = AppDataSource.getRepository(Story);
-  const story = await storyRepository.findOneBy({ id: Number(req.params.id) });
-  if (!story) {
-    return error(res, "故事不存在" );
-  }
-
-  const itemRepository = AppDataSource.getRepository(Item);
-  const item = await itemRepository.findOneBy({ key: req.params.key, storyId: Number(req.params.id) });
+router.get("/item/:key", async (req, res) => {
+  const story = req.story!;
+  const item = await itemRepository.findOneBy({ key: req.params.key, storyId: story.id });
   if (!item) {
     return error(res, "物品不存在" );
   }
@@ -109,23 +88,30 @@ router.get("/:id/item/:key", async (req, res) => {
   json(res, item);
 });
 
-router.get("/:id/item/types", async (req, res) => {
-  const storyRepository = AppDataSource.getRepository(Story);
-  const story = await storyRepository.findOneBy({ id: Number(req.params.id) });
-  if (!story) {
-    return error(res, "故事不存在" );
-  }
-
-  const itemRepository = AppDataSource.getRepository(Item);
+router.get("/item/types", async (req, res) => {
+  const story = req.story!;
   const items = await itemRepository.find({
     where: { 
-      storyId: Number(req.params.id)
+      storyId: story.id
     }
   });
 
   const types = [...new Set(items.map(item => item.type))];
   json(res, types);
 });
+
+router.get("/item/attrs", async (req, res) => {
+  const story = req.story!;
+
+  const items = await itemRepository.find({
+    where: { 
+      storyId: story.id
+    }
+  });
+
+  const attrs = items.map(item => Object.keys(item.attributes)).flat();
+  json(res, Array.from(new Set(attrs)));
+})
 
 
 export default router;

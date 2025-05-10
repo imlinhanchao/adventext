@@ -78,6 +78,8 @@ export interface User {
   username: string;
   password: string;
   isAdmin: boolean;
+  lastLogin: number;
+  attr: any;
 }
 
 export function getUserList() {

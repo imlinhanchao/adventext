@@ -1,18 +1,20 @@
 <script lang="ts" setup>
   import Sortable from 'sortablejs';
-  import { createScene, Option, Scene, updateScene } from '@/api/scene';
+  import { Option, Scene, SceneApi } from '@/api/scene';
   import { ElMessage, ElMessageBox, ElTable, FormInstance } from 'element-plus';
   import OptionForm from './option.vue';
   import { clone } from '@/utils';
 
   const props = defineProps<{
-    story: number;
+    story: string;
+    type: string;
     scenes: Scene[];
   }>();
 
   const emit = defineEmits(['updateName']);
   const visible = ref(false);
   const data = ref<Scene>(new Scene());
+  const sceneApi = computed(() => new SceneApi(props.story, props.type));
 
   const oldName = ref('');
   let saveResolve: (scene: Scene) => void;
@@ -42,7 +44,7 @@
       return;
     }
 
-    const scene = await (data.value.id ? updateScene : createScene)(props.story, data.value);
+    const scene = await sceneApi.value.save(data.value);
 
     visible.value = false;
     ElMessage.success('保存成功');
@@ -141,7 +143,7 @@
             </template>
           </el-table-column>
         </el-table>
-        <OptionForm ref="optionRef" :scenes="scenes" :story="story" />
+        <OptionForm ref="optionRef" :scenes="scenes" :story="story" :type="type" />
       </template>
     </el-form>
     <template #footer>

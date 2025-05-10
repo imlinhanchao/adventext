@@ -1,6 +1,6 @@
 import { defHttp } from '@/utils/http';
 import { Scene } from './scene';
-import { Inventory } from './story';
+import { Inventory } from './draft';
 
 export class Profile {
 
@@ -12,7 +12,7 @@ export class Profile {
   /**
    * 故事 ID
    */
-  storyId: number;
+  storyId: string;
 
   /**
    * 当前场景
@@ -39,7 +39,7 @@ export class Profile {
    */
   attrName: { [key: string]: [string, string] | string } = {}
 
-  constructor(user: number, storyId: number) {
+  constructor(user: number, storyId: string) {
     this.userId = user;
     this.storyId = storyId;
     this.scene = '';

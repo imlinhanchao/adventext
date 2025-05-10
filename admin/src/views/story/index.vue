@@ -43,7 +43,13 @@
     </el-header>
     <el-main>
       <el-table :data="storyList" style="width: 100%">
-        <el-table-column prop="name" label="名称" width="280" align="center" />
+        <el-table-column prop="name" label="名称" width="280" align="center">
+          <template #default="{ row }">
+            <route-link :to="`/story/${row.id}/scene`">
+              {{ row.name }}
+            </route-link>
+          </template>
+        </el-table-column>
         <el-table-column prop="description" label="描述" />
         <el-table-column label="操作" align="center" width="280">
           <template #default="{ row }">

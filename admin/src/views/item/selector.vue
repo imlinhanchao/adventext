@@ -1,12 +1,13 @@
 <script lang="ts" setup>
-  import { deleteItem, getItemList, Item } from '@/api/item';
-  import { Inventory } from '@/api/story';
-import { clone } from '@/utils';
+  import { ItemApi, Item } from '@/api/item';
+  import { Inventory } from '@/api/draft';
+  import { clone } from '@/utils';
   import ItemForm from '@/views/item/item.vue';
-import { ElMessageBox } from 'element-plus';
+  import { ElMessageBox } from 'element-plus';
 
   const props = defineProps<{
-    story: number;
+    story: string;
+    type: string;
     multiple?: boolean;
     inventory?: boolean;
     readonly?: boolean;
@@ -17,10 +18,11 @@ import { ElMessageBox } from 'element-plus';
     type: '',
   });
 
+  const itemApi = computed(() => new ItemApi(props.story, props.type));
   const items = ref<Inventory[]>([]);
   const visible = ref(false);
   function search() {
-    getItemList(props.story, query).then((data) => {
+    itemApi.value.getList(query).then((data) => {
       items.value = data.map((item) => {
         const selectedItem = selected.value.find((i) => i.id === item.id);
         return {
@@ -41,7 +43,7 @@ import { ElMessageBox } from 'element-plus';
       selectedResolve = (data) => {
         resolve(data);
         visible.value = false;
-      }
+      };
     });
   }
 
@@ -65,7 +67,7 @@ import { ElMessageBox } from 'element-plus';
 
   const itemRef = ref<InstanceType<typeof ItemForm>>();
   function add() {
-    itemRef.value?.open()
+    itemRef.value?.open();
   }
   function edit(row: Item) {
     itemRef.value?.open(row);
@@ -77,7 +79,7 @@ import { ElMessageBox } from 'element-plus';
       cancelButtonText: '取消',
       confirmButtonText: '确定',
     }).then(() => {
-      deleteItem(props.story, row.id!).then(() => {
+      itemApi.value.remove(row.id!).then(() => {
         ElMessageBox.alert('删除成功', '提示', {
           type: 'success',
         });
@@ -85,7 +87,6 @@ import { ElMessageBox } from 'element-plus';
       });
     });
   }
-
 </script>
 
 <template>
@@ -146,7 +147,7 @@ import { ElMessageBox } from 'element-plus';
           <span v-if="item.count">×{{ item.count }}</span>
         </el-tag>
       </el-footer>
-      <ItemForm ref="itemRef" @confirm="search" :story-id="story" />
+      <ItemForm ref="itemRef" @confirm="search" :story-id="story" :type="type" />
     </el-container>
     <template #footer v-if="!readonly">
       <el-button @click="visible = false">取消</el-button>

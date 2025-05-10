@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import { DataSource } from 'typeorm';
 import { Record } from "./Record";
 import { Profile } from "./Profile";
+import { Draft } from "./Draft";
 import { Story } from "./Story";
 import { Scene } from "./Scene";
 import { Item } from "./Item";
@@ -14,7 +15,7 @@ export const AppDataSource = utils.config ? new DataSource({
   ...utils.config.database,
   synchronize: true,
   logging: false,
-  entities: [Record, Profile, User, Story, Scene, Item, End],
+  entities: [Record, Profile, User, Story, Scene, Draft, Item, End],
   migrations: [],
   subscribers: [],
 }) : {} as DataSource;
@@ -24,6 +25,7 @@ export {
   Profile,
   User,
   Story,
+  Draft,
   Scene,
   Item,
   End,

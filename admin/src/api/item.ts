@@ -11,7 +11,7 @@ export class Item {
   /**
    * 故事Id
    */
-  storyId?: number;
+  storyId?: string;
 
   /**
    * 唯一标识
@@ -53,41 +53,64 @@ export interface IItemQuery {
   name?: string;
 }
 
-export function getItemList(storyId: number, params?: IItemQuery) {
-  return defHttp.get<Item[]>({
-    url: `/story/${storyId}/items`,
-    params
-  });
-}
+export class ItemApi {
+  private storyId: string;
+  private type: string;
 
-export function getItem(storyId: number, name: string, mode: ErrorMessageMode = 'message') {
-  return defHttp.get<Item>({
-    url: `/story/${storyId}/item/${name}`,
-  }, { errorMessageMode: mode });
-}
+  constructor(storyId: string, type: string) {
+    this.storyId = storyId;
+    this.type = type;
+  }
 
-export function createItem(storyId: number, item: Item) {
-  return defHttp.post<Item>({
-    url: `/story/${storyId}/item`,
-    data: item,
-  });
-}
+  getList(params?: IItemQuery) {
+    return defHttp.get<Item[]>({
+      url: `/${this.type}/${this.storyId}/items`,
+      params
+    });
+  }
 
-export function updateItem(storyId: number, item: Item) {
-  return defHttp.put<Item>({
-    url: `/story/${storyId}/item/${item.id}`,
-    data: item,
-  });
-}
+  get(name: string, mode: ErrorMessageMode = 'message') {
+    return defHttp.get<Item>({
+      url: `/${this.type}/${this.storyId}/item/${name}`,
+    }, { errorMessageMode: mode });
+  }
 
-export function deleteItem(storyId: number, id: number) {
-  return defHttp.delete({
-    url: `/story/${storyId}/item/${id}`,
-  });
-}
+  create(item: Item) {
+    return defHttp.post<Item>({
+      url: `/${this.type}/${this.storyId}/item`,
+      data: item,
+    });
+  }
 
-export function getItemTypes() {
-  return defHttp.get<string[]>({
-    url: '/story/item/types',
-  });
+  update(item: Item) {
+    return defHttp.put<Item>({
+      url: `/${this.type}/${this.storyId}/item/${item.id}`,
+      data: item,
+    });
+  }
+
+  save(item: Item) {
+    if (item.id) {
+      return this.update(item);
+    }
+    return this.create(item);
+  }
+
+  remove(id: number) {
+    return defHttp.delete({
+      url: `/${this.type}/${this.storyId}/item/${id}`,
+    });
+  }
+
+  getTypes() {
+    return defHttp.get<string[]>({
+      url: `/${this.type}/${this.storyId}/item/types`,
+    });
+  }
+
+  getAttrs() {
+    return defHttp.get<string[]>({
+      url: `/${this.type}/${this.storyId}/item/attrs`,
+    });
+  }
 }

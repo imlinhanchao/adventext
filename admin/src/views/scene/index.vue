@@ -1,24 +1,29 @@
 <script setup lang="ts">
-  import { deleteScene, getSceneList, Scene, sceneBatchSave } from '@/api/scene';
+  import { SceneApi, Scene } from '@/api/scene';
   import SceneItem from './scene.vue';
   import { ElMessage, ElMessageBox } from 'element-plus';
   import { useEventListener } from '@/hooks/event/useEventListener';
   import SceneForm from './item.vue';
-  import { getStory, Story, updateStory } from '@/api/story';
-  import { getItemList, Item } from '@/api/item';
+  import { ItemApi, Item } from '@/api/item';
   import { ItemsContext, ScenesContext, StoryContext } from './index';
   import ItemSelector from '@/views/item/selector.vue';
   import Virtual from './virtual.vue';
   import StoryForm from '@/views/story/item.vue';
+  import DraftForm from '@/views/draft/item.vue';
   import { useBreakpoint } from '@/hooks/event/useBreakpoint';
+  import { Draft } from '@/api/draft';
+import { Story } from '@/api/story';
 
   const { screenSM: isMobile } = useBreakpoint();
 
   const route = useRoute();
-  const storyId = Number(route.params.story);
-  const story = ref<Story>(new Story());
+  const storyId = route.params.story as string;
+  const type = route.meta.type as string;
+  const story = ref<Draft>(new Draft());
   const items = ref<Item[]>([]);
   const scenes = ref<Scene[]>([]);
+  const sceneApi = new SceneApi(storyId, type);
+  const itemApi = new ItemApi(storyId, type);
 
   provide(ItemsContext, items);
   provide(StoryContext, story);
@@ -30,17 +35,17 @@
     loadItem();
   });
   function loadScene() {
-    getSceneList(storyId).then((data) => {
+    sceneApi.getList().then((data) => {
       scenes.value = data;
     });
   }
   function loadStory() {
-    getStory(storyId).then((data) => {
+    sceneApi.getStory(storyId).then((data) => {
       story.value = data;
     });
   }
   function loadItem() {
-    getItemList(storyId).then((data) => {
+    itemApi.getList().then((data) => {
       items.value = data;
     });
   }
@@ -52,12 +57,12 @@
         }
       });
     });
-    sceneBatchSave(story.value.id!, scenes.value).then(() => {
+    sceneApi.batchSave(scenes.value).then(() => {
       ElMessage.success('场景名称联动修改成功');
     });
     if (story.value.start == oldName) {
       story.value.start = name;
-      updateStory(story.value);
+      sceneApi.updateStory(story.value);
     }
   }
 
@@ -67,7 +72,7 @@
   });
 
   async function save() {
-    await sceneBatchSave(storyId, scenes.value);
+    await sceneApi.batchSave(scenes.value);
     ElMessage.success('保存成功');
   }
 
@@ -86,7 +91,7 @@
     ElMessageBox.confirm('确定删除该场景吗？', '提示', {
       type: 'warning',
     }).then(() => {
-      deleteScene(storyId, scene.id!).then(() => {
+      sceneApi.delete(scene.id!).then(() => {
         ElMessage.success('删除成功');
       });
       scenes.value = scenes.value.filter((item) => item !== scene);
@@ -97,15 +102,20 @@
       type: 'warning',
     }).then(() => {
       story.value.start = scene.name;
-      updateStory(story.value).then(() => {
+      sceneApi.updateStory(story.value).then(() => {
         ElMessage.success('设置成功');
       });
     });
   }
 
   const storyFormRef = ref<InstanceType<typeof StoryForm>>();
+  const draftFormRef = ref<InstanceType<typeof DraftForm>>();
   function editStory() {
-    storyFormRef.value?.open(story.value);
+    if (type === 'draft') {
+      draftFormRef.value?.open(story.value);
+      return;
+    }
+    storyFormRef.value?.open(story.value as Story);
   }
 
   const scenePanelRef = ref<HTMLElement>();
@@ -219,7 +229,7 @@
   const itemListRef = ref<InstanceType<typeof ItemSelector>>();
   function viewItemList() {
     itemListRef.value?.open().then(async () => {
-      items.value = await getItemList(storyId);
+      items.value = await itemApi.getList();
     });
   }
 
@@ -306,9 +316,10 @@
             </section>
 
           </el-main>
-          <ItemSelector ref="itemListRef" :story="storyId" readonly @close="loadItem" />
-          <SceneForm ref="sceneFormRef" :story="storyId" :scenes="scenes" @update-name="updateSceneName" />
-          <StoryForm ref="storyFormRef" @confirm="loadStory" />
+          <ItemSelector ref="itemListRef" :story="storyId" :type="type" readonly @close="loadItem" />
+          <SceneForm ref="sceneFormRef" :story="storyId" :type="type" :scenes="scenes" @update-name="updateSceneName" />
+          <StoryForm ref="storyFormRef" v-if="type == 'story'" @confirm="loadStory" />
+          <DraftForm ref="draftFormRef" v-if="type == 'draft'" @confirm="loadStory" />
 
         </el-container>
         <el-aside 

@@ -1,7 +1,8 @@
 <script lang="ts" setup>
   import { deleteUser, getUserList, User } from '@/api/user';
   import Item from './item.vue';
-import { ElMessageBox } from 'element-plus';
+  import { ElMessageBox } from 'element-plus';
+import { formatDate } from '@vueuse/core';
 
   const userList = ref<User[]>([]);
   onMounted(() => {
@@ -32,23 +33,41 @@ import { ElMessageBox } from 'element-plus';
       });
     });
   }
+
+  function loginTime(row: User) {
+    if (row.lastLogin) {
+      return formatDate(new Date(Number(row.lastLogin)), 'YYYY-MM-DD HH:mm:ss');
+    }
+    return '未登录';
+  }
 </script>
 
 <template>
   <el-container>
     <el-main>
       <el-table :data="userList" style="width: 100%">
-        <el-table-column prop="id" label="Id" align="center" width="80" />
-        <el-table-column prop="username" label="用户名" align="center" min-width="120" />
-        <el-table-column prop="isAdmin" label="是否管理员" width="120" align="center" />
-        <el-table-column label="操作" align="center" width="120">
+        <el-table-column label="" align="center" width="80">
           <template #default="{ row }">
-            <el-button-group>
-              <el-button type="primary" size="small" @click="edit(row)">编辑</el-button>
-              <el-button type="danger" size="small" @click="remove(row)">删除</el-button>
-            </el-button-group>
+            <el-button link type="primary" icon="el-icon-edit" @click="edit(row)" />
+            <el-button link type="danger" icon="el-icon-remove" @click="remove(row)" />
           </template>
         </el-table-column>
+        <el-table-column prop="username" label="用户名" align="center" min-width="120" />
+        <el-table-column prop="nickname" label="昵称" align="center" min-width="100" />
+        <el-table-column
+          prop="lastLogin"
+          label="上次登录时间"
+          width="180"
+          align="center"
+          :formatter="loginTime"
+        />
+        <el-table-column
+          prop="isAdmin"
+          label="是否管理员"
+          width="120"
+          align="center"
+          :formatter="({ isAdmin }) => (isAdmin ? '是' : '否')"
+        />
       </el-table>
       <Item ref="itemRef" @confirm="loadUser" />
     </el-main>

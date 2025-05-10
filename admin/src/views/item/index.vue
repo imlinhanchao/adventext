@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { deleteItem, getItemList, Item } from '@/api/item';
+  import { ItemApi, Item } from '@/api/item';
   import ItemForm from '@/views/item/item.vue';
   import { ElMessageBox } from 'element-plus';
 
@@ -8,10 +8,12 @@
     type: '',
   });
   const route = useRoute();
-  const story = Number(route.params.story);
+  const story = route.params.story as string;
+  const type = route.meta.type as string;
+  const itemApi = new ItemApi(story, type);
   const items = ref<Item[]>([]);
   function search() {
-    getItemList(story, query).then((data) => {
+    itemApi.getList(query).then((data) => {
       items.value = data;
     });
   }
@@ -29,7 +31,7 @@
       cancelButtonText: '取消',
       confirmButtonText: '确定',
     }).then(() => {
-      deleteItem(story, row.id!).then(() => {
+      itemApi.remove(row.id!).then(() => {
         ElMessage.success('删除成功');
         items.value = items.value.filter((item) => item.id !== row.id);
       });
@@ -73,6 +75,6 @@
         </el-table-column>
       </el-table>
     </el-main>
-    <ItemForm ref="itemRef" @confirm="search" :story-id="story" />
+    <ItemForm ref="itemRef" @confirm="search" :story-id="story" :type="type" />
   </el-container>
 </template>

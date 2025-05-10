@@ -1,16 +1,18 @@
 <script setup lang="ts">
-  import { createItem, Item, updateItem } from '@/api/item';
+  import { ItemApi, Item } from '@/api/item';
   import { clone } from '@/utils';
   import { FormInstance } from 'element-plus';
 
   const props = defineProps<{
-    storyId: number;
+    storyId: string;
+    type: string;
   }>();
 
   const visible = ref(false);
   const data = ref<Item>(new Item());
   const attr = ref<{ key: string, value: string, name: string}[]>([]);
   const formData = computed(() => ({ ...data.value, attr: attr.value }));
+  const itemApi = computed(() => new ItemApi(props.storyId, props.type));
 
   const rules = {
     name: [{ required: true, message: '请输入名称', trigger: 'blur' }],
@@ -50,7 +52,7 @@
         if (item.name) data.value.attrName[item.key] = item.name;
       }
     });
-    await (data.value.id ? updateItem : createItem)(props.storyId, data.value);
+    await itemApi.value.save(data.value);
     emit('confirm', data.value);
     visible.value = false;
   }

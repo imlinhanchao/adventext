@@ -16,8 +16,8 @@ export class Profile {
   @Column('int', { comment: '用户ID' })
   userId: number;
 
-  @Column('int', { comment: '故事 ID' })
-  storyId: number;
+  @Column('varchar', { length: 255, comment: '故事 ID' })
+  storyId: string;
 
   @Column('varchar', { length: 255, comment: '当前场景' })
   scene: string;
@@ -43,7 +43,7 @@ export class Profile {
   @Column('bigint', { comment: '创建时间' })
   createTime: number;
 
-  constructor(user: number, storyId: number) {
+  constructor(user: number, storyId: string) {
     this.userId = user;
     this.storyId = storyId;
     this.scene = '';

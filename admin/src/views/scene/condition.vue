@@ -7,6 +7,10 @@ import { ItemsContext, StoryContext } from './index';
 import ItemSelector from '@/views/item/selector.vue';
 import { Item } from '@/api/item';
 
+defineProps<{
+  type: string;
+}>();
+
 const visible = ref(false);
 const data = ref<Condition>(new Condition());
 const formData = computed(() => ({ ...data.value, attr: attr.value }));
@@ -284,7 +288,7 @@ function searchItemType (query: string, cb) {
         </template>
         <el-switch v-model="data.isHide" />
       </el-form-item>
-      <ItemSelector v-if="story" ref="itemSelectorRef" :story="story.id!" />
+      <ItemSelector v-if="story" ref="itemSelectorRef" :story="story.id!" :type="type" />
     </el-form>
     <template #footer>
       <el-button @click="visible = false">取消</el-button>

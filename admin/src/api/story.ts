@@ -1,57 +1,22 @@
 import { defHttp } from '@/utils/http';
-import { Item } from './item';
+import { Draft } from './draft';
 
 
-export class Inventory extends Item {
+export class Story extends Draft {
   /**
-   * 物品数量
+   * 来源故事ID
    */
-  count?: number = 0;
-}
-
-export class Story {
-  /**
-   * 故事Id
-   */
-  id?: number;
+  sourceId: number;
 
   /**
-   * 故事名称
+   * 故事状态
    */
-  name: string;
-
-  /**
-   * 起始场景
-   */
-  start: string;
-
-  /**
-   * 描述
-   */
-  description: string;
-
-  /**
-   * 人物初始化属性
-   */
-  attr: Recordable<string|number>;
-
-  /**
-   * 属性名称
-   */
-  attrName: Recordable<string>;
-
-  /**
-   * 初始化物品
-   */
-  inventory: Inventory[];
+  status: number;
   
   constructor() {
-    this.name = '';
-    this.description = '';
-    this.start = '';
-    this.attr = {};
-    this.attrName = {};
-    this.inventory = [];
+    super()
+    this.sourceId = 0;
+    this.status = 0;
   }
 }
 
@@ -61,7 +26,7 @@ export function getStoryList() {
   });
 }
 
-export function getStory(id: number) {
+export function getStory(id: string) {
   return defHttp.get<Story>({
     url: `/story/${id}`,
   });
@@ -81,7 +46,7 @@ export function updateStory(story: Story) {
   });
 }
 
-export function deleteStory(id: number) {
+export function deleteStory(id: string) {
   return defHttp.delete({
     url: `/story/${id}`,
   });

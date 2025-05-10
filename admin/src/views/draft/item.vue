@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-  import { createStory, Story, updateStory } from '@/api/story';
+  import { createStory, Draft, updateStory } from '@/api/draft';
   import { ElMessage, FormInstance } from 'element-plus';
   import ItemSelector from '@/views/item/selector.vue';
   import { Item } from '@/api/item';
@@ -7,10 +7,10 @@
 
   const emit = defineEmits(['confirm']);
   const visible = ref(false);
-  const data = ref<Story>(new Story());
+  const data = ref<Draft>(new Draft());
 
-  function open(story?: Story) {
-    data.value = clone(story || new Story());
+  function open(story?: Draft) {
+    data.value = clone(story || new Draft());
     visible.value = true;
     baseAttr.value = Object.entries(data.value.attr).map(([key, value]) => {
       return {
@@ -133,7 +133,7 @@
           {{ item.name }}×{{ item.count }}
         </el-tag>
       </el-form-item>
-      <ItemSelector v-if="data.id" ref="itemRef" :story="data.id" multiple inventory type="story" />
+      <ItemSelector v-if="data.id" ref="itemRef" :story="data.id" multiple inventory type="draft" />
     </el-form>
     <template #footer>
       <el-button @click="visible = false">取消</el-button>
