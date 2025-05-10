@@ -27,4 +27,10 @@ export class Item {
   
   @Column('json', { comment: '属性名称' })
   attrName: { [key: string]: string };
+
+  @Column('bigint', { comment: "创建时间" })
+  createTime: number = 0;
+  
+  @Column('bigint', { comment: "更新时间" })
+  updateTime: number = 0;
 }

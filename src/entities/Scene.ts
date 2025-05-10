@@ -64,4 +64,10 @@ export class Scene {
 
   @Column("json", { comment: '面板位置' })
   position: { x: number, y: number, w?: number, h?: number };
+
+  @Column('bigint', { comment: "创建时间" })
+  createTime: number = 0;
+  
+  @Column('bigint', { comment: "更新时间" })
+  updateTime: number = 0;
 }

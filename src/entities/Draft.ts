@@ -26,9 +26,12 @@ export class Draft {
 
   @Column('json', { comment: '初始化物品' })
   inventory: Inventory[];
+    
+  @Column('int', { default: 0, comment: '故事状态: 0 - 草稿，1 - 推送，2 - 发布，3 - 下架' })
+  status: number;
   
   @Column('bigint', { comment: "创建时间" })
-  creatTime: number = 0;
+  createTime: number = 0;
   
   @Column('bigint', { comment: "更新时间" })
   updateTime: number = 0;
@@ -39,5 +42,6 @@ export class Draft {
     this.attr = {};
     this.attrName = {};
     this.inventory = [];
+    this.status = 0;
   }
 }

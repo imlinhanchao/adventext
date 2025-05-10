@@ -617,8 +617,8 @@ export default class GameController {
   async init(user: User, req: Request, res: Response) {
     try {
       const userId = user.id;
-      const { state, scene } = await this.gameState(userId, req.params.storyId);
       const story = await this.getStory(req.params.storyId);
+      const { state, scene } = await this.gameState(userId, req.params.storyId);
 
       scene!.options = await this.updateOptions(scene!, state, req.body?.timezone ?? new Date().getTimezoneOffset() / -60);
 
