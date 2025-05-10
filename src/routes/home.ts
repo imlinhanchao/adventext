@@ -9,7 +9,7 @@ import { isNumber } from '../utils/is';
 const router = Router();
 const game = new GameController('story');
 
-router.get("/", userSession(game.storyList));
+router.get("/", userSession((user: User, req: Request, res: Response) => game.storyList(req, res)));
 router.get("/profile", userSession(async (user: User, req: Request, res: Response) => {
   render(res, "profile", req).title(user.username).render()
 }));

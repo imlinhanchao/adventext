@@ -9,6 +9,9 @@
         </li>
       <% }); %>
     </ol>
+    <% if (stories.length === 0) { %>
+      <p>还没有故事.</p>
+    <% } %>
   </section>
 </article>
 <%- include('footer') %>

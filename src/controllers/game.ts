@@ -603,7 +603,7 @@ export default class GameController {
   }
 
 
-  async storyList (user: User, req: Request, res: Response) {
+  async storyList (req: Request, res: Response) {
     try {
       const stories = await this.storyRepo.find();
       render(res, 'stories', req).render({

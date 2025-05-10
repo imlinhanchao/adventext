@@ -1,9 +1,8 @@
 import "reflect-metadata";
+import http from 'http';
 import express from "express";
 import authRoutes from "./routes/auth";
 import adminRoutes from "./routes/admin";
-import StoryRoute from './routes/story';
-import ItemRoute from './routes/item';
 import homeRoutes from "./routes/home";
 import configRoutes from "./routes/config";
 import path from "path";
@@ -13,7 +12,7 @@ import utils from './utils'
 import SessionStore from "session-file-store";
 
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 const FileStore = SessionStore(session);
 
 // 中间件
@@ -36,28 +35,59 @@ if (utils.config) {
       store: new FileStore(),
       saveUninitialized: false,
       resave: false,
-      cookie: { maxAge: 60 * 60 * 24 * 1000 * 365 }, 
+      cookie: { maxAge: 60 * 60 * 24 * 1000 * 365 },
     })
   );
-  
+
   // 路由
   app.use("/auth", authRoutes);
   app.use("/api", adminRoutes);
   app.use("/", homeRoutes);
-  
+
   // 数据库连接
   AppDataSource.initialize()
     .then(() => {
       console.log("Database connected");
-      const port = utils.config.webport;
-      app.listen(port, () => {
-        console.log(`Server is running on http://localhost:${port}`);
-      });
+      listen(app);
     })
     .catch((error) => console.log(error));
 } else {
   app.use(configRoutes);
-  app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+  listen(app);
+}
+
+function listen(app: express.Express) {
+  const port = utils.config?.webport ?? PORT;
+  const server = http.createServer(app);
+  server.listen(port);
+  server.on('error', (error: any) => {
+    if (error.syscall !== 'listen') {
+      throw error;
+    }
+
+    var bind = typeof port === 'string'
+      ? 'Pipe ' + port
+      : 'Port ' + port;
+
+    // handle specific listen errors with friendly messages
+    switch (error.code) {
+      case 'EACCES':
+        console.error(bind + ' requires elevated privileges');
+        process.exit(1);
+      case 'EADDRINUSE':
+        console.error(bind + ' is already in use');
+        process.exit(1);
+      default:
+        throw error;
+    }
   });
+  server.on('listening', () => {
+    const addr = server.address();
+    if (!addr) return;
+    const bind = typeof addr === 'string'
+      ? 'pipe ' + addr
+      : 'port ' + addr.port;
+    console.log('Listening on ' + bind);
+  });
+
 }
