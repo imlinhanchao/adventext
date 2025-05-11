@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { EventSubscriber, EntitySubscriberInterface, InsertEvent, UpdateEvent, DataSource } from 'typeorm';
+import { EventSubscriber, EntitySubscriberInterface, InsertEvent, UpdateEvent, DataSource, Repository } from 'typeorm';
 import { Record } from "./Record";
 import { Profile } from "./Profile";
 import { Draft } from "./Draft";
@@ -51,3 +51,12 @@ export {
   Item,
   End,
 }
+
+export const RecordRepo = utils.config ? AppDataSource.getRepository(Record) : {} as Repository<Record>;
+export const ProfileRepo = utils.config ? AppDataSource.getRepository(Profile) : {} as Repository<Profile>;
+export const UserRepo = utils.config ? AppDataSource.getRepository(User) : {} as Repository<User>;
+export const StoryRepo = utils.config ? AppDataSource.getRepository(Story) : {} as Repository<Story>;
+export const DraftRepo = utils.config ? AppDataSource.getRepository(Draft) : {} as Repository<Draft>;
+export const SceneRepo = utils.config ? AppDataSource.getRepository(Scene) : {} as Repository<Scene>;
+export const ItemRepo = utils.config ? AppDataSource.getRepository(Item) : {} as Repository<Item>;
+export const EndRepo = utils.config ? AppDataSource.getRepository(End) : {} as Repository<End>;

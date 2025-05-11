@@ -1,13 +1,12 @@
 import crypto from "crypto";
-import { AppDataSource } from '../entities';
+import { UserRepo } from '../entities';
 import { User } from '../entities/User';
 import { generateToken } from "../utils/auth";
 import utils, { omit } from '../utils';
 
 export async function login(params: { username: string; password: string }, needToken = false) {
   const { username, password } = params;
-  const userRepository = AppDataSource.getRepository(User);
-  let user = await userRepository.findOne({ where: { username } });
+  let user = await UserRepo.findOne({ where: { username } });
 
   if (!user) {
     throw new Error("用户名或密码错误");
@@ -22,7 +21,7 @@ export async function login(params: { username: string; password: string }, need
   }
 
   user.lastLogin = Date.now();
-  await userRepository.save(user);
+  await UserRepo.save(user);
 
   if (needToken) {
     const token = generateToken({ id: user!.id });
@@ -34,8 +33,7 @@ export async function login(params: { username: string; password: string }, need
 
 export async function register(params: { username: string; password: string }) {
   const { username, password } = params;
-  const userRepository = AppDataSource.getRepository(User);
-  const existingUser = await userRepository.findOne({ where: { username } });
+  const existingUser = await UserRepo.findOne({ where: { username } });
   if (existingUser) {
     throw new Error("用户名已存在");
   }
@@ -43,17 +41,16 @@ export async function register(params: { username: string; password: string }) {
   const sha256 = crypto.createHash('sha256');
   const hashedPassword = sha256.update(password + utils.config.secret.salt).digest('hex');
 
-  const newUser = userRepository.create(new User(username, hashedPassword));
-  return await userRepository.save(newUser);
+  const newUser = UserRepo.create(new User(username, hashedPassword));
+  return await UserRepo.save(newUser);
 }
 
 export async function profile(userId: number) {
-  const userRepository = AppDataSource.getRepository(User);
-  const user = await userRepository.findOne({ where: { id: userId } });
+  const user = await UserRepo.findOne({ where: { id: userId } });
   if (!user) {
     throw new Error("用户不存在");
   }
   user.lastLogin = Date.now();
-  await userRepository.save(user);
+  await UserRepo.save(user);
   return omit(user, User.unsafeKey);
 }

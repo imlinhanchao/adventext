@@ -1,5 +1,5 @@
 import { Request, Router } from "express";
-import { AppDataSource, Draft, Scene, Story } from "../entities";
+import { DraftRepo, SceneRepo, Scene } from "../entities";
 import { error, json } from "../utils/route";
 import ItemRoute from './item';
 
@@ -7,12 +7,9 @@ export function updateStoryStatus(req: Request) {
   if (!req.baseUrl.includes('/draft/')) return;
 
   const story = req.story!;
-  const storyRepository = AppDataSource.getRepository(Draft);
   story.status = 0;
-  return storyRepository.save(story);
+  return DraftRepo.save(story);
 }
-
-const sceneRepository = AppDataSource.getRepository(Scene);
 
 const router = Router();
 
@@ -28,8 +25,7 @@ router.use((req, res, next) => {
 router.get("/scenes", async (req, res) => {
   const story = req.story!;
 
-  const sceneRepository = AppDataSource.getRepository(Scene);
-  const scenes = await sceneRepository.find({
+  const scenes = await SceneRepo.find({
     where: { storyId: story.id }
   });
   json(res, scenes);
@@ -39,13 +35,13 @@ router.get("/scenes", async (req, res) => {
 router.post("/scene", async (req, res) => {
   const story = req.story!;
 
-  const existingScene = await sceneRepository.findOneBy({ name: req.body.name, storyId: story.id });
+  const existingScene = await SceneRepo.findOneBy({ name: req.body.name, storyId: story.id });
   if (existingScene) {
     return error(res, "场景名称已存在" );
   }
   
-  const newScene = sceneRepository.create({ ...req.body, storyId: story.id });
-  const result = await sceneRepository.save(newScene);
+  const newScene = SceneRepo.create({ ...req.body, storyId: story.id });
+  const result = await SceneRepo.save(newScene);
 
   updateStoryStatus(req);
   json(res, result);
@@ -54,18 +50,18 @@ router.post("/scene", async (req, res) => {
 // 更新场景
 router.put("/scene/:sceneId", async (req, res) => {
   const story = req.story!;
-  const scene = await sceneRepository.findOneBy({ id: Number(req.params.sceneId), storyId: story.id });
+  const scene = await SceneRepo.findOneBy({ id: Number(req.params.sceneId), storyId: story.id });
   if (!scene) {
     return error(res, "场景不存在" );
   }
 
-  const existingScene = await sceneRepository.findOneBy({ name: req.body.name, storyId: story.id });
+  const existingScene = await SceneRepo.findOneBy({ name: req.body.name, storyId: story.id });
   if (existingScene && existingScene.id !== Number(req.params.sceneId)) {
     return error(res, "场景名称已存在" );
   }
   
-  sceneRepository.merge(scene, req.body);
-  const result = await sceneRepository.save(scene);
+  SceneRepo.merge(scene, req.body);
+  const result = await SceneRepo.save(scene);
 
   updateStoryStatus(req);
   json(res, result);
@@ -75,8 +71,7 @@ router.put("/scene/:sceneId", async (req, res) => {
 router.delete("/scene/:sceneId", async (req, res) => {
   const story = req.story!;
 
-  const sceneRepository = AppDataSource.getRepository(Scene);
-  const result = await sceneRepository.delete({ id: Number(req.params.sceneId), storyId: story.id });
+  const result = await SceneRepo.delete({ id: Number(req.params.sceneId), storyId: story.id });
   if (result.affected === 0) {
     return error(res, "场景不存在");
   }
@@ -90,24 +85,24 @@ router.post("/scenes", async (req, res) => {
   try {
     const story = req.story!;
 
-    const scenes = await sceneRepository.find({
+    const scenes = await SceneRepo.find({
       where: { storyId: story.id }
     });
   
     req.body.forEach((scene: Scene) => {
       const existingScene = scenes.find(s => s.id === scene.id);
       if (existingScene) {
-        sceneRepository.merge(existingScene, scene);
+        SceneRepo.merge(existingScene, scene);
         scene = existingScene;
       } else {
-        scene = sceneRepository.create({ ...scene, storyId: story.id });
+        scene = SceneRepo.create({ ...scene, storyId: story.id });
       }
-      sceneRepository.save(scene);
+      SceneRepo.save(scene);
     })
   
     scenes.forEach(async (scene: Scene) => {
       if (!req.body.some((s: Scene) => s.id === scene.id)) {
-        await sceneRepository.delete({ id: scene.id, storyId: story.id });
+        await SceneRepo.delete({ id: scene.id, storyId: story.id });
       }
     })
 

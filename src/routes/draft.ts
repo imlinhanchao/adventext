@@ -1,12 +1,10 @@
 import { Router, Request, Response } from "express";
 import GameController from "../controllers/game";
-import { AppDataSource, Draft, Story } from "../entities/";
+import { StoryRepo, DraftRepo, SceneRepo, ItemRepo } from "../entities/";
 import { error, json } from "../utils/route";
 import SceneRoute from './scene';
 import ItemRoute from './item';
 import { omit, pick } from "../utils";
-
-const draftRepository = AppDataSource.getRepository(Draft);
 
 const router = Router();
 router.post("/run", (req: Request, res: Response) => new GameController('draft').gameVirtual(req, res));
@@ -33,7 +31,7 @@ router.get("/list", async (req, res) => {
     query.description = { $like: `%${query.description}%` };
   }
   query = pick(query, ['name', 'author', 'status', 'description']);
-  const stories = await draftRepository.find({
+  const stories = await DraftRepo.find({
     where: query
   });
   json(res, stories);
@@ -42,13 +40,13 @@ router.get("/list", async (req, res) => {
 // 添加新故事
 router.post("/", async (req, res) => {
   req.body.author = req.user?.username;
-  const newStory = draftRepository.create(omit(req.body, ['status', 'comment']));
-  const result = await draftRepository.save(newStory);
+  const newStory = DraftRepo.create(omit(req.body, ['status', 'comment']));
+  const result = await DraftRepo.save(newStory);
   json(res, result);
 });
 
 router.use('/:id', async (req, res, next) => {
-  const story = await draftRepository.findOneBy({ id: req.params.id });
+  const story = await DraftRepo.findOneBy({ id: req.params.id });
   if (!story) {
     return error(res, "故事不存在");
   }
@@ -69,16 +67,16 @@ router.get("/:id", async (req, res) => {
 router.put("/:id", async (req, res) => {
   const story = req.story!;
 
-  draftRepository.merge(story!, omit(req.body, ['status', 'comment']));
+  DraftRepo.merge(story!, omit(req.body, ['status', 'comment']));
   story.status = 0;
-  const result = await draftRepository.save(story);
+  const result = await DraftRepo.save(story);
   json(res, result);
 });
 
 // 删除故事
 router.delete("/:id", async (req, res) => {
   const story = req.story!;
-  const result = await draftRepository.delete({ id: story.id });
+  const result = await DraftRepo.delete({ id: story.id });
   if (result.affected === 0) {
     return error(res, "故事不存在");
   }
@@ -89,7 +87,7 @@ router.delete("/:id", async (req, res) => {
 router.post("/:id/publish", async (req, res) => {
   const story = req.story!;
   story.status = 1;
-  const result = await draftRepository.save(story);
+  const result = await DraftRepo.save(story);
 
   json(res, result);
 });
@@ -104,23 +102,37 @@ router.post("/:id/approve", async (req, res) => {
   if (!req.body.pass) {
     draft.status = 3;
     draft.comment = req.body.reason;
-    const result = await draftRepository.save(draft);
+    const result = await DraftRepo.save(draft);
     return json(res, result);
   }
 
-  const story = new Story();
-  const storyRepository = AppDataSource.getRepository(Story);
-  storyRepository.merge(story, draft);
+  const story = omit(draft, ['id', 'status', 'comment']);
 
   story.status = 2;
   story.sourceId = draft.id;
 
-  const newStory = storyRepository.create(story);
-  const result = await storyRepository.save(newStory);
+  const newStory = StoryRepo.create(story);
+  const result = await StoryRepo.save(newStory);
+
+  const scenes = await SceneRepo.find({
+    where: { storyId: draft.id}
+  });
+  scenes.forEach((scene) => {
+    scene.storyId = result.id!;
+  });
+  SceneRepo.save(scenes);
+
+  const items = await ItemRepo.find({
+    where: { storyId: draft.id }
+  });
+  items.forEach((item) => {
+    item.storyId = result.id!;
+  });
+  ItemRepo.save(items);
 
   draft.status = 2;
   draft.comment = req.body.reason;
-  draftRepository.save(draft);
+  DraftRepo.save(draft);
 
   json(res, result);
 });

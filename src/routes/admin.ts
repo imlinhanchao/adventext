@@ -4,7 +4,7 @@ import { login, profile } from '../controllers/auth';
 import { json, error } from '../utils/route';
 import { authenticate, generateToken } from '../utils/auth';
 import { JwtPayload } from 'jsonwebtoken';
-import { AppDataSource, User } from '../entities';
+import { User, UserRepo } from '../entities';
 import DraftRoute from './draft';
 import StoryRoute from './story';
 import UserRoute from './user';
@@ -53,8 +53,7 @@ router.get("/profile", authenticate(async (payload: JwtPayload, req, res) => {
 
 router.use(authenticate(async (payload: JwtPayload, req, res, next) => {
   try {
-    const userRepository = AppDataSource.getRepository(User);
-    const user = await userRepository.findOne({ where: { id: payload.id } });
+    const user = await UserRepo.findOne({ where: { id: payload.id } });
     if (!user) {
       throw new Error("用户不存在");
     }

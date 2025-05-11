@@ -1,11 +1,9 @@
 import { Router, Request, Response } from "express";
 import GameController from "../controllers/game";
-import { AppDataSource, Story } from "../entities/";
+import { Story, StoryRepo } from "../entities/";
 import { error, json } from "../utils/route";
 import SceneRoute from './scene';
 import ItemRoute from './item';
-
-const storyRepository = AppDataSource.getRepository(Story);
 
 const router = Router();
 router.post("/run", (req: Request, res: Response) => new GameController('story').gameVirtual(req, res));
@@ -22,7 +20,7 @@ router.use((req, res, next) => {
 // 获取所有故事
 router.get("/list", async (req, res) => {
   const query: any = {};
-  const stories = await storyRepository.find({
+  const stories = await StoryRepo.find({
     where: query
   });
   json(res, stories);
@@ -31,13 +29,13 @@ router.get("/list", async (req, res) => {
 // 添加新故事
 router.post("/", async (req, res) => {
   req.body.author = req.user?.username;
-  const newStory = storyRepository.create(req.body);
-  const result = await storyRepository.save(newStory);
+  const newStory = StoryRepo.create(req.body);
+  const result = await StoryRepo.save(newStory);
   json(res, result);
 });
 
 router.use('/:id', async (req, res, next) => {
-  const story = await storyRepository.findOneBy({ id: req.params.id });
+  const story = await StoryRepo.findOneBy({ id: req.params.id });
   if (!story) {
     return next();
   }
@@ -54,15 +52,15 @@ router.get("/:id", async (req, res) => {
 // 更新故事
 router.put("/:id", async (req, res) => {
   const story = req.story! as Story;
-  storyRepository.merge(story!, req.body);
-  const result = await storyRepository.save(story);
+  StoryRepo.merge(story!, req.body);
+  const result = await StoryRepo.save(story);
   json(res, result);
 });
 
 // 删除故事
 router.delete("/:id", async (req, res) => {
   const story = req.story!;
-  const result = await storyRepository.delete({ id: story.id });
+  const result = await StoryRepo.delete({ id: story.id });
   if (result.affected === 0) {
     return error(res, "故事不存在");
   }

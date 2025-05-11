@@ -1,9 +1,8 @@
 import { Router } from "express";
 import { error, json } from "../utils/route";
-import { AppDataSource, Item, Story } from "../entities/";
+import { ItemRepo } from "../entities/";
 import { updateStoryStatus } from "./scene";
 
-const itemRepository = AppDataSource.getRepository(Item);
 const router = Router();
 
 router.use((req, res, next) => {
@@ -26,7 +25,7 @@ router.get("/items", async (req, res) => {
     query.name = { $like: `%${req.query.name}%` };
   }
 
-  const items = await itemRepository.find({
+  const items = await ItemRepo.find({
     where: { 
       storyId: story.id,
       ...query
@@ -39,13 +38,13 @@ router.get("/items", async (req, res) => {
 router.post("/item", async (req, res) => {
   const story = req.story!;
 
-  const existingItem = await itemRepository.findOneBy({ name: req.body.name, storyId: story.id });
+  const existingItem = await ItemRepo.findOneBy({ name: req.body.name, storyId: story.id });
   if (existingItem) {
     return error(res, "物品名称已存在" );
   }
 
-  const newItem = itemRepository.create({ ...req.body, storyId: story.id });
-  const result = await itemRepository.save(newItem);
+  const newItem = ItemRepo.create({ ...req.body, storyId: story.id });
+  const result = await ItemRepo.save(newItem);
 
   updateStoryStatus(req);
   json(res, result);
@@ -54,18 +53,18 @@ router.post("/item", async (req, res) => {
 // 更新物品
 router.put("/item/:itemId", async (req, res) => {
   const story = req.story!;
-  const existingItem = await itemRepository.findOneBy({ name: req.body.name, storyId: story.id });
+  const existingItem = await ItemRepo.findOneBy({ name: req.body.name, storyId: story.id });
   if (existingItem && existingItem.id !== Number(req.params.itemId)) {
     return error(res, "物品名称已存在" );
   }
   
-  const item = await itemRepository.findOneBy({ id: Number(req.params.itemId), storyId: story.id });
+  const item = await ItemRepo.findOneBy({ id: Number(req.params.itemId), storyId: story.id });
   if (!item) {
     return error(res, "物品不存在" );
   }
 
-  itemRepository.merge(item, req.body);
-  const result = await itemRepository.save(item);
+  ItemRepo.merge(item, req.body);
+  const result = await ItemRepo.save(item);
 
   updateStoryStatus(req);
   json(res, result);
@@ -74,7 +73,7 @@ router.put("/item/:itemId", async (req, res) => {
 // 删除物品
 router.delete("/item/:itemId", async (req, res) => {
   const story = req.story!;
-  const result = await itemRepository.delete({ id: Number(req.params.itemId), storyId: story.id });
+  const result = await ItemRepo.delete({ id: Number(req.params.itemId), storyId: story.id });
   if (result.affected === 0) {
     return error(res, "物品不存在");
   }
@@ -86,7 +85,7 @@ router.delete("/item/:itemId", async (req, res) => {
 // 获取物品详情
 router.get("/item/:key", async (req, res) => {
   const story = req.story!;
-  const item = await itemRepository.findOneBy({ key: req.params.key, storyId: story.id });
+  const item = await ItemRepo.findOneBy({ key: req.params.key, storyId: story.id });
   if (!item) {
     return error(res, "物品不存在" );
   }
@@ -96,7 +95,7 @@ router.get("/item/:key", async (req, res) => {
 
 router.get("/item/types", async (req, res) => {
   const story = req.story!;
-  const items = await itemRepository.find({
+  const items = await ItemRepo.find({
     where: { 
       storyId: story.id
     }
@@ -109,7 +108,7 @@ router.get("/item/types", async (req, res) => {
 router.get("/item/attrs", async (req, res) => {
   const story = req.story!;
 
-  const items = await itemRepository.find({
+  const items = await ItemRepo.find({
     where: { 
       storyId: story.id
     }

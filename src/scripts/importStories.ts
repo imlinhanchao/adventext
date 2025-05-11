@@ -19,7 +19,6 @@ async function importStories() {
     await AppDataSource.transaction(async (transactionalEntityManager) => {
       const stories = Object.entries(storyData).map(([key, value]: any) => {
         const scene = new Scene();
-        scene.storyId = 1;
         scene.name = key;
         scene.content = value.text;
         scene.options = value.options;

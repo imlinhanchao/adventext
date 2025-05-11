@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { Record, Story, Profile, Scene, User, AppDataSource, Item, End, Draft } from "../entities";
+import { Record, Story, Profile, Scene, User, Item, End, Draft, StoryRepo, DraftRepo, ProfileRepo, EndRepo, SceneRepo, ItemRepo, RecordRepo } from "../entities";
 import { render, json, error } from "../utils/route";
 import { Condition, Effect } from '../entities/Scene';
 import { clone } from '../utils';
@@ -116,13 +116,6 @@ function conditionCheckTime(condition: Condition, timezone: number) {
   return true;
 }
 
-const storyRepository = AppDataSource.getRepository(Story);
-const draftRepository = AppDataSource.getRepository(Draft);
-const stateRepository = AppDataSource.getRepository(Profile);
-const sceneRepository = AppDataSource.getRepository(Scene);
-const itemRepository = AppDataSource.getRepository(Item);
-const recordRepository = AppDataSource.getRepository(Record);
-const endRepository = AppDataSource.getRepository(End);
 
 export default class GameController {
   private type: string;
@@ -132,11 +125,11 @@ export default class GameController {
   }
 
   get storyRepo() {
-    return this.type == 'draft' ? draftRepository : storyRepository;
+    return this.type == 'draft' ? DraftRepo : StoryRepo;
   }
 
   async gameState(userId: number, storyId: string) {
-    const state = (await stateRepository.findOneBy({ userId, storyId, isEnd: false })) || new Profile(userId, storyId);
+    const state = (await ProfileRepo.findOneBy({ userId, storyId, isEnd: false })) || new Profile(userId, storyId);
 
     if (!state.scene) {
       const story = await this.storyRepo.findOneBy({ id: storyId });
@@ -155,11 +148,11 @@ export default class GameController {
   }
 
   async getSence(scene: string, storyId: string) {
-    return await sceneRepository.findOneBy({ name: scene, storyId });
+    return await SceneRepo.findOneBy({ name: scene, storyId });
   }
 
   async getItem(item: string) {
-    return await itemRepository.findOneBy({ key: item });
+    return await ItemRepo.findOneBy({ key: item });
   }
 
   async getStory(id: string) {
@@ -170,7 +163,7 @@ export default class GameController {
     for (const option of story.options) {
       let record;
       if (!records) {
-        const [r] = await recordRepository.find({
+        const [r] = await RecordRepo.find({
           where: { user: state.userId, scene: story.name, option: option.text, endId: state.endId },
           order: { time: 'DESC' },
           take: 1,
@@ -423,11 +416,11 @@ export default class GameController {
   async addEnd(scene: Scene, profile: Profile) {
     if (!scene.isEnd) return;
 
-    let end = await endRepository.findOneBy({ user: profile.userId, storyId: profile.storyId, end: scene.theEnd });
+    let end = await EndRepo.findOneBy({ user: profile.userId, storyId: profile.storyId, end: scene.theEnd });
 
     if (end) return;
 
-    end = endRepository.create({
+    end = EndRepo.create({
       user: profile.userId,
       storyId: profile.storyId,
       end: scene.theEnd,
@@ -437,7 +430,7 @@ export default class GameController {
       cost: Date.now() - profile.createTime,
     })
 
-    return await endRepository.save(end);
+    return await EndRepo.save(end);
   }
 
   async restartGame(user: User, req: Request, res: Response) {
@@ -451,7 +444,7 @@ export default class GameController {
       }
 
       state.isEnd = true;
-      await stateRepository.save(state);
+      await ProfileRepo.save(state);
 
       json(res, { message: '游戏已重置' })
     } catch (error: any) {
@@ -506,7 +499,7 @@ export default class GameController {
       }
 
       if (!virtual) {
-        await recordRepository.save({
+        await RecordRepo.save({
           user: userId,
           storyId: storyId,
           scene: scene!.name,
@@ -528,12 +521,12 @@ export default class GameController {
           await this.addEnd(nextScene, profile);
         }
 
-        const currentState = await stateRepository.findOneBy({ userId, storyId, isEnd: false });
+        const currentState = await ProfileRepo.findOneBy({ userId, storyId, isEnd: false });
         if (currentState) {
           Object.assign(currentState, profile);
-          await stateRepository.save(currentState);
+          await ProfileRepo.save(currentState);
         } else {
-          await stateRepository.save(profile);
+          await ProfileRepo.save(profile);
         }
       }
 
