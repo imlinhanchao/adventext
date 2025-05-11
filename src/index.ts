@@ -11,6 +11,7 @@ import { AppDataSource } from "./entities";
 import session from "express-session";
 import utils from './utils'
 import SessionStore from "session-file-store";
+import { render } from "./utils/route";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -45,6 +46,9 @@ if (utils.config) {
   app.use("/u", profileRoutes);
   app.use("/api", adminRoutes);
   app.use("/", homeRoutes);
+  app.use((req, res, next) => {
+    render(res, "404", req).title("404").render();
+  });
 
   // 数据库连接
   AppDataSource.initialize()

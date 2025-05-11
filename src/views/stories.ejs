@@ -1,22 +1,32 @@
 <%- include('header') %>
 
-<article class="w-100">
-  <section>
-    <ol class="list-decimal">
-      <% stories.forEach(function(story) { %>
-        <li>
-          <section class="flex flex-col">
-            <span><a class="truncate" href="<%=query.type === 'draft' ? '/d' : '/s'-%>/<%=story.id-%>"><%= story.name %></a></span>
-            <span class="text-gray-500 dark:text-light-900 text-sm truncate" title="<%= story.description %>">
-              <%= story.description %>
-            </span>
-          </section>
-        </li>
-      <% }); %>
-    </ol>
-    <% if (stories.length === 0) { %>
-      <p>还没有故事.</p>
-    <% } %>
-  </section>
-</article>
-<%- include('footer') %>
+  <article class="max-w-[400px] w-full mx-auto">
+    <section class="w-full pl-5">
+      <ol class="list-decimal w-full">
+        <% stories.forEach(function(story) { %>
+          <li class="w-full">
+            <section class="flex flex-col w-full">
+              <span class="flex justify-between items-bottom w-full">
+                <a class="truncate" href="<%=query.type === 'draft' ? '/d' : '/s'-%>/<%=story.id-%>">
+                  <%= story.name %>
+                </a>
+                <span>
+                  <a href="/u/<%= story.author %>" class="text-gray-500 dark:text-light-900 text-sm truncate"
+                    title="作者">
+                    <%= story.author %>
+                  </a>
+                </span>
+              </span>
+              <span class="text-gray-500 dark:text-light-900 text-sm truncate" title="<%= story.description %>">
+                <%= story.description %>
+              </span>
+            </section>
+          </li>
+          <% }); %>
+      </ol>
+      <% if (stories.length===0) { %>
+        <p>还没有故事.</p>
+        <% } %>
+    </section>
+  </article>
+  <%- include('footer') %>

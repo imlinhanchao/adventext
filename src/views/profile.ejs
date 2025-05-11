@@ -7,7 +7,7 @@
 <% if (locals.user?.username == account.username) { %>
     <section>
 <% if (locals.error) { %>
-    <div class="msg-error"><%= error %></div>
+      <p class="<%= type -%> message"><%= message -%></p>
 <% } %>
       <form action="" method="post">
         <fieldset class="profile">
@@ -18,9 +18,9 @@
           </p>
           <p>
             <label for="passwd">新密码</label>
-            <input type="password" name="passwd" id="passwd" class="text" value="<%=account.passwd||''%>" placeholder="不修改无需填写" />
+            <input type="password" name="password" id="passwd" class="text" value="<%=account.passwd||''%>" placeholder="不修改无需填写" />
             <label for="oldpasswd" >旧密码</label>
-            <input type="password" name="oldpasswd" id="oldpasswd" class="text" value="<%=account.oldpasswd||''%>" placeholder="不修改无需填写" />
+            <input type="password" name="oldpassword" id="oldpasswd" class="text" value="<%=account.oldpasswd||''%>" placeholder="不修改无需填写" />
           </p>
           <p class="text-right">
             <input type="submit" value="修改" class="submit-btn" /> 
@@ -42,7 +42,7 @@
 <% } else { %>
     <section>
       <p>
-        <span class="user-info"><b>昵称：</b> <%=account.nickname%></span>
+        <span class="user-info" title="昵称"><%=account.nickname%></span>
         <span class="user-info"><b>上次登录：</b> <script>document.write(new Date(<%=Number(user.lastLogin)-%>).toLocaleString())</script></span>
       </p>
     </section>
