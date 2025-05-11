@@ -6,7 +6,7 @@
       <% stories.forEach(function(story) { %>
         <li>
           <section class="flex flex-col">
-            <span><a class="truncate" href="<%=query.type === 'draft' ? '/d' : ''-%>/<%=story.id-%>"><%= story.name %></a></span>
+            <span><a class="truncate" href="<%=query.type === 'draft' ? '/d' : '/s'-%>/<%=story.id-%>"><%= story.name %></a></span>
             <span class="text-gray-500 dark:text-light-900 text-sm truncate" title="<%= story.description %>">
               <%= story.description %>
             </span>

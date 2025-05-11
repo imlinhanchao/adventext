@@ -1,0 +1,23 @@
+@font-face {
+    font-family: 'Pixel32';
+    src: url('Pixel32.eot');
+    src: url('Pixel32.eot?#iefix') format('embedded-opentype'),
+        url('Pixel32.woff2') format('woff2'),
+        url('Pixel32.woff') format('woff'),
+        url('Pixel32.ttf') format('truetype'),
+        url('Pixel32.svg#Pixel32') format('svg');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Chill Pixels Mono';
+    src: url('ChillPixels-Mono.woff2') format('woff2'),
+        url('ChillPixels-Mono.woff') format('woff'),
+        url('ChillPixels-Mono.ttf') format('truetype'),
+        url('ChillPixels-Mono.svg#ChillPixels-Mono') format('svg');
+    font-weight: bold;
+    font-style: normal;
+    font-display: swap;
+}

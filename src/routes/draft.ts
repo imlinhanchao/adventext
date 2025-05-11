@@ -92,6 +92,22 @@ router.post("/:id/publish", async (req, res) => {
   json(res, result);
 });
 
+router.get('/:id/export', async (req, res) => {
+  const story = req.story!;
+  const scenes = await SceneRepo.find({
+    where: { storyId: story.id }
+  }).then(scenes => scenes.map((scene) => omit(scene, ['id', 'storyId'])));
+  const items = await ItemRepo.find({
+    where: { storyId: story.id }
+  }).then(items => items.map((item) => omit(item, ['id', 'storyId'])));
+
+  json(res, {
+    ...omit(story, ['id', 'status', 'comment']),
+    scenes,
+    items
+  });
+});
+
 // 审核故事
 router.post("/:id/approve", async (req, res) => {
   if (!req.user?.isAdmin) {
@@ -106,35 +122,49 @@ router.post("/:id/approve", async (req, res) => {
     return json(res, result);
   }
 
-  const story = omit(draft, ['id', 'status', 'comment']);
+  let story:any = StoryRepo.findOneBy({ sourceId: draft.id });
 
-  story.status = 2;
-  story.sourceId = draft.id;
+  if (!story) {
+    story = omit(draft, ['id', 'status', 'comment']);
+    story.status = 2;
+    story.sourceId = draft.id;
 
-  const newStory = StoryRepo.create(story);
-  const result = await StoryRepo.save(newStory);
+    const newStory = StoryRepo.create(story);
+    story = await StoryRepo.save(newStory);
+  } else {
+    const updateStory = omit(story, ['id', 'status', 'comment']);
+    updateStory.status = 2;
+    updateStory.sourceId = draft.id;
+    updateStory.id = story.id;
+
+    StoryRepo.merge(story, updateStory);
+    await StoryRepo.save(story);
+
+    await SceneRepo.delete({ storyId: story.id });
+    await ItemRepo.delete({ storyId: story.id });
+  }
 
   let scenes = await SceneRepo.find({
     where: { storyId: draft.id}
   }).then(scenes => scenes.map((scene) => omit(scene, ['id', 'storyId'])));
   scenes.forEach((scene) => {
-    scene.storyId = result.id!;
+    scene.storyId = story.id!;
   });
-  SceneRepo.save(SceneRepo.create(scenes));
+  story.scenes = await SceneRepo.save(SceneRepo.create(scenes));
 
   let items = await ItemRepo.find({
     where: { storyId: draft.id }
   }).then(items => items.map((item) => omit(item, ['id', 'storyId'])));
   items.forEach((item) => {
-    item.storyId = result.id!;
+    item.storyId = story.id!;
   });
-  ItemRepo.save(ItemRepo.create(items));
+  story.items = await ItemRepo.save(ItemRepo.create(items));
 
   draft.status = 2;
   draft.comment = req.body.reason;
   DraftRepo.save(draft);
 
-  json(res, result);
+  json(res, story);
 });
 
 router.use('/:id', SceneRoute);

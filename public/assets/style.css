@@ -1,3 +1,5 @@
+@import url(../fonts/fonts.css);
+
 :root {
   --primary-color: #007bff;
   --main-bg-color: #f4f4f9;
@@ -9,6 +11,7 @@
   --profile-label-text-color: #fff;
   --dialog-bg-color: rgba(0, 0, 0, 0.5);
   --dialog-container-bg-color: #fff;
+  font-family: "Chill Pixels Mono", "Pixel32", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
 .dark {
@@ -32,7 +35,8 @@ body {
   align-items: center;
   height: 100%;
   flex-direction: column;
-  color: var(--main-text-color)
+  color: var(--main-text-color);
+  font-size: 16px;
 }
 
 html {

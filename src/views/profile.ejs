@@ -1,5 +1,5 @@
 <%- include('header') %>
-<article class="h-full">
+<article class="h-full w-full max-w-[700px]">
   <form action="" method="post">
     <header class="pb-10">
         <h1 class="text-center">@<%= account.username %></h1>
@@ -29,7 +29,7 @@
         </fieldset>
       </form>
     </section>
-    <header class="flex space-x-2 items-center justify-center mt-10">
+    <header class="flex space-x-2 items-center justify-center mt-10 relative">
       <h3>
         <a <%-locals.query.type === 'draft' && `href="/u/${account.username}"` || '' -%>>我的故事</a>
       </h3>
@@ -37,6 +37,7 @@
       <h3>
         <a <%-locals.query.type !== 'draft' && 'href="?type=draft"' || '' -%>>我的草稿</a>
       </h3>
+      <a href="/admin/" title="创作故事" target="_blank" class="absolute right-2 !border-none">✚</a>
     </header>
 <% } else { %>
     <section>
@@ -49,13 +50,13 @@
       <h3 class="text-center">TA的故事</h3>
     </header>
 <% } %>
-    <section class="my-3">
-      <ol class="list-decimal space-y-2">
+    <section class="my-3 pl-5 w-full">
+      <ol class="list-decimal space-y-2 w-full">
         <% stories.forEach(function(story) { %>
-          <li>
-            <section class="flex justify-between items-bottom">
-              <a class="truncate" href="<%=query.type === 'draft' ? '/d' : ''-%>/<%=story.id-%>"><%= story.name %></a>
-              <span class="text-gray-500 dark:text-light-900 text-sm truncate" title="<%= story.description %>">
+          <li class="w-full">
+            <section class="inline-flex justify-between items-bottom w-full">
+              <a class="truncate" href="<%=query.type === 'draft' ? '/d' : '/s'-%>/<%=story.id-%>"><%= story.name %></a>
+              <span class="text-gray-500 dark:text-light-900 text-sm truncate max-w-[60%]" title="<%= story.description %>">
                 <%= story.description %>
               </span>
             </section>
