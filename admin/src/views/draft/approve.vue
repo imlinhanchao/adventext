@@ -13,11 +13,15 @@
   const rules = computed(() => ({
     reason: [{ required: !data.value.pass, message: '请输入审核原因', trigger: 'blur' }],
   }));
+  const loading = ref(false);
   async function submit() {
     if (!(await formRef.value?.validate())) {
       return;
     }
-    await approveStory(story.value.id!, data.value);
+    loading.value = true;
+    await approveStory(story.value.id!, data.value).finally(() => {
+      loading.value = false;
+    });
     ElMessage.success('审核成功');
     visible.value = false;
     emit('confirm', data.value);
@@ -51,7 +55,7 @@
     </el-form>
     <template #footer>
       <el-button @click="$emit('close')">取消</el-button>
-      <el-button type="primary" @click="submit">确定</el-button>
+      <el-button type="primary" @click="submit" :loading="loading">确定</el-button>
     </template>
   </el-dialog>
 </template>

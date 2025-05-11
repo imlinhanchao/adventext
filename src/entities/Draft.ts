@@ -30,7 +30,7 @@ export class Draft {
   @Column('int', { default: 0, comment: '故事状态: 0 - 草稿，1 - 推送，2 - 发布，3 - 下架' })
   status: number;
 
-  @Column('varchar', { length: 1024, comment: '未通过原因' })
+  @Column('varchar', { length: 1024, comment: '未通过原因', default: '' })
   comment: string;
   
   @Column('bigint', { comment: "创建时间" })

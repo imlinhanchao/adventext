@@ -114,21 +114,21 @@ router.post("/:id/approve", async (req, res) => {
   const newStory = StoryRepo.create(story);
   const result = await StoryRepo.save(newStory);
 
-  const scenes = await SceneRepo.find({
+  let scenes = await SceneRepo.find({
     where: { storyId: draft.id}
-  });
+  }).then(scenes => scenes.map((scene) => omit(scene, ['id', 'storyId'])));
   scenes.forEach((scene) => {
     scene.storyId = result.id!;
   });
-  SceneRepo.save(scenes);
+  SceneRepo.save(SceneRepo.create(scenes));
 
-  const items = await ItemRepo.find({
+  let items = await ItemRepo.find({
     where: { storyId: draft.id }
-  });
+  }).then(items => items.map((item) => omit(item, ['id', 'storyId'])));
   items.forEach((item) => {
     item.storyId = result.id!;
   });
-  ItemRepo.save(items);
+  ItemRepo.save(ItemRepo.create(items));
 
   draft.status = 2;
   draft.comment = req.body.reason;
