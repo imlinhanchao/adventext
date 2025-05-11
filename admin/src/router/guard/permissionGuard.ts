@@ -76,7 +76,9 @@ export function createPermissionGuard(router: Router) {
 
     if (router.hasRoute('Home')) return next();
 
+    const isAdmin = userStore.getUserInfo?.isAdmin;
     routes.forEach((route) => {
+      if (route.meta.isAdmin && !isAdmin) return;
       router.addRoute(route as unknown as RouteRecordRaw);
     });
 

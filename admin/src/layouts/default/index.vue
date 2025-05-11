@@ -4,6 +4,7 @@
   import Footer from './footer/index.vue';
   import Content from './content/index.vue';
   import Menu from '@/layouts/components/menu/Menu.vue';
+import { useUserStore } from '@/store/modules/user';
 
   createBreakpointListen();
   const { screenSM } = useBreakpoint();
@@ -17,11 +18,12 @@
   addDeviceClass(screenSM.value);
 
   const { currentRoute } = useRouter();
-  
+  const { getUserInfo } = useUserStore();
+
 </script>
 <template>
   <el-container class="h-full">
-    <el-aside v-if="!screenSM && !currentRoute.meta.hideMenu" width="200px" class="border-r border-light-700 dark:border-gray-700 z-3 bg-[--el-bg-color]">
+    <el-aside v-if="!screenSM && !currentRoute.meta.hideMenu && getUserInfo.isAdmin" width="200px" class="border-r border-light-700 dark:border-gray-700 z-3 bg-[--el-bg-color]">
       <Menu />
     </el-aside>
     <el-container id="main-container" class="h-full w-full relative" direction="vertical">
