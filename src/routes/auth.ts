@@ -11,7 +11,8 @@ router.post("/login", async (req, res) => {
   try {
     const { user } = await login(req.body);
     req.session.user = user;
-    setTimeout(() => res.redirect("/"), 10);
+    req.session.save();
+    res.redirect("/");
   } catch (error: any) {
     render(res, 'login', req).title('登录').error(error.message).render();
   }

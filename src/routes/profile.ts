@@ -79,7 +79,7 @@ router.post('/:username', userSession(async (user: User, req: Request, res: Resp
     account = await UserRepo.save(account);
     req.session.user = omit(account, User.unsafeKey);
     req.session.save();
-    setTimeout(() => res.redirect('/u/' + username), 10);
+    res.redirect('/u/' + username);
   } else {
     const stories = await getStories(user, req, res);
     render(res, "profile", req).title(user.username).error('权限不足').render({
