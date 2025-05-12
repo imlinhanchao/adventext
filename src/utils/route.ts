@@ -49,6 +49,7 @@ class Render {
 
   logo(logo: string) {
     this.params.logo = logo;
+    return this;
   }
 
   render(params: any = {}) {

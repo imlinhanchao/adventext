@@ -39,3 +39,13 @@ export function clone<T>(value: T): T {
   }
   return value;
 }
+
+export function shortTime(ms: number): string {
+  const seconds = Math.floor(ms / 1000);
+  const days = Math.floor(seconds / (24 * 60 * 60));
+  const hours = Math.floor((seconds % (24 * 60 * 60)) / (60 * 60));
+  const minutes = Math.floor((seconds % (60 * 60)) / 60);
+  const remainingSeconds = seconds % 60;
+
+  return `${days} 天 ${hours} 小时 ${minutes} 分钟 ${remainingSeconds} 秒`;
+}

@@ -1,10 +1,12 @@
 import { Request, Response } from 'express';
-import { Record, Story, Profile, Scene, User, Item, End, Draft, StoryRepo, DraftRepo, ProfileRepo, EndRepo, SceneRepo, ItemRepo, RecordRepo } from "../entities";
+import { Record, Story, Profile, Scene, User, Item, End, Draft, StoryRepo, DraftRepo, ProfileRepo, EndRepo, SceneRepo, ItemRepo, RecordRepo, UserRepo, RankRepo } from "../entities";
 import { render, json, error } from "../utils/route";
 import { Condition, Effect } from '../entities/Scene';
-import { clone } from '../utils';
+import { clone, shortTime } from '../utils';
 import { Inventory } from '../entities/Profile';
 import { isNumber } from '../utils/is';
+import { In, Not } from 'typeorm';
+import { nextTick } from 'process';
 
 function fillVar (content: string, type: string, target: any) {
   const mat = content.match(new RegExp(`${type}(\S+)${type}`, 'g'));
@@ -455,6 +457,66 @@ export default class GameController {
     }
   }
 
+  async resetGame (user: User, req: Request, res: Response, next: () => void) {
+    try {
+      const userId = user.id;
+      const storyId = req.params.storyId;
+      let { state } = await this.gameState(userId, storyId);
+
+      if (this.type != 'draft') return next();
+
+      const endId = state.endId;
+      await ProfileRepo.delete({ userId, storyId, endId });
+      await RecordRepo.delete({ user: userId, storyId, endId });
+
+      json(res, { message: '游戏已重置' })
+    } catch (error: any) {
+      error(res, error.message)
+    }
+  }
+
+  async rank (user: User, req: Request, res: Response, next: () => void) {
+    try {
+      const storyId = req.params.storyId;
+      const story = await this.storyRepo.findOneBy({ id: storyId });
+      let { p, count } = req.query;
+      const page = Number(p || 1);
+      const size = Math.min(Number(count || 50), 100);
+      
+      if (!story) return next()
+        
+      const list = await RankRepo.find({
+        where: { storyId, username: Not(story.author) },
+        order: { endCount: 'DESC', totalCost: 'ASC' },
+        take: size,
+        skip: (page - 1) * size,
+      })
+
+      const total = await EndRepo.createQueryBuilder('end')
+        .select('COUNT(DISTINCT end.user)', 'total')
+        .where('end.storyId = :storyId', { storyId })
+        .getRawOne().then((data) => data.total);
+
+      const totalPlayer = await ProfileRepo.createQueryBuilder('profile')
+        .select('COUNT(DISTINCT profile.userId)', 'total')
+        .where('profile.storyId = :storyId', { storyId })
+        .getRawOne().then((data) => data.total);
+
+      render(res, 'rank', req).title('排行榜').logo(story.name).render({
+        list,
+        total: total.total,
+        page,
+        size,
+        story,
+        user: user.id,
+        totalPlayer,
+        shortTime,
+      })
+    } catch (err: any) {
+      error(res, err.message)
+    }
+  }
+
   async gameExcute (profile: Profile, scene: Scene, { option: optionText, value: valueText, timezone }: any, virtual = false) {
     try {
       const storyId = profile.storyId;
@@ -598,15 +660,37 @@ export default class GameController {
     }
   }
 
-
   async storyList (req: Request, res: Response) {
     try {
       const stories = await this.storyRepo.find({
         where: { status: 2 },
         order: { createTime: 'DESC' },
       });
+      const storyIds = stories.map((s) => s.id);
+      const endScenes = await SceneRepo.createQueryBuilder("scene")
+        .select("scene.storyId", "storyId")
+        .addSelect("COUNT(*)", "count")
+        .where("scene.storyId IN (:...storyIds)", { storyIds })
+        .andWhere("scene.isEnd = :isEnd", { isEnd: true })
+        .groupBy("scene.storyId")
+        .getRawMany();
+      const finish = await EndRepo.createQueryBuilder("end")
+        .select("end.storyId", "storyId")
+        .addSelect("COUNT(*)", "count")
+        .where("end.storyId IN (:...storyIds)", { storyIds })
+        .andWhere("end.user = :userId", { userId: req.session.user.id })
+        .groupBy("end.storyId")
+        .getRawMany();
       render(res, 'stories', req).render({
-        stories,
+        stories: stories.map((story) => {
+          const end = endScenes.find((e) => e.storyId == story.id);
+          const findEndItem = finish.find((e) => e.storyId == story.id);
+          return {
+            ...story,
+            end: end ? parseInt(end.count) : 0,
+            finish: findEndItem ? parseInt(findEndItem.count) : 0,
+          }
+        }),
       })
     } catch (error: any) {
       render(res, 'index', req).error(error.message).render()

@@ -14,7 +14,7 @@ export function createRouter(type: string) {
       if (!story || type == 'draft' && story?.author !== user.username) {
         return next();
       }
-      render(res, "index", req).title(story!.name).render({
+      render(res, "index", req).title(story.name).render({
         logo: story!.name,
         scene,
         state,
@@ -44,6 +44,18 @@ export function createRouter(type: string) {
     const game = new GameController(type);
     game.restartGame(user, req, res)
   }));
+
+  if (type === 'draft') {
+    router.post("/:storyId/reset", userSession((user: User, req: Request, res: Response, next) => {
+      const game = new GameController(type);
+      game.resetGame(user, req, res, next)
+    }));
+  } else {
+    router.get("/:storyId/rank", userSession((user: User, req: Request, res: Response, next) => {
+      const game = new GameController(type);
+      game.rank(user, req, res, next)
+    }));
+  }
 
   return router;
 }

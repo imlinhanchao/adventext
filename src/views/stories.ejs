@@ -7,9 +7,12 @@
           <li class="w-full">
             <section class="flex flex-col w-full">
               <span class="flex justify-between items-bottom w-full">
-                <a class="truncate" href="<%=query.type === 'draft' ? '/d' : '/s'-%>/<%=story.id-%>">
-                  <%= story.name %>
-                </a>
+                <span>
+                  <a href="<%=query.type === 'draft' ? '/d' : '/s'-%>/<%=story.id-%>">
+                    <%= story.name %>
+                  </a>
+                  <span>(<span title="已完成"><%= story.finish %></span>/<span title="结局"><%= story.end %></span>)</span>
+                </span>
                 <span>
                   <a href="/u/<%= story.author %>" class="text-gray-500 dark:text-light-900 text-sm truncate"
                     title="作者">
