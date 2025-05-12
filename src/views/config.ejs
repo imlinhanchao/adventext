@@ -4,7 +4,7 @@
     <h1>配置</h1>
     <p>
       <label for="name">游戏名称:</label>
-      <input type="text" id="name" name="name" required value="<%= locals.body?.name || '' -%>">
+      <input type="text" id="name" name="name" required value="<%= locals.body?.name || '文字冒险游戏' -%>">
     </p>
     <p>
       <label for="webport">端口:</label>
@@ -13,7 +13,7 @@
     <h2>数据库配置</h2>
     <p>
       <label for="host">主机:</label>
-      <input type="text" id="host" name="host" required value="<%= locals.body?.host || '' -%>">
+      <input type="text" id="host" name="host" required value="<%= locals.body?.host || 'localhost' -%>">
     </p>
     <p>
       <label for="port">端口:</label>
