@@ -1,10 +1,10 @@
 {
-  "name": "rpg-game",
+  "name": "adventext",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
     "clean": "rimraf dist/ && rimraf public/admin",
-    "copy-files": "copyfiles -u 1 src/views/* dist/",
+    "copy-files": "copyfiles -u 1 src/views/* src/public/**/**/* dist/",
     "start": "ts-node src/index.ts --files",
     "build": "npm run clean && npm run admin:build && tsc --project tsconfig.json && npm run copy-files",
     "admin:dev": "cd admin && npm run dev",
