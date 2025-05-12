@@ -1,6 +1,6 @@
 <%- include('header') %>
 
-  <article class="h-full">
+  <article class="flex flex-1 flex-col h-full">
     <header class="text-center">
       <h2>排行榜</h2>
       <p>根据故事的结局与总耗时进行排名（故事作者不计入排名）。
@@ -33,7 +33,7 @@
           </tbody>
         </table>
 <% } else { -%>
-        <section class="flex h-full items-center justify-center pb-20">
+        <section class="flex h-full items-center justify-center">
           <p class="text-center">还没有人到达这个故事结局。</p>
         </section>
 <% } -%>
