@@ -3,8 +3,10 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "clean": "rimraf dist/ && rimraf public/admin",
+    "copy-files": "copyfiles -u 1 src/views/* dist/",
     "start": "ts-node src/index.ts --files",
-    "build": "tsc --project tsconfig.json",
+    "build": "npm run clean && npm run admin:build && tsc --project tsconfig.json && npm run copy-files",
     "admin:dev": "cd admin && npm run dev",
     "admin:build": "cd admin && npm run build"
   },
@@ -29,6 +31,8 @@
     "@types/jsonwebtoken": "^9.0.9",
     "@types/node": "^22.15.3",
     "@types/session-file-store": "^1.2.5",
+    "copyfiles": "^2.4.1",
+    "rimraf": "^6.0.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
   }

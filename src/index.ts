@@ -14,7 +14,7 @@ import SessionStore from "session-file-store";
 import { render } from "./utils/route";
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3000;
 const FileStore = SessionStore(session);
 
 // 中间件
@@ -22,7 +22,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // 静态文件服务
-app.use(express.static(path.join(__dirname, "..", "public")));
+app.use(express.static(path.join(__dirname, "public")));
 
 // 设置 EJS 模板引擎
 app.set("view engine", "ejs");
