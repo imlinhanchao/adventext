@@ -1,35 +1,30 @@
 import "reflect-metadata";
-import { AppDataSource } from "../entities";
+import { AppDataSource, ItemRepo, SceneRepo, StoryRepo } from "../entities";
 import { Scene } from "../entities/Scene";
 import * as fs from "fs";
 import * as path from "path";
+import { omit } from "../utils";
 
-async function importStories() {
+async function importStories () {
   try {
     await AppDataSource.initialize();
     console.log("Database connected");
 
-    AppDataSource.getRepository(Scene);
-
     // 读取 JSON 文件
     const filePath = path.join(__dirname, "../../data/story.json");
-    const storyData = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+    const stories = JSON.parse(fs.readFileSync(filePath, "utf-8"));
 
-    // 转换并保存数据
-    await AppDataSource.transaction(async (transactionalEntityManager) => {
-      const stories = Object.entries(storyData).map(([key, value]: any) => {
-        const scene = new Scene();
-        scene.name = key;
-        scene.content = value.text;
-        scene.options = value.options;
-        scene.position = { x: 0, y: 0 };
-        return scene;
-      });
+    for (const storyData of stories) {
+      const story = await StoryRepo.save(StoryRepo.create(omit(storyData, ['scenes', 'items'])));
+      await SceneRepo.save(SceneRepo.create(storyData.scenes.map((scene: Scene) => {
+        scene.storyId = story.id;
+      })));
+      await ItemRepo.save(ItemRepo.create(storyData.items.map((item: Scene) => {
+        item.storyId = story.id;
+      })));
 
-      for (const story of stories) {
-        await transactionalEntityManager.save(story);
-      }
-    });
+      console.log(`Story ${story.name} imported successfully`);
+    }
 
     console.log("Stories imported successfully");
     process.exit(0);

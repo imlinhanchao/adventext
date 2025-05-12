@@ -72,13 +72,13 @@ router.get('/:id/export', async (req, res) => {
   const story = req.story!;
   const scenes = await SceneRepo.find({
     where: { storyId: story.id }
-  }).then(scenes => scenes.map((scene) => omit(scene, ['id', 'storyId'])));
+  }).then(scenes => scenes.map((scene) => omit(scene, ['id', 'storyId', 'createTime', 'updateTime'])));
   const items = await ItemRepo.find({
     where: { storyId: story.id }
-  }).then(items => items.map((item) => omit(item, ['id', 'storyId'])));
+  }).then(items => items.map((item) => omit(item, ['id', 'storyId', 'createTime', 'updateTime'])));
 
   json(res, {
-    ...omit(story, ['id', 'status', 'comment']),
+    ...omit(story, ['id', 'status', 'comment', 'createTime', 'updateTime', 'sourceId']),
     scenes,
     items
   });

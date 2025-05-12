@@ -1,91 +1,515 @@
-{
-  "start": {
-    "text": "你站在一个分岔路口，左边是黑暗的森林，右边是阳光明媚的小路。",
-    "options": [
-      {
-        "text": "进入森林",
-        "next": "forest"
-      },
-      {
-        "text": "走小路",
-        "next": "sunny_path"
-      }
-    ]
+[{
+  "name": "森林与村庄",
+  "start": "start",
+  "description": "森林与村庄之间的故事",
+  "attr": {
+    "hp": 50,
+    "mp": 50,
+    "cave": "false"
   },
-  "forest": {
-    "text": "你进入了森林，听到远处传来狼嚎声。",
-    "options": [
-      {
-        "text": "捡起剑",
-        "append": "你发现了一把生锈的剑。",
-        "next": "forest",
-        "loop": -1,
-        "effects": [
-          { "type": "Item", "name": "rusty_sword", "content": "1" }
-        ]
-      },
-      {
-        "text": "继续前进",
-        "next": "deep_forest"
-      },
-      {
-        "text": "返回路口",
-        "next": "start"
-      }
-    ]
+  "attrName": {
+    "hp": "生命",
+    "mp": "体力"
   },
-  "sunny_path": {
-    "text": "你走在阳光明媚的小路上，感到一阵轻松。前方有一个村庄。",
-    "options": [
-      {
-        "text": "进入村庄",
-        "next": "village"
-      },
-      {
-        "text": "返回路口",
-        "next": "start"
-      }
-    ]
-  },
-  "deep_forest": {
-    "text": "你深入森林，遇到了一只狼。你是否要战斗？",
-    "options": [
-      {
-        "text": "战斗",
-        "next": "wolf_fight",
-        "condition": {
-          "itemType": "weapon"
+  "inventory": [
+    {
+      "id": 2,
+      "key": "gold",
+      "name": "金币",
+      "type": "金币",
+      "count": 10,
+      "story": 1,
+      "attributes": {},
+      "description": "金币"
+    }
+  ],
+  "scenes": [
+    {
+      "name": "start",
+      "content": "你站在一个分岔路口，左边是黑暗的森林，右边是阳光明媚的小路。",
+      "options": [
+        {
+          "next": "forest",
+          "text": "进入森林",
+          "disabled": false
         },
-        "effects": [
-          { "type": "Item", "name": "wolf_fur", "content": "1" },
-          { "type": "Gold", "content": 5 }
-        ]
-      },
-      {
-        "text": "逃跑",
-        "next": "<back>"
+        {
+          "next": "sunny_path",
+          "text": "走小路",
+          "disabled": false
+        }
+      ],
+      "theEnd": "",
+      "isEnd": false,
+      "position": {
+        "x": 45,
+        "y": 40
       }
-    ]
-  },
-  "village": {
-    "text": "村庄里有一个商人，他愿意用金币交换物品。",
-    "options": [
-      {
-        "text": "购买药水(10金币/瓶)",
-        "next": "buy_potion",
-        "value": "请输入购买数量",
-        "conditions": [
-          { "type": "Gold", "content": 10 }
-        ],
-        "effects": [
-          { "type": "Gold", "content": -10 },
-          { "name": "hp_restore", "type": "Item", "content": 1 }
-        ]
-      },
-      {
-        "text": "离开村庄",
-        "next": "<back>"
+    },
+    {
+      "name": "forest",
+      "content": "你进入了森林${继续前进}${前往山洞}。",
+      "options": [
+        {
+          "loop": -1,
+          "next": "forest",
+          "text": "捡起剑",
+          "append": "你发现了一把生锈的剑。",
+          "effects": [
+            {
+              "name": "rusty_sword",
+              "type": "Item",
+              "content": "1"
+            }
+          ],
+          "disabled": true
+        },
+        {
+          "loop": 0,
+          "next": "deep_forest",
+          "text": "继续前进",
+          "value": "",
+          "append": "，听到远处传来狼嚎声",
+          "disabled": false,
+          "conditions": [
+            {
+              "name": "",
+              "type": "Attr",
+              "isHide": true,
+              "content": {
+                "cave": "false"
+              }
+            }
+          ]
+        },
+        {
+          "next": "start",
+          "text": "返回路口",
+          "disabled": false
+        },
+        {
+          "loop": "60",
+          "next": "forest",
+          "text": "捡树枝",
+          "append": "一些树下有些干枯的枝叶。这里以前似乎还是铁矿。",
+          "effects": [
+            {
+              "name": "branchs",
+              "type": "Item",
+              "content": "rand(1,10)"
+            },
+            {
+              "name": "iron",
+              "type": "Item",
+              "content": "percent(10,rand(1,3))"
+            }
+          ],
+          "disabled": false
+        },
+        {
+          "loop": 0,
+          "next": "cave",
+          "text": "前往山洞",
+          "append": "，前方有一个山洞",
+          "disabled": true,
+          "conditions": [
+            {
+              "name": "",
+              "type": "Attr",
+              "isHide": true,
+              "content": {
+                "cave": "true"
+              }
+            }
+          ]
+        }
+      ],
+      "theEnd": "",
+      "isEnd": false,
+      "position": {
+        "x": 472,
+        "y": 41
       }
-    ]
-  }
-}
+    },
+    {
+      "name": "sunny_path",
+      "content": "你走在阳光明媚的小路上，感到一阵轻松。前方有一个村庄。",
+      "options": [
+        {
+          "next": "village",
+          "text": "进入村庄",
+          "disabled": false
+        },
+        {
+          "next": "start",
+          "text": "返回路口",
+          "disabled": false
+        }
+      ],
+      "theEnd": "",
+      "isEnd": false,
+      "position": {
+        "x": 42,
+        "y": 279
+      }
+    },
+    {
+      "name": "deep_forest",
+      "content": "你深入森林，遇到了一只狼。你是否要战斗？",
+      "options": [
+        {
+          "loop": 0,
+          "next": "cave",
+          "text": "战斗",
+          "value": "item:选择战斗的武器：:武器",
+          "effects": [
+            {
+              "name": "cave",
+              "type": "Attr",
+              "content": "true"
+            }
+          ],
+          "disabled": false,
+          "conditions": [
+            {
+              "type": "ItemType",
+              "content": "武器"
+            },
+            {
+              "tip": "你的武器太弱了",
+              "name": "",
+              "type": "ItemAttr",
+              "content": {
+                "attack": 5
+              }
+            }
+          ]
+        },
+        {
+          "next": "<back>",
+          "text": "逃跑",
+          "disabled": false
+        }
+      ],
+      "theEnd": "",
+      "isEnd": false,
+      "position": {
+        "x": 892,
+        "y": 41
+      }
+    },
+    {
+      "name": "store",
+      "content": "在商店，你可以用金币交换物品。",
+      "options": [
+        {
+          "loop": 60,
+          "next": "store",
+          "text": "购买药水(10金币/瓶)",
+          "value": "请输入购买数量",
+          "effects": [
+            {
+              "name": "gold",
+              "type": "Item",
+              "content": -10
+            },
+            {
+              "name": "hp_restore",
+              "type": "Item",
+              "content": 1
+            }
+          ],
+          "conditions": [
+            {
+              "name": "gold",
+              "type": "Item",
+              "content": 10
+            }
+          ]
+        },
+        {
+          "next": "village",
+          "text": "离开商店",
+          "disabled": false
+        },
+        {
+          "loop": 0,
+          "next": "store",
+          "text": "出售物品",
+          "value": "item:你要出售什么：",
+          "effects": [
+            {
+              "name": "gold",
+              "type": "Item",
+              "content": "$price$"
+            },
+            {
+              "name": "$item",
+              "type": "Item",
+              "content": "-1"
+            }
+          ],
+          "conditions": [
+            {
+              "tip": "物品不可出售",
+              "name": "",
+              "type": "ItemAttr",
+              "content": {
+                "price": ""
+              }
+            }
+          ]
+        }
+      ],
+      "theEnd": "",
+      "isEnd": false,
+      "position": {
+        "x": 891,
+        "y": 243
+      }
+    },
+    {
+      "name": "village",
+      "content": "在村庄，有一个商店和一个铁匠铺",
+      "options": [
+        {
+          "loop": "0",
+          "next": "store",
+          "text": "去商店"
+        },
+        {
+          "loop": 0,
+          "next": "iron_shop",
+          "text": "去铁匠铺",
+          "disabled": false
+        },
+        {
+          "loop": 0,
+          "next": "start",
+          "text": "返回路口",
+          "disabled": false
+        }
+      ],
+      "theEnd": "",
+      "isEnd": false,
+      "position": {
+        "x": 471,
+        "y": 369
+      }
+    },
+    {
+      "name": "iron_shop",
+      "content": "铁匠铺里有一个铁匠，可以请他锻造兵器，也可以把旧武器翻新。",
+      "options": [
+        {
+          "loop": 0,
+          "next": "iron_shop",
+          "text": "锻造兵器",
+          "effects": [
+            {
+              "name": "steel_sword",
+              "type": "Item",
+              "content": "1"
+            }
+          ],
+          "disabled": false,
+          "conditions": [
+            {
+              "name": "iron",
+              "type": "Item",
+              "content": 10
+            }
+          ]
+        },
+        {
+          "loop": 0,
+          "next": "iron_shop",
+          "text": "翻新兵器",
+          "value": "item:选择你的燃料：:燃料",
+          "effects": [
+            {
+              "name": "Iron_sword",
+              "type": "Item",
+              "content": "1"
+            },
+            {
+              "name": "energy",
+              "type": "ItemAttr",
+              "content": "20"
+            },
+            {
+              "name": "rusty_sword",
+              "type": "Item",
+              "content": "-1"
+            },
+            {
+              "name": "iron",
+              "type": "Item",
+              "content": "-1"
+            }
+          ],
+          "disabled": false,
+          "conditions": [
+            {
+              "name": "rusty_sword",
+              "type": "Item",
+              "content": 1
+            },
+            {
+              "name": "iron",
+              "type": "Item",
+              "content": 1
+            },
+            {
+              "tip": "你的燃料不够，需要 20 能量",
+              "name": "branchs",
+              "type": "ItemAttr",
+              "content": {
+                "energy": 20
+              }
+            }
+          ]
+        },
+        {
+          "loop": 0,
+          "next": "<back>",
+          "text": "离开铁匠铺",
+          "disabled": false
+        }
+      ],
+      "theEnd": "",
+      "isEnd": false,
+      "position": {
+        "x": 891,
+        "y": 476
+      }
+    },
+    {
+      "name": "cave",
+      "content": "狼逃走了，在它身后有一个神秘的山洞，似乎有什么秘密",
+      "options": [
+        {
+          "loop": 0,
+          "next": "cave_inside",
+          "text": "进去看看"
+        },
+        {
+          "loop": 0,
+          "next": "start",
+          "text": "返回路口"
+        }
+      ],
+      "theEnd": "",
+      "isEnd": false,
+      "position": {
+        "x": 1307,
+        "y": 43
+      }
+    },
+    {
+      "name": "cave_inside",
+      "content": "山洞深处有一行字：E = mc²",
+      "options": [],
+      "theEnd": "山洞的秘密",
+      "isEnd": true,
+      "position": {
+        "x": 1307,
+        "y": 282
+      }
+    }
+  ],
+  "items": [
+    {
+      "key": "rusty_sword",
+      "name": "生锈的剑",
+      "description": "一把生锈的剑，不知道能拿来干啥",
+      "type": "武器",
+      "attributes": {
+        "attack": 1
+      },
+      "attrName": {
+        "attack": "攻击力"
+      }
+    },
+    {
+      "key": "gold",
+      "name": "金币",
+      "description": "可以买东西",
+      "type": "金币",
+      "attributes": {},
+      "attrName": {}
+    },
+    {
+      "key": "hp_restore",
+      "name": "恢复药水",
+      "description": "恢复生命力+10",
+      "type": "药水",
+      "attributes": {
+        "hp": 10,
+        "price": 5
+      },
+      "attrName": {
+        "hp": "生命力",
+        "price": "售价"
+      }
+    },
+    {
+      "key": "branchs",
+      "name": "树枝",
+      "description": "树上掉落的树枝，已经干枯了",
+      "type": "燃料",
+      "attributes": {
+        "price": 1,
+        "energy": 1
+      },
+      "attrName": {
+        "price": "售价",
+        "energy": "能量"
+      }
+    },
+    {
+      "key": "iron",
+      "name": "玄铁",
+      "description": "一块玄铁，可以用于锻造武器",
+      "type": "材料",
+      "attributes": {
+        "price": 2
+      },
+      "attrName": {
+        "price": "售价"
+      }
+    },
+    {
+      "key": "Iron_sword",
+      "name": "铁剑",
+      "description": "普通的铁剑，应该可以砍砍野兽。",
+      "type": "武器",
+      "attributes": {
+        "price": 5,
+        "attack": 20,
+        "defense": 2
+      },
+      "attrName": {
+        "price": "售价",
+        "attack": "攻击力",
+        "defense": "防御力"
+      }
+    },
+    {
+      "key": "steel_sword",
+      "name": "钢剑",
+      "description": "钢制的剑，吹毛断发。",
+      "type": "武器",
+      "attributes": {
+        "price": 50,
+        "attack": 100,
+        "defense": 20
+      },
+      "attrName": {
+        "price": "售价",
+        "attack": "攻击力",
+        "defense": "防御力"
+      }
+    }
+  ]
+}]
