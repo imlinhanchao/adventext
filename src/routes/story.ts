@@ -1,9 +1,10 @@
 import { Router, Request, Response } from "express";
 import GameController from "../controllers/game";
-import { Story, StoryRepo } from "../entities/";
+import { ItemRepo, SceneRepo, Story, StoryRepo } from "../entities/";
 import { error, json } from "../utils/route";
 import SceneRoute from './scene';
 import ItemRoute from './item';
+import { omit } from "../utils";
 
 const router = Router();
 router.post("/run", (req: Request, res: Response) => new GameController('story').gameVirtual(req, res));
@@ -65,6 +66,22 @@ router.delete("/:id", async (req, res) => {
     return error(res, "故事不存在");
   }
   json(res, { message: "故事删除成功" });
+});
+
+router.get('/:id/export', async (req, res) => {
+  const story = req.story!;
+  const scenes = await SceneRepo.find({
+    where: { storyId: story.id }
+  }).then(scenes => scenes.map((scene) => omit(scene, ['id', 'storyId'])));
+  const items = await ItemRepo.find({
+    where: { storyId: story.id }
+  }).then(items => items.map((item) => omit(item, ['id', 'storyId'])));
+
+  json(res, {
+    ...omit(story, ['id', 'status', 'comment']),
+    scenes,
+    items
+  });
 });
 
 router.use('/:id', SceneRoute);

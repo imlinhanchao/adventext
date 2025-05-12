@@ -53,7 +53,7 @@
     <el-form ref="formRef" :model="formData" label-width="auto" :rules="rules">
       <el-alert v-if="data.type" :closable="false" class="!mb-2">
         <span v-if="data.type == 'Attr'">
-          对玩家的指定属性进行修改，若值为数字，则会加上。若非数字，则直接赋值。因此，若要减少，可以直接填写负数。
+          对玩家的指定属性进行修改，可以通过输入 <code>\n</code> 来表示换行字符串。若前面操作符选择了 <code>-</code>、<code>/</code>、<code>*</code>，则需要保证值的运算结果为数字。
         </span>
         <span v-else-if="data.type == 'ItemAttr'">
           值只能是正数，会从背包<b>扣除</b>指定属性名的值之和等于设定值的物品，若<b>客户端输入值</b>设置了选择物品，则会将扣除范围限定在选择的物品上。
@@ -113,7 +113,7 @@
             <span>
               <el-tooltip
                 effect="dark"
-                content="可以使用 $value 表示输入值，rand(x,y) 表示 x~y 的随机数，percent(x,y) 表示 x% 的概率增加 y，y 省略则表示 1，，两个函数可嵌套使用"
+                content="可以使用 $value 表示输入值，rand(x,y) 表示 x~y 的随机数，percent(x,y) 表示 x% 的概率增加 y，y 省略则表示 1，，两个函数可嵌套使用，还可以通过 $物品属性名$ 获取玩家选择物品的属性的值，#玩家属性名# 获取玩家的属性的值。"
               >
                 <Icon icon="i-ep:info-filled" :size="14" />
               </el-tooltip>
@@ -142,7 +142,7 @@
             <span>
               <el-tooltip
                 effect="dark"
-                content="此处设置表示消耗对应属性名的属性值之和的物品，可以设置选项物品弹窗来精确控制对应物品。可以使用 $value 表示输入值，rand(x,y) 表示 x~y 的随机数，percent(x,y) 表示 x% 的概率为 y，y 省略则表示 1，两个函数可嵌套使用"
+                content="此处设置表示消耗对应属性名的属性值之和的物品，可以设置选项物品弹窗来精确控制对应物品。可以使用 $value 表示输入值，rand(x,y) 表示 x~y 的随机数，percent(x,y) 表示 x% 的概率为 y，y 省略则表示 1，两个函数可嵌套使用，还可以通过 $物品属性名$ 获取玩家选择物品的属性的值，#玩家属性名# 获取玩家的属性的值。此字段最后运算非数字将会报错！"
               >
                 <Icon icon="i-ep:info-filled" :size="14" />
               </el-tooltip>
@@ -170,7 +170,7 @@
             <span>
               <el-tooltip
                 effect="dark"
-                content="可以输入数字，或 rand(x,y) 表示 x~y 的随机数，percent(x,y) 表示 x% 的概率获得 y 个，y 省略则表示 1 个，两个函数可嵌套使用"
+                content="可以输入数字，或 rand(x,y) 表示 x~y 的随机数，percent(x,y) 表示 x% 的概率获得 y 个，y 省略则表示 1 个，两个函数可嵌套使用，还可以通过 $物品属性名$ 获取玩家选择物品的属性的值，#玩家属性名# 获取玩家的属性的值。此字段最后运算非数字将会报错！"
               >
                 <Icon icon="i-ep:info-filled" />
               </el-tooltip>

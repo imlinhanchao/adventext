@@ -269,7 +269,7 @@ function searchItemType (query: string, cb) {
       <el-form-item label="失败提示" prop="tip">
         <template #label>
           <span>
-            <el-tooltip content="条件不成立时将弹出提示，若不设置将使用游戏引擎默认提示" placement="top">
+            <el-tooltip content="条件不成立时将弹出提示，若不设置将使用游戏引擎默认提示，可以通过 $物品属性名$ 获取玩家选择物品的属性的值，#玩家属性名# 获取玩家的属性的值。" placement="top">
               <Icon icon="i-ep:info-filled" class="ml-1" />
             </el-tooltip>
             失败提示

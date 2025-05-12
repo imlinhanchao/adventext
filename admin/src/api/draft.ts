@@ -21,6 +21,11 @@ export class Draft {
   name: string;
 
   /**
+   * 作者
+   */
+  author: string;
+
+  /**
    * 起始场景
    */
   start: string;
@@ -57,6 +62,7 @@ export class Draft {
 
   constructor() {
     this.name = '';
+    this.author = '';
     this.description = '';
     this.start = '';
     this.attr = {};
@@ -110,5 +116,11 @@ export function approveStory(id: string, data: { pass: boolean; reason: string }
   return defHttp.post({
     url: `/draft/${id}/approve`,
     data
+  });
+}
+
+export function exportStory(id: string) {
+  return defHttp.get({
+    url: `/draft/${id}/export`,
   });
 }

@@ -6,11 +6,11 @@ import { clone } from '../utils';
 import { Inventory } from '../entities/Profile';
 import { isNumber } from '../utils/is';
 
-function fillVar(content: string, type: string, target: any) {
+function fillVar (content: string, type: string, target: any) {
   const mat = content.match(new RegExp(`${type}(\S+)${type}`, 'g'));
   if (mat) {
     for (const m of mat) {
-      const key = m.replace('#', '');
+      const key = m.replaceAll(type, '');
       if (target && target[key] !== undefined) {
         content = content.replace(m, target[key]);
       }
@@ -19,7 +19,7 @@ function fillVar(content: string, type: string, target: any) {
   return content;
 }
 
-function getCount(content: string, profileAttr: any, value: string, itemTakeAttr?: any) {
+function formatContent (content: string, profileAttr: any, value: string, itemTakeAttr?: any) {
   if (isNumber(content)) return content;
   content = fillVar(content, '\\$', itemTakeAttr);
   content = fillVar(content, '#', profileAttr);
@@ -34,10 +34,10 @@ function getCount(content: string, profileAttr: any, value: string, itemTakeAttr
       content = content.replace(/percent\(([\d.]+),*(\d+)*\)/, (Math.floor(Math.random() * 100) < parseFloat(mat[1]) ? parseInt(mat[2] || '1') : 0) + '');
     }
   }
-  return parseFloat(content);
+  return isNaN(parseFloat(content)) ? content : parseFloat(content);
 }
 
-function operatorData(left: string | number, right: string | number, operator: string) {
+function operatorData (left: string | number, right: string | number, operator: string) {
   if (typeof right === 'string' || typeof left === 'string') {
     switch (operator) {
       case '=':
@@ -66,7 +66,7 @@ function operatorData(left: string | number, right: string | number, operator: s
 
 }
 
-function conditionCheckTime(condition: Condition, timezone: number) {
+function conditionCheckTime (condition: Condition, timezone: number) {
   const time = new Date();
   if (condition.content.year !== undefined) {
     if (Array.isArray(condition.content.year)) {
@@ -124,11 +124,11 @@ export default class GameController {
     this.type = type;
   }
 
-  get storyRepo() {
+  get storyRepo () {
     return this.type == 'draft' ? DraftRepo : StoryRepo;
   }
 
-  async gameState(userId: number, storyId: string) {
+  async gameState (userId: number, storyId: string) {
     const state = (await ProfileRepo.findOneBy({ userId, storyId, isEnd: false })) || new Profile(userId, storyId);
 
     if (!state.scene) {
@@ -147,19 +147,19 @@ export default class GameController {
     return { state, scene };
   }
 
-  async getSence(scene: string, storyId: string) {
+  async getSence (scene: string, storyId: string) {
     return await SceneRepo.findOneBy({ name: scene, storyId });
   }
 
-  async getItem(item: string) {
+  async getItem (item: string) {
     return await ItemRepo.findOneBy({ key: item });
   }
 
-  async getStory(id: string) {
+  async getStory (id: string) {
     return await this.storyRepo.findOneBy({ id });
   }
 
-  async updateOptions(story: Scene, state: Profile, timezone: number, records?: Record[]) {
+  async updateOptions (story: Scene, state: Profile, timezone: number, records?: Record[]) {
     for (const option of story.options) {
       let record;
       if (!records) {
@@ -185,7 +185,7 @@ export default class GameController {
     return story.options.filter((option) => !option.disabled);
   }
 
-  async checkConditions(conditions: Condition[], profile: Profile, option: any, valueText: string, timezone: number, itemTake?: Inventory) {
+  async checkConditions (conditions: Condition[], profile: Profile, option: any, valueText: string, timezone: number, itemTake?: Inventory) {
     for (const condition of conditions) {
       try {
         if (condition.type === 'Time') {
@@ -292,7 +292,7 @@ export default class GameController {
   }
 
 
-  async runEffects(profile: Profile, effects: Effect[], value: string, itemTake?: Inventory) {
+  async runEffects (profile: Profile, effects: Effect[], value: string, itemTake?: Inventory) {
     try {
       let message = '', next = null;
       for (const effect of effects) {
@@ -305,8 +305,8 @@ export default class GameController {
           else item = itemTake;
           if (!item) throw new Error(`物品 ${effect.name} 未找到.`)
           const inventory = profile.inventory.find((i) => i.key === effect.name);
-          let count = getCount(effect.content || '1', profile.attr, value, itemTake?.attributes);
-          if (isNaN(count)) throw new Error(`Item ${effect.name} 效果获取数量失败！`)
+          let count = formatContent(effect.content || '1', profile.attr, value, itemTake?.attributes);
+          if (!isNumber(count)) throw new Error(`Item ${effect.name} 效果获取数量失败！`)
           if (inventory) {
             inventory.count += count;
           } else if (count) {
@@ -322,15 +322,18 @@ export default class GameController {
         if (effect.type === 'Attr') {
           const oldValue = profile.attr[effect.name] || '';
           if (profile.attr[effect.name] === undefined) {
-            profile.attr[effect.name] = isNaN(parseFloat(effect.content)) ? effect.content : parseFloat(effect.content);
+            const content = formatContent(effect.content || '1', profile.attr, value, itemTake?.attributes);
+            profile.attr[effect.name] = content;
           }
           else if (typeof profile.attr[effect.name] === 'number') {
-            let count = getCount(effect.content || '1', profile.attr, value, itemTake?.attributes);
-            if (isNaN(count)) throw new Error(`Attr ${effect.name} 效果获取数量失败！`)
+            let count = formatContent(effect.content || '1', profile.attr, value, itemTake?.attributes);
+            if (!isNumber(count)) throw new Error(`Attr ${effect.name} 效果获取数量失败！`)
             profile.attr[effect.name] = operatorData(profile.attr[effect.name], count, effect.operator);
           }
           else {
-            profile.attr[effect.name] = operatorData(profile.attr[effect.name], effect.content, effect.operator);
+            let content = fillVar(effect.content, '\\$', itemTake?.attributes);
+            content = fillVar(content, '#', profile.attr);
+            profile.attr[effect.name] = operatorData(profile.attr[effect.name], content, effect.operator);
           }
           if (profile.attrName[effect.name]) {
             message += `${profile.attrName[effect.name]} ${oldValue} → ${effect.content}.\n`;
@@ -345,8 +348,8 @@ export default class GameController {
             if (!inventorys.length) {
               throw new Error(`你没有包含${attr}的物品.`);
             }
-            let count = getCount(effect.content || '1', profile.attr, value);
-            if (isNaN(count)) throw new Error(`ItemAttr ${effect.name} 效果获取数量失败！`)
+            let count = formatContent(effect.content || '1', profile.attr, value);
+            if (!isNumber(count)) throw new Error(`ItemAttr ${effect.name} 效果获取数量失败！`)
             let total = 0;
             for (const inventory of inventorys) {
               if (total >= count) break;
@@ -365,8 +368,8 @@ export default class GameController {
             if (itemTake.attributes[effect.name] === undefined) {
               throw new Error(`物品 ${itemTake.name} 不包含属性 ${effect.name}.`);
             }
-            let count = getCount(effect.content || '1', profile.attr, value, itemTake.attributes);
-            if (isNaN(count)) throw new Error(`ItemAttr ${effect.name} 效果获取数量失败！`)
+            let count = formatContent(effect.content || '1', profile.attr, value, itemTake.attributes);
+            if (!isNumber(count)) throw new Error(`ItemAttr ${effect.name} 效果获取数量失败！`)
             const itemCount = Math.ceil(count / itemTake.attributes[effect.name]);
             if (itemCount > itemTake.count) {
               throw new Error(`物品 ${itemTake.name} 数量不足.`);
@@ -413,7 +416,7 @@ export default class GameController {
     }
   }
 
-  async addEnd(scene: Scene, profile: Profile) {
+  async addEnd (scene: Scene, profile: Profile) {
     if (!scene.isEnd) return;
 
     let end = await EndRepo.findOneBy({ user: profile.userId, storyId: profile.storyId, end: scene.theEnd });
@@ -433,7 +436,7 @@ export default class GameController {
     return await EndRepo.save(end);
   }
 
-  async restartGame(user: User, req: Request, res: Response) {
+  async restartGame (user: User, req: Request, res: Response) {
     try {
       const userId = user.id;
       const storyId = req.params.storyId;
@@ -452,7 +455,7 @@ export default class GameController {
     }
   }
 
-  async gameExcute(profile: Profile, scene: Scene, { option: optionText, value: valueText, timezone }: any, virtual = false) {
+  async gameExcute (profile: Profile, scene: Scene, { option: optionText, value: valueText, timezone }: any, virtual = false) {
     try {
       const storyId = profile.storyId;
       const userId = profile.userId;
@@ -541,7 +544,7 @@ export default class GameController {
     }
   }
 
-  async optionFilter(req: Request, res: Response) {
+  async optionFilter (req: Request, res: Response) {
     try {
       const { scene, profile, timezone, records } = req.body;
       if (!scene) {
@@ -557,7 +560,7 @@ export default class GameController {
     }
   }
 
-  async gameVirtual(req: Request, res: Response) {
+  async gameVirtual (req: Request, res: Response) {
     try {
       let { profile, scene } = req.body;
 
@@ -577,7 +580,7 @@ export default class GameController {
     }
   }
 
-  async game(user: User, req: Request, res: Response) {
+  async game (user: User, req: Request, res: Response) {
     try {
       const userId = user.id;
       const storyId = req.params.storyId;
@@ -598,7 +601,10 @@ export default class GameController {
 
   async storyList (req: Request, res: Response) {
     try {
-      const stories = await this.storyRepo.find();
+      const stories = await this.storyRepo.find({
+        where: { status: 2 },
+        order: { createTime: 'DESC' },
+      });
       render(res, 'stories', req).render({
         stories,
       })
@@ -607,7 +613,7 @@ export default class GameController {
     }
   }
 
-  async init(user: User, req: Request, res: Response) {
+  async init (user: User, req: Request, res: Response) {
     try {
       const userId = user.id;
       const story = await this.getStory(req.params.storyId);

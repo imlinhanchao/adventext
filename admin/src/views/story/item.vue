@@ -77,6 +77,9 @@
       <el-form-item label="名称" name="name">
         <el-input v-model.trim="data.name" />
       </el-form-item>
+      <el-form-item label="作者" name="name">
+        <el-input v-model="data.author" />
+      </el-form-item>
       <el-form-item label="描述" name="description">
         <el-input v-model="data.description" type="textarea" />
       </el-form-item>

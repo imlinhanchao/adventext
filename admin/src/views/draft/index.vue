@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { deleteStory, getStoryList, Draft, publishStory } from '@/api/draft';
+  import { deleteStory, getStoryList, Draft, publishStory, exportStory } from '@/api/draft';
   import { ElMessageBox } from 'element-plus';
   import Item from '@/views/draft/item.vue';
   import Approve from './approve.vue';
@@ -36,6 +36,19 @@
         storyList.value = storyList.value.filter((item) => item.id !== row.id);
       });
     });
+  }
+  async function exportJson(row: Draft) {
+    const data = await exportStory(row.id!);
+    const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${row.name}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    ElMessage.success('导出成功');
   }
   function publish(row: Draft) {
     ElMessageBox.confirm('确定推荐这个故事吗?审核通过将可以公开游玩。', '提示', {
@@ -76,6 +89,7 @@
               <Icon icon="i-material-symbols:publish" />
             </el-button>
             <el-button link type="danger" icon="el-icon-remove" @click="remove(row)" />
+            <el-button link type="primary" icon="el-icon-download" @click="exportJson(row)" title="导出" />
           </template>
         </el-table-column>
         <el-table-column prop="author" label="作者" v-if="isAdmin" width="200" align="center" />

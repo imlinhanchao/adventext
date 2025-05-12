@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { deleteStory, getStoryList, Story } from '@/api/story';
+  import { deleteStory, exportStory, getStoryList, Story } from '@/api/story';
   import { ElMessageBox } from 'element-plus';
   import Item from '@/views/story/item.vue';
 
@@ -28,6 +28,20 @@
       });
     });
   }
+
+  async function exportJson(row: Story) {
+    const data = await exportStory(row.id!);
+    const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${row.name}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    ElMessage.success('导出成功');
+  }
 </script>
 
 <template>
@@ -37,15 +51,17 @@
         <el-table-column label="" align="center" width="80">
           <template #default="{ row }">
             <el-button link type="danger" icon="el-icon-remove" @click="remove(row)" />
+            <el-button link type="primary" icon="el-icon-download" @click="exportJson(row)" />
           </template>
         </el-table-column>
-        <el-table-column prop="name" label="名称" width="280" align="center">
+        <el-table-column prop="name" label="名称" width="200" align="center">
           <template #default="{ row }">
             <router-link class="text-primary" :to="`/story/${row.id}/scene`">
               {{ row.name }}
             </router-link>
           </template>
         </el-table-column>
+        <el-table-column prop="author" label="作者" align="center" min-width="150" />
         <el-table-column prop="description" label="描述" />
         <el-table-column label="状态" width="200" align="center">
           <template #default="{ row }">

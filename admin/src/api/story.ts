@@ -46,3 +46,8 @@ export function deleteStory(id: string) {
   });
 }
 
+export function exportStory(id: string) {
+  return defHttp.get({
+    url: `/story/${id}/export`,
+  });
+}
