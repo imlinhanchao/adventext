@@ -8,7 +8,7 @@
     <p>
       @<a title="个人资料" href="/u/<%= user.username %>"><%= user.username %></a>
       <% if (locals.name == 'index') { -%>
-        / <a href="<%= story.id %>/rank">排行榜</a>
+        / <a href="<%= locals.story.id %>/rank">排行榜</a>
       <% } -%>
     </p>
   <% } -%>

@@ -3,3 +3,4 @@ dist
 sessions
 config.json
 src/public/admin
+deploy.sh

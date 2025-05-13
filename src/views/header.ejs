@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><%= locals.title ? locals.title + ' | ' + locals.config.name : locals.logo -%></title>
+  <title><%= locals.title ? locals.title + ' | ' + (locals.config.name || 'Adventext') : locals.logo -%></title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="/assets/main.js"></script>
 </head>

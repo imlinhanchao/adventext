@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "clean": "rimraf dist/ && rimraf public/admin",
-    "copy-files": "copyfiles -u 1 src/views/* src/public/**/**/* dist/ && copyfiles package*.json dist/",
+    "copy-files": "copyfiles -u 1 src/views/* src/public/* src/public/**/* src/public/**/**/* dist/ && copyfiles package*.json dist/",
     "start": "ts-node src/index.ts --files",
     "build": "npm run clean && npm run admin:build && tsc --project tsconfig.json && npm run copy-files",
     "import": "ts-node src/scripts/importStories.ts",

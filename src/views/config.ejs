@@ -8,7 +8,7 @@
     </p>
     <p>
       <label for="webport">端口:</label>
-      <input type="number" id="webport" name="webport" required value="<%= locals.body?.webport || '3000' -%>">
+      <input type="number" id="webport" name="webport" required value="<%= locals.body?.webport || process.env.PORT || '3000' -%>">
     </p>
     <h2>数据库配置</h2>
     <p>
