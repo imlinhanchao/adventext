@@ -1,9 +1,7 @@
 name: Build and Release With dependencies
 
 on:
-  push:
-    branches:
-      - main # 你可以根据需要修改分支名称
+  workflow_dispatch: # 手动触发工作流
 
 jobs:
   build-and-release:
