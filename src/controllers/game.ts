@@ -7,6 +7,7 @@ import { Inventory } from '../entities/Profile';
 import { isNumber } from '../utils/is';
 import { In, Not } from 'typeorm';
 import { nextTick } from 'process';
+import { profile } from 'console';
 
 function fillVar (content: string, type: string, target: any) {
   const mat = content.match(new RegExp(`${type}(\S+)${type}`, 'g'));
@@ -472,6 +473,78 @@ export default class GameController {
       json(res, { message: '游戏已重置' })
     } catch (error: any) {
       error(res, error.message)
+    }
+  }
+
+  async record (user: User, req: Request, res: Response, next: () => void) {
+    try {
+      const storyId = req.params.storyId;
+      const story = await this.storyRepo.findOneBy({ id: storyId });
+      let { p, count, end } = req.query;
+      const page = Number(p || 1);
+      const size = Math.min(Number(count || 50), 100);
+      
+      if (!story) return next()
+      
+      const profile = await ProfileRepo.findOneBy({
+        isEnd: false,
+        storyId,
+        userId: user.id,
+      });
+
+      if (!profile) {
+        render(res, 'record', req).title('游戏记录').logo(story.name).render({
+          list: [],
+          total: 0,
+          page,
+          size,
+          story,
+          endId: end,
+          ends: [],
+          profile: {},
+        })
+        return;
+      }
+
+      const ends = await EndRepo.find({
+        where: {
+          storyId,
+          user: user.id,
+        }
+      });
+
+      if (!end || !ends.some(p => p.endId == Number(end))) {
+        end = profile.endId + '';
+      }
+
+      if (!end) next();
+
+      const list = await RecordRepo.find({
+        where: { storyId, endId: Number(end), user: user.id },
+        order: { time: 'DESC' },
+        take: size,
+        skip: (page - 1) * size,
+      });
+
+      const total = await RecordRepo.createQueryBuilder('record')
+        .select('COUNT(DISTINCT record.id)', 'total')
+        .where('record.storyId = :storyId', { storyId })
+        .andWhere('record.endId = :endId', { endId: end })
+        .andWhere('record.user = :userId', { userId: user.id })
+        .getRawOne().then((data) => data.total);
+
+      render(res, 'record', req).title('游戏记录').logo(story.name).render({
+        list,
+        total,
+        page,
+        size,
+        story,
+        endId: end,
+        ends,
+        profile,
+      })
+    } catch (err: any) {
+      error(res, err.message)
     }
   }
 

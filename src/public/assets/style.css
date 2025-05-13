@@ -207,7 +207,7 @@ h3 {
   margin: 10px auto;
 }
 
-#options button {
+#options button, .option-btn {
   border: 2px solid currentColor;
   color: var(--primary-color);
   padding: 5px 10px;

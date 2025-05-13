@@ -1,0 +1,43 @@
+<%- include('header') %>
+
+  <article class="flex flex-1 flex-col h-full max-w-[700px]">
+    <header class="text-center">
+      <h2>历史记录</h2>
+<% if (ends.length > 0) { %>
+      <p>
+        <h3>
+          <a <%- locals.end && profile.endId && locals.end !== profile.endId && `href="?end=${profile.endId}"` || '' -%>>当前</a>
+        </h3>
+<% ends.forEach(function(end, i) { %>
+        <span>/</span>
+        <h3>
+          <a <%-locals.end !== end.endId && 'href="?end=${end.endId}"' || '' -%>><%=end.end-%></a>
+        </h3>
+<% }); %>
+      </p>
+<% } -%>
+    </header>
+    <main class="h-full">
+      <section class="w-full pl-5 h-full overflow-auto space-y-3">
+<% if (list.length > 0) { %>
+<% list.forEach(function(record, i) { %>
+        <section class="flex flex-col w-full space-y-2 hover:bg-gray-100 dark:hover:bg-gray-800 p-2 rounded-md">
+          <span class="line-clamp-2" onclick="open('<%=record.content%>')">
+            <%= record.content %>
+          </span>
+          <span class="flex justify-between items-bottom w-full">
+            <span><span class="option-btn text-sm" title="你的选择"><%=record.option-%></span></span>
+            <span class="text-gray-500 text-sm"><script>document.write(new Date(<%=Number(record.time)-%>).toLocaleString())</script></span>
+          </span>
+        </section>
+<% }); %>
+<% } else { -%>
+        <section class="flex h-full items-center justify-center">
+          <p class="text-center">你还没做出选择。</p>
+        </section>
+<% } -%>
+      </section>
+    </main>
+  </article>
+
+<%- include('footer') %>

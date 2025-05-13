@@ -43,6 +43,11 @@ export function createRouter(type: string) {
     const game = new GameController(type);
     game.restartGame(user, req, res)
   }));
+  router.get("/:storyId/history", userSession((user: User, req: Request, res: Response, next) => {
+    const game = new GameController(type);
+    game.record(user, req, res, next)
+  }));
+
 
   if (type === 'draft') {
     router.post("/:storyId/reset", userSession((user: User, req: Request, res: Response, next) => {
