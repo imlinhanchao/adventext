@@ -65,6 +65,7 @@
     return value;
   }
 
+  const content = ref('');
   async function run(option: Option) {
     let value = await getValue(option);
     if (value === false) return;
@@ -72,6 +73,7 @@
       scene,
       state,
       next,
+      content: text,
       message: msg,
     } = await gameRun({
       option: option.text,
@@ -87,6 +89,7 @@
 
     if (!scene) return;
 
+    content.value = text;
     profile.value = state;
     records.value.unshift(new SceneRecord(currentScene.value, option.text, profile.value.from));
 
@@ -152,28 +155,6 @@
     message.value = '';
     emit('next', currentScene.value.name);
   }
-
-  const content = computed(() => {
-    let content = currentScene.value.content;
-    Object.entries(profile.value.attr).forEach(([key, value]) => {
-      if (content.includes(`\${${key}}`)) {
-        content = content.replaceAll(`\${${key}}`, value + '');
-      }
-    });
-    currentScene.value.options.forEach((option) => {
-      if (option.append) {
-        if (content.includes('${' + option.text + '}')) {
-          content = content.replaceAll(
-            '${' + option.text + '}',
-            !option.disabled ? option.append : '',
-          );
-        } else if (!option.disabled) {
-          content += option.append;
-        }
-      }
-    });
-    return content;
-  });
 </script>
 
 <template>

@@ -45,7 +45,6 @@
     }
 
     const scene = await sceneApi.value.save(data.value);
-
     visible.value = false;
     ElMessage.success('保存成功');
     saveResolve(scene);

@@ -61,6 +61,10 @@ router.put("/scene/:sceneId", async (req, res) => {
   }
   
   SceneRepo.merge(scene, req.body);
+  scene.options.forEach((option) => {
+    delete option.disabled
+  });
+  
   const result = await SceneRepo.save(scene);
 
   updateStoryStatus(req);

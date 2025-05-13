@@ -517,6 +517,28 @@ export default class GameController {
     }
   }
 
+  getContent(profile: Profile, scene: Scene) {
+    let content = scene.content;
+
+    content = fillVar(content, '#', profile.attr);
+
+    Object.entries(profile.attr).forEach(([key, value]) => {
+      if (scene.content.includes(`\${${key}}`)) {
+        scene.content = scene.content.replaceAll(`\${${key}}`, value + '');
+      }
+    });
+    scene.options.forEach(option => {
+      if (option.append) {
+        if (content.includes('${' + option.text + '}')) {
+          content = content.replaceAll('${' + option.text + '}', option.append);
+        } else {
+          content += option.append;
+        }
+      }
+    })
+    return content;
+  }
+
   async gameExcute (profile: Profile, scene: Scene, { option: optionText, value: valueText, timezone }: any, virtual = false) {
     try {
       const storyId = profile.storyId;
@@ -570,7 +592,7 @@ export default class GameController {
           scene: scene!.name,
           endId: profile.endId,
           from: profile.from,
-          content: scene!.content,
+          content: this.getContent(profile, scene),
           option: option.text,
           time: Date.now(),
         });
@@ -600,6 +622,7 @@ export default class GameController {
         scene: nextScene,
         next,
         message,
+        content: this.getContent(profile, nextScene),
       }
     } catch (err: any) {
       throw err;
@@ -714,6 +737,7 @@ export default class GameController {
         state,
         scene,
         story,
+        content: this.getContent(state, scene!)
       }
 
     } catch (error: any) {

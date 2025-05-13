@@ -10,14 +10,12 @@ export function createRouter(type: string) {
   router.get("/:storyId", userSession(async (user: User, req: Request, res: Response, next) => {
     try {
       const game = new GameController(type);
-      const { state, story, scene } = await game.init(user, req, res);
+      const story = await game.getStory(req.params.storyId);
       if (!story || type == 'draft' && story?.author !== user.username) {
         return next();
       }
       render(res, "index", req).title(story.name).render({
         logo: story!.name,
-        scene,
-        state,
         story,
       })
     } catch (error: any) {
@@ -27,10 +25,11 @@ export function createRouter(type: string) {
   router.post("/:storyId/init", userSession(async (user: User, req: Request, res: Response) => {
     try {
       const game = new GameController(type);
-      const { state, story, scene } = await game.init(user, req, res);
+      const { state, content, scene } = await game.init(user, req, res);
       json(res, {
         scene,
         state,
+        content,
       })
     } catch (err: any) {
       error(res, err.message)

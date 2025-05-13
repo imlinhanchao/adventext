@@ -1,15 +1,9 @@
-function startGame(scene, state) {
+function startGame(scene, state, content) {
   const storyDiv = document.getElementById('story');
   const optionsDiv = document.getElementById('options');
   showMessage('', 'info')
 
-  Object.entries(state.attr).forEach(([key, value]) => {
-    if (scene.content.includes(`\${${key}}`)) {
-      scene.content = scene.content.replaceAll(`\${${key}}`, value);
-    }
-  });
-
-  storyDiv.textContent = scene.content;
+  storyDiv.textContent = content;
   optionsDiv.innerHTML = '';
 
   if (scene.isEnd) {
@@ -40,14 +34,6 @@ function startGame(scene, state) {
     scene.options.forEach(option => {
       const button = document.createElement('button');
       button.textContent = option.text;
-
-      if (option.append) {
-        if (storyDiv.textContent.includes('${' + option.text + '}')) {
-          storyDiv.textContent = storyDiv.textContent.replaceAll('${' + option.text + '}', option.append);
-        } else {
-          storyDiv.textContent += option.append;
-        }
-      }
 
       button.onclick = async () => {
         button.disabled = true;
@@ -83,8 +69,9 @@ function startGame(scene, state) {
           .then(res => {
             button.disabled = false;
             if (!res.code) {
-              startGame(res.data.scene, res.data.state);
-              if (res.data.message) showMessage(res.data.message, 'info')
+              const { scene, state, content, message } = res.data;
+              startGame(scene, state, content);
+              if (message) showMessage(message, 'info')
             } else {
               showMessage(res.message, 'error')
             }
@@ -178,7 +165,8 @@ function initGame(story) {
   }).then(res => res.json())
     .then(res => {
       if (!res.code) {
-        startGame(res.data.scene, res.data.state);
+        const { scene, state, content } = res.data;
+        startGame(scene, state, content);
       } else {
         showMessage(res.message, 'error')
       }
