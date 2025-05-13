@@ -214,6 +214,9 @@ h3 {
   border-radius: 4px;
   cursor: pointer;
 }
+#options button {
+  margin: 2px;
+}
 
 #profile .item {
   display: inline-block;

@@ -108,7 +108,7 @@
           <span>
             <el-tooltip placement="top">
               <template #content>
-                <p>追加到场景内容的文本。在场景内容，可以通过<code>${选项}</code>来控制追加内容的位置。</p>
+                <p>追加到场景内容的文本。在场景内容，可以通过<code>${选项}</code>来控制追加内容的位置。当选项存在时插入。</p>
               </template>
               <Icon icon="i-ep:info-filled" :size="14" />
             </el-tooltip>
@@ -116,6 +116,20 @@
           </span>
         </template>
         <el-input v-model="data.append" type="textarea" />
+      </el-form-item>
+      <el-form-item label="反向追加内容" prop="append">
+        <template #label>
+          <span>
+            <el-tooltip placement="top">
+              <template #content>
+                <p>使用与追加内容一样，但只有当选项被过滤时才插入。</p>
+              </template>
+              <Icon icon="i-ep:info-filled" :size="14" />
+            </el-tooltip>
+            反向追加内容
+          </span>
+        </template>
+        <el-input v-model="data.antiAppend" type="textarea" />
       </el-form-item>
       <el-form-item label="下个场景" prop="next">
         <el-autocomplete v-model="data.next" :fetch-suggestions="searchScene" @select="data.next = $event.name">

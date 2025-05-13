@@ -183,9 +183,7 @@ export default class GameController {
       }
     }
 
-    if (records) return story.options;
-
-    return story.options.filter((option) => !option.disabled);
+    return story.options;
   }
 
   async checkConditions (conditions: Condition[], profile: Profile, option: any, valueText: string, timezone: number, itemTake?: Inventory) {
@@ -601,11 +599,18 @@ export default class GameController {
       }
     });
     scene.options.forEach(option => {
-      if (option.append) {
+      if (option.append && !option.disabled) {
         if (content.includes('${' + option.text + '}')) {
           content = content.replaceAll('${' + option.text + '}', option.append);
         } else {
           content += option.append;
+        }
+      }
+      if (option.antiAppend && option.disabled) {
+        if (content.includes('${' + option.text + '}')) {
+          content = content.replaceAll('${' + option.text + '}', option.antiAppend);
+        } else {
+          content += option.antiAppend;
         }
       }
     })
@@ -711,8 +716,12 @@ export default class GameController {
       if (!profile) {
         throw new Error(`缺少游戏资料！`);
       }
-      const result = await this.updateOptions(scene, profile, timezone ?? new Date().getTimezoneOffset() / -60, records || []);
-      json(res, result)
+      scene.options = await this.updateOptions(scene, profile, timezone ?? new Date().getTimezoneOffset() / -60, records || []);
+      const content = this.getContent(profile, scene);
+      json(res, {
+        options: scene.options,
+        content,
+      })
     } catch (err: any) {
       error(res, err.message)
     }
@@ -749,8 +758,13 @@ export default class GameController {
       }
 
       const result = await this.gameExcute(profile, scene, req.body)
+      scene = result.scene;
+      scene.options = scene.options.filter(o => !o.disabled);
 
-      json(res, result)
+      json(res, {
+        ...result,
+        scene
+      })
     } catch (err: any) {
       error(res, err.message)
     }

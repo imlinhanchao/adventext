@@ -8,10 +8,14 @@ export class Option {
    * 选项文本
    */
   text: string;
-  /**as
+  /**
    * 追加内容
    */
   append?: string;
+  /**
+   * 反追加
+   */
+  antiAppend?: string; 
   /**
    * 下一场景
    */

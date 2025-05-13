@@ -3,6 +3,7 @@ import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
 export class Option {
   text: string;
   append?: string;
+  antiAppend?: string; 
   next: string;
   loop?: number;
   disabled?: boolean;
