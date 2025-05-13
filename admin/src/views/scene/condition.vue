@@ -110,10 +110,39 @@ const itemSelectorRef = ref<InstanceType<typeof ItemSelector>>();
 const itemTypes = computed<string[]>(() =>
   Array.from(new Set(items?.value.map((item) => item.type) || [])),
 );
+const itemAttrs = computed(() =>
+  items?.value.map(
+    (item) => Object.keys(item.attributes).map(
+      a => ({ 
+        value: a, label: item.attrName[a]
+      })
+    )
+  ).flat().filter(
+    (item, index, self) => index === self.findIndex((t) => t.value === item.value)
+  ) || []
+);
+const defaultAttrs = computed(() =>
+  Array.from(
+    new Set(
+      Object.keys(story?.value?.attr || {}).map(
+        a => ({ 
+          value: a, label: story?.value?.attrName[a]
+        })
+      )
+    )
+  )
+);
 function searchItemType (query: string, cb) {
   const items = itemTypes.value.filter((item) => item.includes(query) || !query);
   cb(items.map(item => ({ value: item })));
 }
+function searchAttr (type: string) {
+  return (query: string, cb) => {
+    const items = (type == 'Attr' ? defaultAttrs : itemAttrs).value.filter((item) => item.value.includes(query) || item.label?.includes(query) || !query);
+    cb(items);
+  }
+}
+
 </script>
 
 <template>
@@ -176,7 +205,14 @@ function searchItemType (query: string, cb) {
           <el-table-column prop="key" label="标识符" align="center">
             <template #default="{ row, $index: i }">
               <el-form-item :prop="`attr.${i}.key`" :rules="rules.key">
-                <el-input v-model.trim="row.key" />
+                <el-autocomplete :fetch-suggestions="searchAttr(data.type)" v-model.trim="row.key">
+                  <template #default="{ item }">
+                    <div class="flex items-center">
+                      <span class="font-bold">{{ item.label || item.value }}</span>
+                      <span class="text-xs text-gray-500 ml-2" v-if="item.label">{{ item.value }}</span>
+                    </div>
+                  </template>
+                </el-autocomplete>
               </el-form-item>
             </template>
           </el-table-column>

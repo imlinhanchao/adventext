@@ -77,7 +77,7 @@
   <el-container>
     <el-main>
       <el-table :data="storyList" style="width: 100%">
-        <el-table-column label="" align="center" width="80">
+        <el-table-column label="" align="center" width="120">
           <template #header>
             <el-button type="primary" link @click="add" icon="el-icon-circle-plus" />
           </template>
