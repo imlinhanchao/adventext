@@ -185,27 +185,37 @@ function initGame(story) {
     });
 }
 
+const isDarkModeInSystem = window.matchMedia("(prefers-color-scheme: dark)").matches;
+
 function initDarkMode() {
   const body = document.body;
-  const darkMode = localStorage.getItem('dark-mode');
-  if (darkMode === 'true') {
-    body.classList.add('dark');
-  } else if (!darkMode) {
-    if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+  const darkMode = localStorage.getItem('vueuse-color-scheme') || 'auto';
+  switch (darkMode) {
+    case 'dark': 
       body.classList.add('dark');
       localStorage.setItem('dark-mode', 'true');
-    } 
+      break;
+    case 'auto':
+      if (isDarkModeInSystem) {
+        body.classList.add('dark');
+        localStorage.setItem('dark-mode', 'true');
+      }
+      break;
   }
 }
 
 function toggleDarkMode() {
   const body = document.body;
-  let darkMode = localStorage.getItem('dark-mode');
-  if (darkMode === 'true') {
+  let darkMode = localStorage.getItem('vueuse-color-scheme'); // light / dark / auto
+  if (darkMode === 'dark') {
     body.classList.remove('dark');
-    localStorage.setItem('dark-mode', 'false');
-  } else {
+    localStorage.setItem('vueuse-color-scheme', isDarkModeInSystem ? 'light' : 'auto');
+  } else if (darkMode === 'light') {
     body.classList.add('dark');
-    localStorage.setItem('dark-mode', 'true');
+    localStorage.setItem('vueuse-color-scheme', !isDarkModeInSystem ? 'dark' : 'auto');
+  } else {
+    !isDarkModeInSystem ? body.classList.add('dark') : body.classList.remove('dark');
+    localStorage.setItem('vueuse-color-scheme', isDarkModeInSystem ? 'light' : 'dark');
   }
 }
+

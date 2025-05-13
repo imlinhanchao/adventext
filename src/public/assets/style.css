@@ -331,3 +331,11 @@ input {
   border: 1px solid var(--main-border-color);
   padding: 0 5px;
 }
+
+.dark .dark-icon{
+  display: inline-block;
+}
+
+.dark .light-icon {
+  display: none;
+}
