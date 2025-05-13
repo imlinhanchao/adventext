@@ -1,0 +1,63 @@
+name: Build and Release
+
+on:
+  push:
+    branches:
+      - main # 你可以根据需要修改分支名称
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 检出代码
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 设置 Node.js 环境
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18' # 根据项目需要调整 Node.js 版本
+
+      # 安装依赖
+      - name: Install dependencies
+        run: npm install
+
+      # 执行 build
+      - name: Build project
+        run: npm run build
+
+      # 安装依赖
+      - name: Install Prod dependencies
+        run: |
+          cd dist
+          npm ci --prod
+          cd ..
+
+      # 打包 dist 文件夹为 tar.gz
+      - name: Archive dist folder
+        run: tar -czvf dist.tar.gz dist
+
+      # 创建 Release 草稿
+      - name: Create Release Draft
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ github.run_number }} # 根据运行次数生成 tag
+          release_name: "Build ${GITHUB_SHA}" # 根据 SHA 设置 Release 名称
+          draft: true # 创建草稿
+          prerelease: false
+
+      # 上传 tar.gz 文件到 Release 中
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist.tar.gz
+          asset_name: dist.tar.gz
+          asset_content_type: application/gzip
