@@ -178,9 +178,6 @@ export default class GameController {
       option.disabled = option.loop !== undefined && record && (option.loop < 0 || Date.now() - record.time < option.loop * 1000);
       if (option.disabled) continue;
       option.disabled = !(await this.checkConditions(option.conditions?.filter(c => c.isHide) || [], state, option, '', timezone).catch(() => false));
-      if (option.disabled && story.content.includes('${' + option.text + '}')) {
-        story.content = story.content.replace('${' + option.text + '}', '');
-      }
     }
 
     return story.options;
@@ -612,6 +609,9 @@ export default class GameController {
         } else {
           content += option.antiAppend;
         }
+      }
+      if (option.append || option.antiAppend) {
+        content = content.replaceAll('${' + option.text + '}', '');
       }
     })
     return content;
