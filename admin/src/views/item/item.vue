@@ -40,6 +40,7 @@
   });
 
   const emit = defineEmits(['confirm', 'close']);
+  const loading = ref(false);
   async function save() {
     if (!(await formRef.value?.validate())) {
       return;
@@ -52,14 +53,17 @@
         if (item.name) data.value.attrName[item.key] = item.name;
       }
     });
-    await itemApi.value.save(data.value);
+    loading.value = true;
+    await itemApi.value.save(data.value).finally(() => {
+      loading.value = false;
+    });
     emit('confirm', data.value);
     visible.value = false;
   }
   
 </script>
 <template>
-  <el-dialog :title="data.id ? '物品更新' : '物品创建'" v-model="visible" width="800px" @close="emit('close')">
+  <el-dialog :title="data.id ? '物品更新' : '物品创建'" v-model="visible" width="800px" @close="emit('close')" append-to-body>
     <el-form :model="formData" label-width="auto" class="colon" :rules="rules" ref="formRef">
       <el-form-item label="标识符" prop="key">
         <el-input v-model="data.key" clearable />
@@ -111,7 +115,7 @@
     <template #footer>
       <span class="flex justify-end">
         <el-button @click="visible = false">取消</el-button>
-        <el-button type="primary" @click="save">保存</el-button>
+        <el-button type="primary" @click="save" :loading="loading">保存</el-button>
       </span>
     </template>
   </el-dialog>

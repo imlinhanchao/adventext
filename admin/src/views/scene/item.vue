@@ -39,12 +39,16 @@
     content: [{ required: true, message: '请输入场景内容', trigger: 'blur' }],
   }));
 
+  const loading = ref(false);
   async function save() {
     if (!(await formRef.value?.validate())) {
       return;
     }
 
-    const scene = await sceneApi.value.save(data.value);
+    loading.value = true;
+    const scene = await sceneApi.value.save(data.value).finally(() => {
+      loading.value = false;
+    });
     visible.value = false;
     ElMessage.success('保存成功');
     saveResolve(scene);
@@ -97,7 +101,7 @@
 </script>
 
 <template>
-  <el-dialog :title="data.id ? '场景编辑' : '场景创建'" v-model="visible" width="600px">
+  <el-dialog :title="data.id ? '场景编辑' : '场景创建'" v-model="visible" width="600px" append-to-body>
     <el-form ref="formRef" :model="data" label-width="auto" :rules="rules" class="colon" @mousedown.stop>
       <el-form-item label="场景名称" prop="name">
         <el-input v-model="data.name" placeholder="请输入场景名称" />
@@ -147,7 +151,7 @@
     </el-form>
     <template #footer>
       <el-button @click="visible = false">取消</el-button>
-      <el-button type="primary" @click="save">保存</el-button>
+      <el-button type="primary" @click="save" :loading="loading">保存</el-button>
     </template>
   </el-dialog>
 </template>

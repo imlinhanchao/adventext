@@ -90,7 +90,7 @@
 </script>
 
 <template>
-  <el-dialog title="物品" v-model="visible" width="1000px">
+  <el-dialog title="物品" v-model="visible" width="1000px" append-to-body>
     <el-container>
       <el-header class="flex !py-2 justify-between" height="auto">
         <section class="flex space-x-2">

@@ -68,14 +68,15 @@
   }
 
   const content = ref('');
+  const loading = ref(false);
   async function run(option: Option) {
     let value = await getValue(option);
     if (value === false) return;
+    loading.value = true;
     let {
       scene,
       state,
       next,
-      content: text,
       message: msg,
     } = await gameRun({
       option: option.text,
@@ -91,7 +92,6 @@
 
     if (!scene) return;
 
-    content.value = text;
     profile.value = state;
     records.value.unshift(new SceneRecord(currentScene.value, option.text, profile.value.from));
 
@@ -99,7 +99,9 @@
       sceneMap.value[next || scene.name],
       profile.value,
       records.value,
-    );
+    ).finally(() => {
+      loading.value = false;
+    });
     sceneMap.value[next || scene.name].options = options;
     content.value = updateContent;
     currentScene.value = sceneMap.value[next || scene.name];
@@ -250,7 +252,7 @@
       </section>
       <section>
         <template v-for="o in currentScene.options" :key="o.text">
-          <el-button v-if="!o.disabled" plain type="primary" @click="run(o)">
+          <el-button v-if="!o.disabled" plain type="primary" @click="run(o)" :loading="loading">
             {{ o.text }}
           </el-button>
         </template>

@@ -22,12 +22,16 @@
 
   const formData = computed(() => ({ ...data.value }));
   const formRef = ref<FormInstance>();
+  const loading = ref(false);
   async function submit() {
     if (!(await formRef.value?.validate())) {
       return;
     }
 
-    await updateUser(data.value!);
+    loading.value = true;
+    await updateUser(data.value!).then(() => {
+      loading.value = false;
+    });
     ElMessage.success('保存成功');
     visible.value = false;
     emit('confirm', data.value);
@@ -40,10 +44,14 @@
     v-model="visible"
     width="700px"
     class="max-h-[80vh]"
+    append-to-body
   >
     <el-form v-if="data" ref="formRef" label-width="auto" :model="formData" :rules="rules" class="colon">
       <el-form-item label="用户名" name="username">
         <el-input v-model.trim="data.username" />
+      </el-form-item>
+      <el-form-item label="昵称" name="nickname">
+        <el-input v-model.trim="data.nickname" />
       </el-form-item>
       <el-form-item label="密码" name="password">
         <el-input v-model="data.password" type="password" />
@@ -54,7 +62,7 @@
     </el-form>
     <template #footer>
       <el-button @click="visible = false">取消</el-button>
-      <el-button type="primary" @click="submit">保存</el-button>
+      <el-button type="primary" @click="submit" :loading="loading">保存</el-button>
     </template>
   </el-dialog>
 </template>

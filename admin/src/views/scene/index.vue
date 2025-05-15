@@ -29,23 +29,29 @@ import { Story } from '@/api/story';
   provide(StoryContext, story);
   provide(ScenesContext, scenes);
 
+  const loading = ref(false);
   onMounted(() => {
-    loadScene();
-    loadStory();
-    loadItem();
+    loading.value = true
+    Promise.all([
+      loadScene(),
+      loadStory(),
+      loadItem(),
+    ]).then(() => {
+      loading.value = false;
+    });
   });
   function loadScene() {
-    sceneApi.getList().then((data) => {
+    return sceneApi.getList().then((data) => {
       scenes.value = data;
     });
   }
   function loadStory() {
-    sceneApi.getStory(storyId).then((data) => {
+    return sceneApi.getStory(storyId).then((data) => {
       story.value = data;
     });
   }
   function loadItem() {
-    itemApi.getList().then((data) => {
+    return itemApi.getList().then((data) => {
       items.value = data;
     });
   }
@@ -87,15 +93,15 @@ import { Story } from '@/api/story';
       Object.assign(scene, data);
     });
   }
-  function removeScene(scene: Scene) {
+  function removeScene(scene: Scene, cb) {
     ElMessageBox.confirm('确定删除该场景吗？', '提示', {
       type: 'warning',
-    }).then(() => {
-      sceneApi.delete(scene.id!).then(() => {
+    }).then(async () => {
+      await sceneApi.delete(scene.id!).then(() => {
         ElMessage.success('删除成功');
-      });
+      }).finally(cb);
       scenes.value = scenes.value.filter((item) => item !== scene);
-    });
+    }).catch(cb);
   }
   function setStart(scene: Scene) {
     ElMessageBox.confirm('确定设置为起始场景吗？', '提示', {
@@ -249,6 +255,7 @@ import { Story } from '@/api/story';
         :direction="isMobile ? 'vertical' : 'horizontal'" 
         class="story-panel absolute z-1 top-0 bottom-0 right-0 left-0 overflow-hidden" 
         :style="`--panel-offset-x: ${pos.x}px; --panel-offset-y: ${pos.y}px;`"
+        v-loading="loading"
       >
         <el-container class="pt-60px">
           <el-header class="flex !p-3 justify-between z-2" height="auto">
@@ -316,10 +323,12 @@ import { Story } from '@/api/story';
             </section>
 
           </el-main>
-          <ItemSelector ref="itemListRef" :story="storyId" :type="type" readonly @close="loadItem" />
-          <SceneForm ref="sceneFormRef" :story="storyId" :type="type" :scenes="scenes" @update-name="updateSceneName" />
-          <StoryForm ref="storyFormRef" v-if="type == 'story'" @confirm="loadStory" />
-          <DraftForm ref="draftFormRef" v-if="type == 'draft'" @confirm="loadStory" />
+          <span @mousedown.stop>
+            <ItemSelector ref="itemListRef" :story="storyId" :type="type" readonly @close="loadItem" />
+            <SceneForm ref="sceneFormRef" :story="storyId" :type="type" :scenes="scenes" @update-name="updateSceneName" />
+            <StoryForm ref="storyFormRef" v-if="type == 'story'" @confirm="loadStory" />
+            <DraftForm ref="draftFormRef" v-if="type == 'draft'" @confirm="loadStory" />
+          </span>
 
         </el-container>
         <el-aside 

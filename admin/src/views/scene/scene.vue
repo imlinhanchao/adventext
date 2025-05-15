@@ -95,6 +95,12 @@
     });
     return content;
   });
+
+  const loading = ref(false);
+  function remove() {
+    loading.value = true;
+    emit('remove', data.value, () => loading.value = false);
+  }
 </script>
 <template>
   <section
@@ -113,7 +119,7 @@
           <el-button class="!group-hover:inline !hidden" v-if="!start && !scene.isEnd" link @click="$emit('start', scene)" title="设置为起始场景">
             <Icon icon="i-lets-icons:flag-duotone" />
           </el-button>
-          <el-button type="danger" link icon="el-icon-delete" @click="$emit('remove', scene)" />
+          <el-button type="danger" link icon="el-icon-delete" @click="remove" :loading="loading" />
           <el-button type="primary" link icon="el-icon-edit" @click="$emit('edit', scene)" />
         </span>
       </template>

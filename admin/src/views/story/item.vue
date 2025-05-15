@@ -34,6 +34,7 @@
 
   const formData = computed(() => ({ ...data.value, baseAttr: baseAttr.value }));
   const formRef = ref<FormInstance>();
+  const loading = ref(false);
   async function submit() {
     if (!(await formRef.value?.validate())) {
       return;
@@ -50,7 +51,10 @@
       }
     });
 
-    await (data.value.id ? updateStory : createStory)(data.value);
+    loading.value = true;
+    await (data.value.id ? updateStory : createStory)(data.value).finally(() => {
+      loading.value = false;
+    });
     ElMessage.success('保存成功');
     visible.value = false;
     emit('confirm', data.value);
@@ -140,7 +144,7 @@
     </el-form>
     <template #footer>
       <el-button @click="visible = false">取消</el-button>
-      <el-button type="primary" @click="submit">保存</el-button>
+      <el-button type="primary" @click="submit" :loading="loading">保存</el-button>
     </template>
   </el-dialog>
 </template>

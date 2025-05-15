@@ -19,7 +19,9 @@ let saveResolve: (condition: Condition) => void;
 function open (condition?: Condition) {
   visible.value = true;
   data.value = clone(condition || new Condition());
-
+  itemAttr.value = [];
+  profileAttr.value = [];
+  
   if (data.value.type == 'ItemAttr') {
     itemAttr.value = Object.entries(data.value.content).map(([key, value]: any) => {
       return {
