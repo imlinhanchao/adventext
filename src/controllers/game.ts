@@ -184,6 +184,25 @@ export default class GameController {
   }
 
   async checkConditions (conditions: Condition[], profile: Profile, option: any, valueText: string, timezone: number, itemTake?: Inventory) {
+    function conditionOperator (left: number, right: number, operator: string) {
+      switch (operator) {
+        case '=':
+          return left == right;
+        case '!=':
+          return left != right;
+        case '>':
+          return left > right;
+        case '<':
+          return left < right;
+        case '>=':
+          return left >= right;
+        case '<=':
+          return left <= right;
+        default:
+          return left > right;
+      }
+    }
+
     for (const condition of conditions) {
       try {
         if (condition.type === 'Time') {
@@ -208,8 +227,9 @@ export default class GameController {
           if (option.value && !option.value?.startsWith('item:')) {
             count = parseInt(valueText) * count
           }
-          if (!inventory || inventory.count < count) {
-            throw new Error(`你需要 ${item.name}×${count}.`);
+          if (!inventory || !conditionOperator(inventory.count, count, condition.operator || '>')) {
+            if ((condition.operator || '>') == '>') throw new Error(`你需要 ${item.name}×${count}.`);
+            else throw new Error('还不是时候');
           }
         }
         if (condition.type === 'ItemType') {

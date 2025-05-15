@@ -107,6 +107,17 @@
         <el-input v-model="data.name" placeholder="请输入场景名称" />
       </el-form-item>
       <el-form-item label="场景内容" prop="content">
+        <template #label>
+          <span>
+            <el-tooltip placement="top">
+              <template #content>
+                <p>支持通过<code>${选项名}</code>引用选项追加内容。#属性标识# 可插入玩家对应属性值。</p>
+              </template>
+              <Icon icon="i-ep:info-filled" :size="14" />
+            </el-tooltip>
+            场景内容
+          </span>
+        </template>
         <el-input
           v-model="data.content"
           type="textarea"

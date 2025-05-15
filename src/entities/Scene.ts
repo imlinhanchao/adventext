@@ -24,6 +24,7 @@ export class Condition {
   name: string;
   content: any;
   tip: string;
+  operator?: string;
   isHide: boolean = false;
 }
 

@@ -110,17 +110,15 @@
     <el-card class="scene w-full" :header="scene.name" header-class="!flex justify-between">
       <template #header>
         <span class="text-lg font-bold select-none cursor-move flex items-center space-x-1" @mousedown.stop="beginMove" @touchstart.stop="beginMove">
-          <Icon icon="i-tdesign:move" />
+          <el-tooltip content="移动场景"><Icon icon="i-tdesign:move" /></el-tooltip>
           <span>{{ scene.name }}</span>
           <Icon title="起始场景" :size="20" color="#f63832" v-if="start" icon="i-lets-icons:flag-fill" />
           <Icon title="结局" :size="20" color="#1f8bf4" v-if="scene.isEnd" icon="i-carbon:circle-filled" />
         </span>
         <span>
-          <el-button class="!group-hover:inline !hidden" v-if="!start && !scene.isEnd" link @click="$emit('start', scene)" title="设置为起始场景">
-            <Icon icon="i-lets-icons:flag-duotone" />
-          </el-button>
-          <el-button type="danger" link icon="el-icon-delete" @click="remove" :loading="loading" />
-          <el-button type="primary" link icon="el-icon-edit" @click="$emit('edit', scene)" />
+          <ButtonEx class="!group-hover:inline !hidden" icon="i-lets-icons:flag-duotone" v-if="!start && !scene.isEnd" link @click="$emit('start', scene)" content="设置为起始场景" />
+          <ButtonEx type="danger" link icon="el-icon-delete" @click="remove" :loading="loading" content="删除" />
+          <ButtonEx type="primary" link icon="el-icon-edit" @click="$emit('edit', scene)" content="编辑" />
         </span>
       </template>
       <p class="my-2">

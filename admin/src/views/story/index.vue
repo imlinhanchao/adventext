@@ -50,8 +50,8 @@
       <el-table :data="storyList" style="width: 100%">
         <el-table-column label="" align="center" width="80">
           <template #default="{ row }">
-            <el-button link type="danger" icon="el-icon-remove" @click="remove(row)" />
-            <el-button link type="primary" icon="el-icon-download" @click="exportJson(row)" />
+            <ButtonEx content="删除" link type="danger" icon="el-icon-remove" @click="remove(row)" />
+            <ButtonEx content="导出" link type="primary" icon="el-icon-download" @click="exportJson(row)" />
           </template>
         </el-table-column>
         <el-table-column prop="name" label="名称" width="200" align="center">

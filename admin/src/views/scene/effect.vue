@@ -257,7 +257,7 @@ function searchAttr (type: string) {
           <el-button @click="data.content = '$value'">输入值</el-button>
         </p>
       </template>
-      <ItemSelector v-if="story" ref="itemSelectorRef" :story="story.id!" :type="type" />
+      <ItemSelector v-if="story" ref="itemSelectorRef" :story="story.id!" :type="type" @confirm="items = $event" />
     </el-form>
     <template #footer>
       <el-button @click="visible = false">取消</el-button>

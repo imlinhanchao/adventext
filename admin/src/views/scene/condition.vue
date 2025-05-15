@@ -21,7 +21,7 @@ function open (condition?: Condition) {
   data.value = clone(condition || new Condition());
   itemAttr.value = [];
   profileAttr.value = [];
-  
+
   if (data.value.type == 'ItemAttr') {
     itemAttr.value = Object.entries(data.value.content).map(([key, value]: any) => {
       return {
@@ -115,7 +115,7 @@ const itemTypes = computed<string[]>(() =>
 const itemAttrs = computed(() =>
   items?.value.map(
     (item) => Object.keys(item.attributes).map(
-      a => ({ 
+      a => ({
         value: a, label: item.attrName[a]
       })
     )
@@ -127,7 +127,7 @@ const defaultAttrs = computed(() =>
   Array.from(
     new Set(
       Object.keys(story?.value?.attr || {}).map(
-        a => ({ 
+        a => ({
           value: a, label: story?.value?.attrName[a]
         })
       )
@@ -166,10 +166,13 @@ function searchAttr (type: string) {
         <span v-else-if="data.type == 'ItemType'">当前角色是否拥有设定的物品类型，比如设定物品类型为燃料，则需要当前角色中有类型为燃料的物品，且数量大于等于 1 才会判定成功。</span>
         <span v-else-if="data.type == 'Value'">选择此类型，必须在选项设定<b>客户端输入提示</b>，当玩家输入值等于设定值时才会判定成功。</span>
         <div v-else-if="data.type == 'Fn'">
-          <p>选择此类型，将会执行设定的函数内容，通过给<code>result</code>赋值或直接 return 返回判定结果。函数参数为 <code>profile</code>：当前玩家的 Profile 对象，<code>value</code>：玩家选择选项时填写的值，<code>itemSelect</code>：玩家选择选项时选择的物品。</p>
-          <p><code>profile</code>： 对象的属性包括 <code>attr</code>（属性对象 Map）、<code>inventory</code>（背包物品数组）、<code>scene</code>（当前场景对象）。</p>
+          <p>选择此类型，将会执行设定的函数内容，通过给<code>result</code>赋值或直接 return 返回判定结果。函数参数为 <code>profile</code>：当前玩家的 Profile
+            对象，<code>value</code>：玩家选择选项时填写的值，<code>itemSelect</code>：玩家选择选项时选择的物品。</p>
+          <p><code>profile</code>： 对象的属性包括 <code>attr</code>（属性对象
+            Map）、<code>inventory</code>（背包物品数组）、<code>scene</code>（当前场景对象）。</p>
           <p>
-            <code>inventory</code>：当前玩家的背包物品列表，包含属性<code>key</code>（物品标识符）、<code>name</code>（物品名称）、<code>count</code>（物品数量）、<code>attr</code>（物品属性对象 Map）。
+            <code>inventory</code>：当前玩家的背包物品列表，包含属性<code>key</code>（物品标识符）、<code>name</code>（物品名称）、<code>count</code>（物品数量）、<code>attr</code>（物品属性对象
+            Map）。
           </p>
           <p>
             <code>scene</code>：当前场景对象，包含属性<code>name</code>（场景名称）、<code>content</code>（场景内容）、<code>options</code>（场景选项数组）。
@@ -235,14 +238,14 @@ function searchAttr (type: string) {
           </el-table-column>
           <el-table-column label="操作" width="80" align="center">
             <template #header>
-              <el-button type="primary" link size="small" @click="attr.push({ key: '', value: '' })">
-                <Icon icon="i-ep:circle-plus" />
-              </el-button>
+              <ButtonEx
+                content="添加" icon="i-ep:circle-plus" type="primary" link size="small"
+                @click="attr.push({ key: '', value: '' })" />
             </template>
             <template #default="{ $index }">
-              <el-button type="danger" link size="small" @click="attr.splice($index, 1)">
-                <Icon icon="i-ep:remove" />
-              </el-button>
+              <ButtonEx
+                content="删除" icon="i-ep:remove" type="danger" link size="small"
+                @click="attr.splice($index, 1)" />
             </template>
           </el-table-column>
         </el-table>
@@ -251,9 +254,9 @@ function searchAttr (type: string) {
         <el-form-item label="物品" prop="name">
           <el-input v-model="data.name" clearable>
             <template #suffix>
-              <el-button type="text" @click="itemSelectorRef?.open().then((item: Item) => (data.name = item.key))">
-                <Icon icon="i-ep:search" />
-              </el-button>
+              <ButtonEx
+                icon="i-ep:search" content="选择" type="primary" link
+                @click="itemSelectorRef?.open().then((item: Item) => (data.name = item.key))" />
             </template>
           </el-input>
         </el-form-item>
@@ -272,7 +275,18 @@ function searchAttr (type: string) {
               数量
             </span>
           </template>
-          <el-input-number v-model="data.content" :min="0" />
+          <el-input type="number" v-model="data.content" :min="0">
+            <template #prepend>
+              <el-select v-model="data.operator" class="!w-60px">
+                <el-option label="=" value="=" />
+                <el-option label="!=" value="!=" />
+                <el-option label="<" value="<" />
+                <el-option label=">" value=">" />
+                <el-option label="≤" value="≤" />
+                <el-option label="≥" value="≥" />
+              </el-select>
+            </template>
+          </el-input>
         </el-form-item>
       </template>
       <template v-if="data.type === 'ItemType'">
@@ -288,16 +302,17 @@ function searchAttr (type: string) {
       <template v-if="data.type === 'Fn'">
         <el-form-item label="函数" prop="content">
           <section class="flex flex-col w-full">
-            <span class="bg-gray-100 dark:bg-gray-900 flex flex-col px-2 rounded-tl rounded-tr border border-b-0 border-[var(--el-border-color)]">
+            <span
+              class="bg-gray-100 dark:bg-gray-900 flex flex-col px-2 rounded-tl rounded-tr border border-b-0 border-[var(--el-border-color)]">
               <code>function check(profile: Profile, value: string, itemSelect: string): boolean {</code>
               <code>　　let result = true;</code>
             </span>
             <el-input
-              v-model="data.content" clearable type="textarea" :autosize="{ minRows: 3 }" 
+              v-model="data.content" clearable type="textarea" :autosize="{ minRows: 3 }"
               class="border-l border-r border-[var(--el-border-color)]"
-              style="--el-input-border-radius: 0;--el-input-border-color:transparent;"
-            />
-            <span class="bg-gray-100 dark:bg-gray-900 flex flex-col px-2 rounded-bl rounded-br border border-t-0 border-[var(--el-border-color)]">
+              style="--el-input-border-radius: 0;--el-input-border-color:transparent;" />
+            <span
+              class="bg-gray-100 dark:bg-gray-900 flex flex-col px-2 rounded-bl rounded-br border border-t-0 border-[var(--el-border-color)]">
               <code>　　return result;</code>
               <code>}</code>
             </span>
@@ -307,7 +322,9 @@ function searchAttr (type: string) {
       <el-form-item label="失败提示" prop="tip">
         <template #label>
           <span>
-            <el-tooltip content="条件不成立时将弹出提示，若不设置将使用游戏引擎默认提示，可以通过 $物品属性名$ 获取玩家选择物品的属性的值，#玩家属性名# 获取玩家的属性的值。" placement="top">
+            <el-tooltip
+              content="条件不成立时将弹出提示，若不设置将使用游戏引擎默认提示，可以通过 $物品属性名$ 获取玩家选择物品的属性的值，#玩家属性名# 获取玩家的属性的值。"
+              placement="top">
               <Icon icon="i-ep:info-filled" class="ml-1" />
             </el-tooltip>
             失败提示
@@ -326,7 +343,7 @@ function searchAttr (type: string) {
         </template>
         <el-switch v-model="data.isHide" />
       </el-form-item>
-      <ItemSelector v-if="story" ref="itemSelectorRef" :story="story.id!" :type="type" />
+      <ItemSelector v-if="story" ref="itemSelectorRef" :story="story.id!" :type="type" @confirm="items = $event" />
     </el-form>
     <template #footer>
       <el-button @click="visible = false">取消</el-button>

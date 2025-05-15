@@ -194,11 +194,11 @@
     <el-main class="!h-full space-y-2">
       <section class="space-x-2">
         <label class="bg-black text-white p-1 mr-1 rounded">
-          <el-button
+          <ButtonEx
             link
             icon="el-icon-plus"
             class="!text-inherit"
-            title="手动添加"
+            content="手动添加"
             @click="addAttr"
           />
           属性
@@ -223,11 +223,11 @@
       </section>
       <section class="space-x-2">
         <label class="bg-black text-white p-1 mr-1 rounded">
-          <el-button
+          <ButtonEx
             link
             icon="el-icon-plus"
             class="!text-inherit"
-            title="手动添加"
+            content="手动添加"
             @click="addInventory"
           />
           物品

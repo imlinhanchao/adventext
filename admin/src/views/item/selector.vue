@@ -12,6 +12,7 @@
     inventory?: boolean;
     readonly?: boolean;
   }>();
+  const emit = defineEmits(['confirm']);
 
   const query = reactive({
     name: '',
@@ -23,6 +24,7 @@
   const visible = ref(false);
   function search() {
     itemApi.value.getList(query).then((data) => {
+      emit('confirm', data);
       items.value = data.map((item) => {
         const selectedItem = selected.value.find((i) => i.id === item.id);
         return {

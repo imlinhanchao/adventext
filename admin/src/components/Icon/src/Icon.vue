@@ -18,7 +18,7 @@
     () =>
       isObject(props.icon) ||
       isFunction(props.icon) ||
-      (isString(props.icon) && props.icon.startsWith(`ant-icon-`)),
+      (isString(props.icon) && props.icon.startsWith(`el-icon-`)),
   );
 
   const isSVG = computed(() => isString(props.icon) && props.icon.startsWith('svg-icon:'));

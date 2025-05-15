@@ -79,6 +79,10 @@ export class Condition {
    */
   tip?: string;
   /**
+   * 条件操作符
+   */
+  operator?: string = '>';
+  /**
    * 是否用于隐藏选项
    */
   isHide: boolean = false;
