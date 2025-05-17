@@ -844,13 +844,16 @@ export default class GameController {
         .andWhere("scene.isEnd = :isEnd", { isEnd: true })
         .groupBy("scene.storyId")
         .getRawMany();
-      const finish = await EndRepo.createQueryBuilder("end")
+      let finish = [];
+      if (req.session.user) {
+        finish = await EndRepo.createQueryBuilder("end")
         .select("end.storyId", "storyId")
         .addSelect("COUNT(*)", "count")
         .where("end.storyId IN (:...storyIds)", { storyIds })
         .andWhere("end.user = :userId", { userId: req.session.user.id })
         .groupBy("end.storyId")
         .getRawMany();
+      }
       render(res, 'stories', req).render({
         stories: stories.map((story) => {
           const end = endScenes.find((e) => e.storyId == story.id);
