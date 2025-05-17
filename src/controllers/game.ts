@@ -2,16 +2,16 @@ import { Request, Response } from 'express';
 import { Record, Profile, Scene, User, StoryRepo, DraftRepo, ProfileRepo, EndRepo, SceneRepo, ItemRepo, RecordRepo, RankRepo } from "../entities";
 import { render, json, error } from "../utils/route";
 import { Condition, Effect } from '../entities/Scene';
-import { clone, shortTime } from '../utils';
+import { clone, omit, shortTime } from '../utils';
 import { Inventory } from '../entities/Profile';
 import { isNumber, isString } from '../utils/is';
 import { Not } from 'typeorm';
 
 function fillVar(content: string, type: string, target: any) {
-  const mat = content.match(new RegExp(`${type}(\S+)${type}`, 'g'));
+  const mat = content.match(new RegExp(`${type}(\\S+)${type}`, 'g'));
   if (mat) {
     for (const m of mat) {
-      const key = m.replaceAll(type, '');
+      const key = m.replaceAll(type.replaceAll('\\', ''), '');
       if (target && target[key] !== undefined) {
         content = content.replace(m, target[key]);
       }
@@ -817,11 +817,13 @@ export default class GameController {
 
       const result = await this.gameExcute(profile, scene, req.body)
       scene = result.scene;
-      scene.options = scene.options.filter(o => !o.disabled);
 
       json(res, {
         ...result,
-        scene
+        scene: {
+          ...scene,
+          options: scene.options.filter(o => !o.disabled).map(o => omit(o, ['conditions', 'effects'])),
+        }
       })
     } catch (err: any) {
       error(res, err.message)
@@ -876,7 +878,7 @@ export default class GameController {
 
       const { state, scene } = await this.gameState(userId, req.params.storyId);
 
-      scene!.options = await this.updateOptions(
+      const options = await this.updateOptions(
         scene!, 
         state, 
         req.body?.timezone ?? new Date().getTimezoneOffset() / -60
@@ -884,7 +886,10 @@ export default class GameController {
 
       return {
         state,
-        scene,
+        scene: {
+          ...scene,
+          options: options.map(o => omit(o, ['conditions', 'effects'])),
+        },
         story,
         content: this.getContent(state, scene!)
       }
