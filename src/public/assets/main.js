@@ -37,8 +37,7 @@ function startGame(scene, state, content) {
       button.textContent = option.text;
 
       button.onclick = async () => {
-      if (lock) return;
-      lock = true;
+        if (lock) return;
         let value;
         if (option.value?.startsWith('item:')) {
           const [_, message, type] = option.value.split(':');
@@ -56,6 +55,7 @@ function startGame(scene, state, content) {
           value = prompt(option.value)
           if (!value) return;
         }
+        lock = true;
         fetch(`./${window.storyId}/choose`, {
           method: 'POST',
           headers: {
