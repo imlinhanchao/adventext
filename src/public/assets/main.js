@@ -6,13 +6,15 @@ function startGame(scene, state, content) {
   storyDiv.textContent = content;
   optionsDiv.innerHTML = '';
 
+  let lock = false;
   if (scene.isEnd) {
     showMessage(`收获结局：${scene.theEnd}`, 'success')
     const button = document.createElement('button');
     button.textContent = '重新开始';
     button.onclick = async () => {
-      button.disabled = true;
-      fetch(`./${story}/restart`, {
+      if (lock) return;
+      lock = true;
+      fetch(`./${window.storyId}/restart`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -21,13 +23,12 @@ function startGame(scene, state, content) {
         body: JSON.stringify({})
       }).then(res => res.json())
         .then(res => {
-          button.disabled = false;
           if (!res.code) {
             location.reload();
           } else {
             showMessage(res.message, 'error')
           }
-        });
+        }).finally(() => lock = false);
     };
     optionsDiv.appendChild(button);
   } else {
@@ -36,7 +37,8 @@ function startGame(scene, state, content) {
       button.textContent = option.text;
 
       button.onclick = async () => {
-        button.disabled = true;
+      if (lock) return;
+      lock = true;
         let value;
         if (option.value?.startsWith('item:')) {
           const [_, message, type] = option.value.split(':');
@@ -75,7 +77,7 @@ function startGame(scene, state, content) {
             } else {
               showMessage(res.message, 'error')
             }
-          });
+          }).finally(() => lock = false);
       };
       optionsDiv.appendChild(button);
     });
@@ -135,13 +137,15 @@ function showState(state) {
   document.getElementById('attr').style.display = Object.keys(state.attrName).length == 0 ? 'none' : 'block';
 
   inventory.innerHTML = '';
-  state.inventory.forEach(function (item) {
+  const inventorys = state.inventory.filter(item => item.count > 0);
+  inventorys.forEach(function (item) {
+    if (item.count <= 0) return;
     const itemHTML = `<span class="name">${item.name}</span>
         <span class="value">x ${item.count}</span>`
     inventory.innerHTML += `<div class="item" title="${item.description}">${itemHTML}</div>`;
   })
 
-  document.getElementById('item').style.display = state.inventory.length == 0 ? 'none' : 'block';
+  document.getElementById('item').style.display = inventorys.length == 0 ? 'none' : 'block';
 }
 
 function showMessage(message, type) {

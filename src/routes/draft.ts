@@ -122,7 +122,7 @@ router.post("/:id/approve", async (req, res) => {
     return json(res, result);
   }
 
-  let story:any = StoryRepo.findOneBy({ sourceId: draft.id });
+  let story:any = await StoryRepo.findOneBy({ sourceId: draft.id });
 
   if (!story) {
     story = omit(draft, ['id', 'status', 'comment']);

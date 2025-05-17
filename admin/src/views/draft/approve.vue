@@ -50,7 +50,7 @@
         <el-switch v-model="data.pass" />
       </el-form-item>
       <el-form-item label="审核原因" prop="reason">
-        <el-input v-model="data.reason" clearable />
+        <el-input v-model="data.reason" clearable type="textarea" />
       </el-form-item>
     </el-form>
     <template #footer>

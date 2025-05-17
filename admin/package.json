@@ -6,7 +6,7 @@
     "dev": "vite",
     "build": "run-p type-check \"build-only {@}\" --",
     "preview": "vite preview",
-    "build-only": "rimraf ../../src/public/admin && cross-env NODE_ENV=production vite build && esno ./build/script/postBuild.ts",
+    "build-only": "cross-env NODE_ENV=production vite build && esno ./build/script/postBuild.ts",
     "type-check": "vue-tsc --build --force",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
     "format": "prettier --write src/"

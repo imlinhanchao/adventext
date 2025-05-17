@@ -507,8 +507,8 @@ export default class GameController {
       await ProfileRepo.save(state);
 
       json(res, { message: '游戏已重置' })
-    } catch (error: any) {
-      error(res, error.message)
+    } catch (err: any) {
+      error(res, err.message)
     }
   }
 
@@ -525,8 +525,8 @@ export default class GameController {
       await RecordRepo.delete({ user: userId, storyId, endId });
 
       json(res, { message: '游戏已重置' })
-    } catch (error: any) {
-      error(res, error.message)
+    } catch (err: any) {
+      error(res, err.message)
     }
   }
 
@@ -546,20 +546,6 @@ export default class GameController {
         userId: user.id,
       });
 
-      if (!profile) {
-        render(res, 'record', req).title('游戏记录').logo(story.name).render({
-          list: [],
-          total: 0,
-          page,
-          size,
-          story,
-          endId: end,
-          ends: [],
-          profile: {},
-        })
-        return;
-      }
-
       const ends = await EndRepo.find({
         where: {
           storyId,
@@ -568,10 +554,19 @@ export default class GameController {
       });
 
       if (!end || !ends.some(p => p.endId == Number(end))) {
-        end = profile.endId + '';
+        end = (profile?.endId ?? '') + '';
       }
 
-      if (!end) next();
+      if (!end) return render(res, 'record', req).title('游戏记录').logo(story.name).render({
+          list: [],
+          total: 0,
+          page,
+          size,
+          story,
+          endId: Number(end),
+          ends,
+          profile: {},
+        });
 
       const list = await RecordRepo.find({
         where: { storyId, endId: Number(end), user: user.id },
@@ -593,9 +588,9 @@ export default class GameController {
         page,
         size,
         story,
-        endId: end,
+        endId: Number(end),
         ends,
-        profile,
+        profile: profile || {},
       })
     } catch (err: any) {
       error(res, err.message)
@@ -877,7 +872,11 @@ export default class GameController {
 
       const { state, scene } = await this.gameState(userId, req.params.storyId);
 
-      scene!.options = await this.updateOptions(scene!, state, req.body?.timezone ?? new Date().getTimezoneOffset() / -60);
+      scene!.options = await this.updateOptions(
+        scene!, 
+        state, 
+        req.body?.timezone ?? new Date().getTimezoneOffset() / -60
+      ).then((options) => options.filter(o => !o.disabled));
 
       return {
         state,

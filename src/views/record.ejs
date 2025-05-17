@@ -1,25 +1,26 @@
 <%- include('header') %>
 
-  <article class="flex flex-1 flex-col h-full max-w-[700px]">
+  <article class="flex flex-1 flex-col h-full max-w-[700px] overflow-hidden">
     <header class="text-center">
       <h2>历史记录</h2>
 <% if (ends.length > 0) { %>
-      <p>
-        <h3>
-          <a <%- locals.end && profile.endId && locals.end !== profile.endId && `href="?end=${profile.endId}"` || '' -%>>当前</a>
-        </h3>
+      <section class="flex overflow-auto text-lg">
+        <span>
+          <a <%- endId && endId !== profile.endId && `href="/s/${story.id}/history"` || '' -%>>当前</a>
+        </span>
 <% ends.forEach(function(end, i) { %>
         <span>/</span>
-        <h3>
-          <a <%-locals.end !== end.endId && 'href="?end=${end.endId}"' || '' -%>><%=end.end-%></a>
-        </h3>
+        <span>
+          <a <%- endId !== end.endId && `href="?end=${end.endId}"` || '' -%>><%=end.end-%></a>
+        </span>
 <% }); %>
-      </p>
+      </section>
 <% } -%>
     </header>
-    <main class="h-full">
-      <section class="w-full pl-5 h-full overflow-auto space-y-3">
+    <main class="flex-1 overflow-auto">
 <% if (list.length > 0) { %>
+      <section class="w-full pl-5 h-full overflow-auto space-y-3">
+        <p class="text-center"><a href="/s/<%=story.id-%>">继续游玩</a></p>
 <% list.forEach(function(record, i) { %>
         <section class="flex flex-col w-full space-y-2 hover:bg-gray-100 dark:hover:bg-gray-800 p-2 rounded-md">
           <span class="line-clamp-2" onclick="open('<%=record.content%>')">
@@ -32,8 +33,9 @@
         </section>
 <% }); %>
 <% } else { -%>
-        <section class="flex h-full items-center justify-center">
+        <section class="flex h-full items-center justify-center flex-col">
           <p class="text-center">你还没做出选择。</p>
+          <p><a href="/s/<%=story.id-%>">继续游玩</a></p>
         </section>
 <% } -%>
       </section>
