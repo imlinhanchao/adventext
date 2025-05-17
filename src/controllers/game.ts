@@ -1,13 +1,11 @@
 import { Request, Response } from 'express';
-import { Record, Story, Profile, Scene, User, Item, End, Draft, StoryRepo, DraftRepo, ProfileRepo, EndRepo, SceneRepo, ItemRepo, RecordRepo, UserRepo, RankRepo } from "../entities";
+import { Record, Profile, Scene, User, StoryRepo, DraftRepo, ProfileRepo, EndRepo, SceneRepo, ItemRepo, RecordRepo, RankRepo } from "../entities";
 import { render, json, error } from "../utils/route";
 import { Condition, Effect } from '../entities/Scene';
 import { clone, shortTime } from '../utils';
 import { Inventory } from '../entities/Profile';
 import { isNumber } from '../utils/is';
-import { In, Not } from 'typeorm';
-import { nextTick } from 'process';
-import { profile } from 'console';
+import { Not } from 'typeorm';
 
 function fillVar(content: string, type: string, target: any) {
   const mat = content.match(new RegExp(`${type}(\S+)${type}`, 'g'));
@@ -118,7 +116,6 @@ function conditionCheckTime(condition: Condition, timezone: number) {
   }
   return true;
 }
-
 
 export default class GameController {
   private type: string;
@@ -612,7 +609,12 @@ export default class GameController {
         order: { endCount: 'DESC', totalCost: 'ASC' },
         take: size,
         skip: (page - 1) * size,
-      })
+      }).then((data) => {
+        return data.map((item) => ({
+          ...item,
+          totalCost: shortTime(item.totalCost),
+        }))
+      });
 
       const total = await EndRepo.createQueryBuilder('end')
         .select('COUNT(DISTINCT end.user)', 'total')

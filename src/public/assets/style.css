@@ -201,10 +201,6 @@ h3 {
   font-weight: bold;
 }
 
-#story {
-  margin: 10px auto;
-}
-
 #options button, .option-btn {
   border: 2px solid currentColor;
   color: var(--primary-color);

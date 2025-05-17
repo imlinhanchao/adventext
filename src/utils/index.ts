@@ -47,5 +47,11 @@ export function shortTime(ms: number): string {
   const minutes = Math.floor((seconds % (60 * 60)) / 60);
   const remainingSeconds = seconds % 60;
 
-  return `${days} 天 ${hours} 小时 ${minutes} 分钟 ${remainingSeconds} 秒`;
+  let time = '';
+  if (days > 0) time += `${days} 天 `;
+  if (hours > 0) time += `${hours} 小时 `;
+  if (minutes > 0) time += `${minutes} 分钟 `;
+  if (remainingSeconds > 0) time += `${remainingSeconds} 秒`;
+
+  return time.trim();
 }
