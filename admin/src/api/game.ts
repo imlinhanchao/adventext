@@ -76,10 +76,10 @@ export class SceneRecord {
    */
   time: number = Date.now();
 
-  constructor(scene: Scene, option: string, from: string) {
+  constructor(scene: Scene, option: string, from: string, content: string) {
     this.scene = scene.name;
     this.from = from;
-    this.content = scene.content;
+    this.content = content;
     this.option = option;
     this.time = Date.now();
   }

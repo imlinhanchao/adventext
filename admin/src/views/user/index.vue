@@ -2,7 +2,7 @@
   import { deleteUser, getUserList, User } from '@/api/user';
   import Item from './item.vue';
   import { ElMessageBox } from 'element-plus';
-import { formatDate } from '@vueuse/core';
+  import { formatDate } from '@vueuse/core';
 
   const userList = ref<User[]>([]);
   onMounted(() => {

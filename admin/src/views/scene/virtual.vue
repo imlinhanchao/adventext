@@ -5,6 +5,7 @@
   import { Option, Scene } from '@/api/scene';
   import { Item } from '@/api/item';
   import { isNumber } from '@/utils';
+  import { formatDate } from '@vueuse/core';
 
   defineProps<{
     type: string;
@@ -87,13 +88,14 @@
     }).catch((err) => {
       msgType.value = 'error';
       message.value = err.message;
+      loading.value = false;
       return {};
     });
 
     if (!scene) return;
 
     profile.value = state;
-    records.value.unshift(new SceneRecord(currentScene.value, option.text, profile.value.from));
+    records.value.unshift(new SceneRecord(currentScene.value, option.text, profile.value.from, content.value));
 
     const { options, content: updateContent } = await updateOptions(
       sceneMap.value[next || scene.name],
@@ -274,5 +276,17 @@
         </p>
       </el-dialog>
     </el-main>
+    <el-footer height="auto" class="max-h-[40%] overflow-auto">
+      <section v-for="(record, i) in records" class="text-sm space-y-1 rounded hover:dark:bg-gray-900 hover:bg-gray-50 bg-opacity-50 p-2" :key="record.time">
+        <p>
+          <el-button size="small" link class="mr-2" icon="el-icon-delete" text type="danger" @click="records.splice(i, 1)" />
+          <span>{{ record.content }}</span>
+        </p>
+        <p class="flex justify-between items-center">
+          <el-tag>{{ record.option }}</el-tag>
+          <span class="text-gray-500">{{ formatDate(new Date(Number(record.time)), 'YYYY-MM-DD HH:mm:ss') }}</span>
+        </p>
+      </section>
+    </el-footer>
   </el-container>
 </template>

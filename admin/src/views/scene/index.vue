@@ -77,8 +77,12 @@ const pos = ref({
   y: 120,
 });
 
+const saveLoading = ref(false);
 async function save () {
-  await sceneApi.batchSave(scenes.value);
+  saveLoading.value = true;
+  await sceneApi.batchSave(scenes.value).finally(() => {
+    saveLoading.value = false;
+  });
   ElMessage.success('保存成功');
 }
 
@@ -277,7 +281,7 @@ function virtualRun () {
                 </ButtonEx>
               </el-button-group></el-form>
             <el-form :size="isMobile ? 'small' : 'default'">
-              <ButtonEx icon="i-lucide:save" type="primary" @click="save">
+              <ButtonEx icon="i-lucide:save" type="primary" @click="save" :loading="saveLoading">
                 <span class="btn-text">保存布局</span>
               </ButtonEx>
             </el-form>
@@ -330,5 +334,6 @@ function virtualRun () {
 
 .isMobile.el-aside {
   box-shadow: 0 0 10px rgba(100, 100, 100, 0.5);
+  max-height: 40vh;
 }
 </style>

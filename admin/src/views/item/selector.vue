@@ -124,7 +124,7 @@
           <el-table-column prop="type" label="类型" width="80" />
           <el-table-column v-if="inventory" prop="count" label="数量" width="180" align="center">
             <template #default="{ row }">
-              <el-input-number v-model="row.count" type="number" :min="1" />
+              <el-input-number v-model="row.count" type="number" />
             </template>
           </el-table-column>
           <el-table-column label="操作" align="center" width="180" v-if="readonly">

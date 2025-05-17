@@ -1,59 +1,37 @@
-<script lang="tsx">
-  import { omit } from 'lodash-es';
-  import { computed, unref, defineComponent } from 'vue';
-  import { ElButton, buttonProps, buttonEmits, Placement, ElTooltip } from 'element-plus';
-  import { useAttrs } from '@/hooks/core/useAttrs';
+<!-- filepath: /home/hancel/project/text-rpg/admin/src/components/ButtonEx/src/ButtonEx.vue -->
+<template>
+  <el-tooltip v-if="content" :content="content" :placement="placement">
+    <template #default>
+      <el-button v-bind="$attrs">
+        <template v-if="icon">
+          <Icon :icon="icon" />
+          <span v-if="$slots.default"><slot></slot></span>
+        </template>
+        <template v-else>
+          <slot></slot>
+        </template>
+      </el-button>
+    </template>
+  </el-tooltip>
+  <el-button v-else v-bind="$attrs">
+    <template v-if="icon">
+      <Icon :icon="icon" />
+      <span v-if="$slots.default"><slot></slot></span>
+    </template>
+    <template v-else>
+      <slot></slot>
+    </template>
+  </el-button>
+</template>
+
+<script lang="ts" setup name="ButtonEx">
+  import { ElButton, Placement, ElTooltip } from 'element-plus';
   import Icon from '@/components/Icon';
 
-  const PROP_CONTENT = 'content';
-  const PROP_PLACEMENT = 'placement';
-  const PROP_ICON = 'icon';
 
-  export default defineComponent({
-    name: 'XButton',
-    extends: ElButton,
-    inheritAttrs: false,
-    props: {
-      ...buttonProps,
-      content: { type: String, default: '' },
-      placement: { type: String as PropType<Placement>, default: 'top' },
-    },
-    emits: buttonEmits,
-    setup(props, { slots }) {
-      const attrs = useAttrs({ excludeDefaultKeys: false });
-      const getBindValue = computed(() =>
-        omit({ ...unref(attrs), ...props }, [PROP_CONTENT, PROP_PLACEMENT, PROP_ICON]),
-      );
-
-      const renderButton = () => {
-        return (
-          <ElButton
-            {...unref(getBindValue)}
-          >
-            {{
-              ...slots,
-              default: () =>
-                props[PROP_ICON] ? (
-                  <>
-                    <Icon icon={props[PROP_ICON]} />
-                    {slots.default && <span>{slots.default()}</span>}
-                  </>
-                ) : (
-                  slots.default && slots.default()
-                ),
-            }}
-          </ElButton>
-        );
-      };
-
-      return () =>
-        props.content ? (
-          <ElTooltip content={props.content} placement={props.placement} auto-close={5000}>
-            {renderButton}
-          </ElTooltip>
-        ) : (
-          renderButton()
-        );
-    },
-  });
+  defineProps<{
+    content?: string;
+    placement?: Placement;
+    icon?: string;
+  }>();
 </script>

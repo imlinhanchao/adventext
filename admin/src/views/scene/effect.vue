@@ -251,6 +251,31 @@ function searchAttr (type: string) {
         </el-form-item>
       </template>
       <template v-if="data.type && 'Fn' != data.type">
+        <el-form-item label="提示语" prop="tip">
+          <template #label>
+            <span>
+              <el-tooltip
+                placement="top">
+                <template #content>
+                  <div class="text-sm text-gray-500">
+                    <p>效果生效提示，若不设置将使用游戏引擎默认提示，可以使用</p>
+                    <ul class="list-inside list-disc">
+                      <li><code>$物品属性名$</code>：获取玩家选择物品的属性的值</li>
+                      <li><code>#玩家属性名#</code>：获取玩家的属性的值</li>
+                      <li><code>$old</code>：属性修改前的值</li>
+                      <li><code>$new</code>：属性修改后的值</li>
+                      <li><code>$item</code>：选择的物品</li>
+                      <li><code>$value</code>：输入的值</li>
+                    </ul>
+                  </div>
+                </template>
+                <Icon icon="i-ep:info-filled" class="ml-1" />
+              </el-tooltip>
+              提示语
+            </span>
+          </template>
+          <el-input v-model="data.tip" clearable type="textarea" />
+        </el-form-item>
         <p>
           <el-button @click="data.content = 'rand(1,100)'">随机数</el-button>
           <el-button @click="data.content = 'percent(10,2)'">概率数</el-button>

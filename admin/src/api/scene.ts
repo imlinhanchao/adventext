@@ -81,7 +81,7 @@ export class Condition {
   /**
    * 条件操作符
    */
-  operator?: string = '>';
+  operator?: string = '≥';
   /**
    * 是否用于隐藏选项
    */
@@ -112,6 +112,10 @@ export class Effect {
    * 值
    */
   content: string;
+  /**
+   * 效果提示
+   */
+  tip?: string;
 
   constructor(name: string = '', type: string = '', content: string = '', operator: string = '=') {
     this.name = name;

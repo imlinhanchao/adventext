@@ -29,10 +29,11 @@ export class Condition {
 }
 
 export class Effect {
-  name: string;
   type: string;
+  name: string;
   operator?: string;
   content: string;
+  tip?: string;
 
   constructor(name: string, type: string, content: string) {
     this.name = name;

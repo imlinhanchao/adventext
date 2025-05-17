@@ -26,14 +26,16 @@ function open (condition?: Condition) {
     itemAttr.value = Object.entries(data.value.content).map(([key, value]: any) => {
       return {
         key,
-        value: value.toString(),
+        operator: value.operator,
+        value: value.value || value.toString(),
       };
     });
   } else if (data.value.type == 'Attr') {
     profileAttr.value = Object.entries(data.value.content).map(([key, value]: any) => {
       return {
         key,
-        value: value.toString(),
+        operator: value.operator,
+        value: value.value || value.toString(),
       };
     });
   } else {
@@ -65,9 +67,12 @@ async function save () {
     data.value.content = {};
     attr.value.forEach((item) => {
       if (item.key) {
-        data.value.content[item.key] = isNaN(parseFloat(item.value))
+        const value = isNaN(parseFloat(item.value))
           ? item.value
           : parseFloat(item.value);
+        data.value.content[item.key] = item.operator
+          ? { operator: item.operator, value }
+          : value;
       }
     });
   }
@@ -94,8 +99,8 @@ function initTypeContent () {
   }
 }
 
-const profileAttr = ref<{ key: string; value: string }[]>([]);
-const itemAttr = ref<{ key: string; value: string }[]>([]);
+const profileAttr = ref<{ key: string; value: string, operator?: string }[]>([]);
+const itemAttr = ref<{ key: string; value: string, operator?: string }[]>([]);
 const attr = computed(() => {
   if (data.value.type === 'ItemAttr') {
     return itemAttr.value;
@@ -232,7 +237,18 @@ function searchAttr (type: string) {
             </template>
             <template #default="{ row, $index: i }">
               <el-form-item :prop="`attr.${i}.value`">
-                <el-input v-model.trim="row.value" placeholder="留空则不检查值" />
+                <el-input v-model.trim="row.value" placeholder="留空则不检查值">
+                  <template #prepend>
+                    <el-select v-model="row.operator" class="!w-60px" placeholder="≥">
+                      <el-option label="=" value="=" />
+                      <el-option label="!=" value="!=" />
+                      <el-option label="<" value="<" />
+                      <el-option label=">" value=">" />
+                      <el-option label="≤" value="≤" />
+                      <el-option label="≥" value="≥" />
+                    </el-select>
+                  </template>
+                </el-input>
               </el-form-item>
             </template>
           </el-table-column>

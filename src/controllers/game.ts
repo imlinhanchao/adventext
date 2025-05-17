@@ -9,7 +9,7 @@ import { In, Not } from 'typeorm';
 import { nextTick } from 'process';
 import { profile } from 'console';
 
-function fillVar (content: string, type: string, target: any) {
+function fillVar(content: string, type: string, target: any) {
   const mat = content.match(new RegExp(`${type}(\S+)${type}`, 'g'));
   if (mat) {
     for (const m of mat) {
@@ -22,7 +22,7 @@ function fillVar (content: string, type: string, target: any) {
   return content;
 }
 
-function formatContent (content: string, profileAttr: any, value: string, itemTakeAttr?: any) {
+function formatContent(content: string, profileAttr: any, value: string, itemTakeAttr?: any) {
   if (isNumber(content)) return content;
   content = fillVar(content, '\\$', itemTakeAttr);
   content = fillVar(content, '#', profileAttr);
@@ -40,7 +40,7 @@ function formatContent (content: string, profileAttr: any, value: string, itemTa
   return isNaN(parseFloat(content)) ? content : parseFloat(content);
 }
 
-function operatorData (left: string | number, right: string | number, operator: string) {
+function operatorData(left: string | number, right: string | number, operator: string) {
   if (typeof right === 'string' || typeof left === 'string') {
     switch (operator) {
       case '=':
@@ -69,7 +69,7 @@ function operatorData (left: string | number, right: string | number, operator: 
 
 }
 
-function conditionCheckTime (condition: Condition, timezone: number) {
+function conditionCheckTime(condition: Condition, timezone: number) {
   const time = new Date();
   if (condition.content.year !== undefined) {
     if (Array.isArray(condition.content.year)) {
@@ -127,11 +127,11 @@ export default class GameController {
     this.type = type;
   }
 
-  get storyRepo () {
+  get storyRepo() {
     return this.type == 'draft' ? DraftRepo : StoryRepo;
   }
 
-  async gameState (userId: number, storyId: string) {
+  async gameState(userId: number, storyId: string) {
     const state = (await ProfileRepo.findOneBy({ userId, storyId, isEnd: false })) || new Profile(userId, storyId);
 
     if (!state.scene) {
@@ -150,19 +150,19 @@ export default class GameController {
     return { state, scene };
   }
 
-  async getSence (scene: string, storyId: string) {
+  async getSence(scene: string, storyId: string) {
     return await SceneRepo.findOneBy({ name: scene, storyId });
   }
 
-  async getItem (item: string) {
+  async getItem(item: string) {
     return await ItemRepo.findOneBy({ key: item });
   }
 
-  async getStory (id: string) {
+  async getStory(id: string) {
     return await this.storyRepo.findOneBy({ id });
   }
 
-  async updateOptions (story: Scene, state: Profile, timezone: number, records?: Record[]) {
+  async updateOptions(story: Scene, state: Profile, timezone: number, records?: Record[]) {
     for (const option of story.options) {
       let record;
       if (!records) {
@@ -183,8 +183,8 @@ export default class GameController {
     return story.options;
   }
 
-  async checkConditions (conditions: Condition[], profile: Profile, option: any, valueText: string, timezone: number, itemTake?: Inventory) {
-    function conditionOperator (left: number, right: number, operator: string) {
+  async checkConditions(conditions: Condition[], profile: Profile, option: any, valueText: string, timezone: number, itemTake?: Inventory) {
+    function conditionOperator(left: number, right: number, operator: string) {
       switch (operator) {
         case '=':
           return left == right;
@@ -194,12 +194,12 @@ export default class GameController {
           return left > right;
         case '<':
           return left < right;
-        case '>=':
+        case '≥':
           return left >= right;
-        case '<=':
+        case '≤':
           return left <= right;
         default:
-          return left > right;
+          return left >= right;
       }
     }
 
@@ -222,12 +222,15 @@ export default class GameController {
           if (!item) {
             throw new Error(`物品${condition.name}未找到`);
           }
-          const inventory = profile.inventory.find((i) => i.key === condition.name);
-          let count = parseInt(condition.content || '1');
-          if (option.value && !option.value?.startsWith('item:')) {
+          const inventory = itemTake || profile.inventory.find((i) => i.key === condition.name);
+          if (inventory && inventory.key !== condition.name) {
+            throw new Error(`不是这个`);
+          }
+          let count = parseInt(condition.content || '0');
+          if (valueText && option.value && !option.value?.startsWith('item:')) {
             count = parseInt(valueText) * count
           }
-          if (!inventory || !conditionOperator(inventory.count, count, condition.operator || '>')) {
+          if ((!inventory && condition.content === '') || !conditionOperator(inventory?.count || 0, count, condition.operator || '≥')) {
             if ((condition.operator || '>') == '>') throw new Error(`你需要 ${item.name}×${count}.`);
             else throw new Error('还不是时候');
           }
@@ -248,9 +251,17 @@ export default class GameController {
                   return false;
                 }
                 if (typeof i.attributes[attr] === 'number') {
-                  return i.attributes[attr] * i.count >= condition.content[attr];
+                  return conditionOperator(
+                    i.attributes[attr] * i.count,
+                    condition.content[attr].value || condition.content[attr],
+                    condition.content[attr].operator || '≥'
+                  );
                 } else {
-                  return i.attributes[attr] === condition.content[attr];
+                  return conditionOperator(
+                    i.attributes[attr],
+                    condition.content[attr].value || condition.content[attr],
+                    condition.content[attr].operator || '='
+                  );
                 }
               });
             });
@@ -265,9 +276,17 @@ export default class GameController {
                 return false;
               }
               if (typeof itemTake.attributes[attr] === 'number') {
-                return itemTake.attributes[attr] * itemTake.count >= condition.content[attr];
+                return conditionOperator(
+                  itemTake.attributes[attr] * itemTake.count,
+                  condition.content[attr].value || condition.content[attr],
+                  condition.content[attr].operator || '≥'
+                );
               } else {
-                return itemTake.attributes[attr] === condition.content[attr];
+                return conditionOperator(
+                  itemTake.attributes[attr],
+                  condition.content[attr].value || condition.content[attr],
+                  condition.content[attr].operator || '='
+                );
               }
             });
             if (!inventory) {
@@ -276,16 +295,24 @@ export default class GameController {
           }
         }
         if (condition.type === 'Attr') {
-          for (const [key, value] of Object.entries(condition.content)) {
+          for (const [key, value] of Object.entries(condition.content as { [key: string]: any })) {
             if (profile.attr[key] === undefined) {
               throw new Error(`你还没准备好.`);
             }
             if (typeof profile.attr[key] === 'number') {
-              if (profile.attr[key] < parseFloat((value as any).toString())) {
+              if (!conditionOperator(
+                profile.attr[key],
+                parseFloat(value.value || value.toString()),
+                value.operator || '≥'
+              )) {
                 throw new Error(`你还没准备好.`);
               }
             } else {
-              if (profile.attr[key] !== value) {
+              if (!conditionOperator(
+                profile.attr[key],
+                value.value || value,
+                value.operator || '='
+              )) {
                 throw new Error(`你还没准备好.`);
               }
             }
@@ -310,10 +337,11 @@ export default class GameController {
   }
 
 
-  async runEffects (profile: Profile, effects: Effect[], value: string, itemTake?: Inventory) {
+  async runEffects(profile: Profile, effects: Effect[], value: string, itemTake?: Inventory) {
     try {
       let message = '', next = null;
       for (const effect of effects) {
+        let msg = '', oldVal = '', newVal = '';
         effect.operator = effect.operator || '=';
         effect.content = effect.content.replace(/\$value/g, value);
         effect.content = effect.content.replaceAll('\\n', '\n');
@@ -322,7 +350,7 @@ export default class GameController {
           if (effect.name !== '$item') item = await this.getItem(effect.name);
           else item = itemTake;
           if (!item) throw new Error(`物品 ${effect.name} 未找到.`)
-          const inventory = profile.inventory.find((i) => i.key === effect.name);
+          const inventory = profile.inventory.find((i) => i.key === item.key);
           let count = formatContent(effect.content || '1', profile.attr, value, itemTake?.attributes);
           if (!isNumber(count)) throw new Error(`Item ${effect.name} 效果获取数量失败！`)
           if (inventory) {
@@ -335,7 +363,7 @@ export default class GameController {
           }
           profile.inventory = profile.inventory.filter(i => i.count > 0);
 
-          if (count) message += `${count > 0 ? '获得' : '扣除'} ${item.name}×${Math.abs(count)}.\n`;
+          if (count) msg += `${count > 0 ? '获得' : '扣除'} ${item.name}×${Math.abs(count)}.\n`;
         }
         if (effect.type === 'Attr') {
           const oldValue = profile.attr[effect.name] || '';
@@ -354,8 +382,10 @@ export default class GameController {
             profile.attr[effect.name] = operatorData(profile.attr[effect.name], content, effect.operator);
           }
           if (profile.attrName[effect.name]) {
-            message += `${profile.attrName[effect.name]} ${oldValue} → ${effect.content}.\n`;
+            msg += `${profile.attrName[effect.name]} ${oldValue} → ${effect.content}.\n`;
           }
+          oldVal = oldValue;
+          newVal = effect.content;
         }
         if (effect.type === 'ItemAttr') {
           if (!itemTake) {
@@ -374,11 +404,11 @@ export default class GameController {
               if (inventory.attributes[attr] * inventory.count + total > count) {
                 const itemCount = Math.ceil((count - total) / inventory.attributes[attr]);
                 total += itemCount * inventory.attributes[attr];
-                message += `扣除 ${inventory.name}×${itemCount}.\n`;
+                msg += `扣除 ${inventory.name}×${itemCount}.\n`;
                 inventory.count -= itemCount;
               } else {
                 total += inventory.attributes[attr] * inventory.count;
-                message += `扣除 ${inventory.name}×${inventory.count}.\n`;
+                msg += `扣除 ${inventory.name}×${inventory.count}.\n`;
                 profile.inventory = profile.inventory.filter(i => i.key != inventory.key);
               }
             }
@@ -393,7 +423,7 @@ export default class GameController {
               throw new Error(`物品 ${itemTake.name} 数量不足.`);
             }
             if (itemCount > 0) {
-              message += `扣除 ${itemTake.name}×${itemCount}.\n`;
+              msg += `扣除 ${itemTake.name}×${itemCount}.\n`;
               itemTake.count -= itemCount;
               if (itemTake.count <= 0) {
                 profile.inventory = profile.inventory.filter(i => i.key != itemTake.key);
@@ -423,9 +453,18 @@ export default class GameController {
             }
           }
 
-          message += result.message;
+          msg += result.message;
           next = result.next;
         }
+        if (effect.tip) {
+          msg = effect.tip.replace(/\$item/g, itemTake?.name || '')
+            .replace(/\$value/g, value || '')
+            .replace(/\$old/g, oldVal || '')
+            .replace(/\$new/g, newVal || '');
+          msg = fillVar(msg, '\\$', itemTake?.attributes);
+          msg = fillVar(msg, '#', profile.attr);
+        }
+        message += msg;
       }
 
       return { message, next, profile };
@@ -434,7 +473,7 @@ export default class GameController {
     }
   }
 
-  async addEnd (scene: Scene, profile: Profile) {
+  async addEnd(scene: Scene, profile: Profile) {
     if (!scene.isEnd) return;
 
     let end = await EndRepo.findOneBy({ user: profile.userId, storyId: profile.storyId, end: scene.theEnd });
@@ -454,7 +493,7 @@ export default class GameController {
     return await EndRepo.save(end);
   }
 
-  async restartGame (user: User, req: Request, res: Response) {
+  async restartGame(user: User, req: Request, res: Response) {
     try {
       const userId = user.id;
       const storyId = req.params.storyId;
@@ -473,7 +512,7 @@ export default class GameController {
     }
   }
 
-  async resetGame (user: User, req: Request, res: Response, next: () => void) {
+  async resetGame(user: User, req: Request, res: Response, next: () => void) {
     try {
       const userId = user.id;
       const storyId = req.params.storyId;
@@ -491,16 +530,16 @@ export default class GameController {
     }
   }
 
-  async record (user: User, req: Request, res: Response, next: () => void) {
+  async record(user: User, req: Request, res: Response, next: () => void) {
     try {
       const storyId = req.params.storyId;
       const story = await this.storyRepo.findOneBy({ id: storyId });
       let { p, count, end } = req.query;
       const page = Number(p || 1);
       const size = Math.min(Number(count || 50), 100);
-      
+
       if (!story) return next()
-      
+
       const profile = await ProfileRepo.findOneBy({
         isEnd: false,
         storyId,
@@ -563,16 +602,16 @@ export default class GameController {
     }
   }
 
-  async rank (user: User, req: Request, res: Response, next: () => void) {
+  async rank(user: User, req: Request, res: Response, next: () => void) {
     try {
       const storyId = req.params.storyId;
       const story = await this.storyRepo.findOneBy({ id: storyId });
       let { p, count } = req.query;
       const page = Number(p || 1);
       const size = Math.min(Number(count || 50), 100);
-      
+
       if (!story) return next()
-        
+
       const list = await RankRepo.find({
         where: { storyId, username: Not(story.author) },
         order: { endCount: 'DESC', totalCost: 'ASC' },
@@ -637,7 +676,7 @@ export default class GameController {
     return content;
   }
 
-  async gameExcute (profile: Profile, scene: Scene, { option: optionText, value: valueText, timezone }: any, virtual = false) {
+  async gameExcute(profile: Profile, scene: Scene, { option: optionText, value: valueText, timezone }: any, virtual = false) {
     try {
       const storyId = profile.storyId;
       const userId = profile.userId;
@@ -727,7 +766,7 @@ export default class GameController {
     }
   }
 
-  async optionFilter (req: Request, res: Response) {
+  async optionFilter(req: Request, res: Response) {
     try {
       const { scene, profile, timezone, records } = req.body;
       if (!scene) {
@@ -747,7 +786,7 @@ export default class GameController {
     }
   }
 
-  async gameVirtual (req: Request, res: Response) {
+  async gameVirtual(req: Request, res: Response) {
     try {
       let { profile, scene } = req.body;
 
@@ -767,7 +806,7 @@ export default class GameController {
     }
   }
 
-  async game (user: User, req: Request, res: Response) {
+  async game(user: User, req: Request, res: Response) {
     try {
       const userId = user.id;
       const storyId = req.params.storyId;
@@ -790,7 +829,7 @@ export default class GameController {
     }
   }
 
-  async storyList (req: Request, res: Response) {
+  async storyList(req: Request, res: Response) {
     try {
       const stories = await this.storyRepo.find({
         where: { status: 2 },
@@ -827,7 +866,7 @@ export default class GameController {
     }
   }
 
-  async init (user: User, req: Request, res: Response) {
+  async init(user: User, req: Request, res: Response) {
     try {
       const userId = user.id;
       const story = await this.getStory(req.params.storyId);
