@@ -4,7 +4,7 @@ import { render, json, error } from "../utils/route";
 import { Condition, Effect } from '../entities/Scene';
 import { clone, shortTime } from '../utils';
 import { Inventory } from '../entities/Profile';
-import { isNumber } from '../utils/is';
+import { isNumber, isString } from '../utils/is';
 import { Not } from 'typeorm';
 
 function fillVar(content: string, type: string, target: any) {
@@ -98,10 +98,10 @@ function conditionCheckTime(condition: Condition, timezone: number) {
   }
   if (condition.content.hour !== undefined) {
     if (Array.isArray(condition.content.hour)) {
-      if (time.getHours() + timezone < condition.content.hour[0] || time.getHours() + timezone > condition.content.hour[1]) {
+      if (time.getUTCHours() + timezone < condition.content.hour[0] || time.getUTCHours() + timezone > condition.content.hour[1]) {
         return false;
       }
-    } else if (time.getHours() + timezone !== condition.content.hour) {
+    } else if (time.getUTCHours() + timezone !== condition.content.hour) {
       return false;
     }
   }
@@ -340,8 +340,10 @@ export default class GameController {
       for (const effect of effects) {
         let msg = '', oldVal = '', newVal = '';
         effect.operator = effect.operator || '=';
-        effect.content = effect.content.replace(/\$value/g, value);
-        effect.content = effect.content.replaceAll('\\n', '\n');
+        if (isString(effect.content)) {
+          effect.content = effect.content.replace(/\$value/g, value);
+          effect.content = effect.content.replaceAll('\\n', '\n');
+        }
         if (effect.type === 'Item') {
           let item;
           if (effect.name !== '$item') item = await this.getItem(effect.name);
@@ -379,7 +381,7 @@ export default class GameController {
             profile.attr[effect.name] = operatorData(profile.attr[effect.name], content, effect.operator);
           }
           if (profile.attrName[effect.name]) {
-            msg += `${profile.attrName[effect.name]} ${oldValue} → ${effect.content}.\n`;
+            msg += `${profile.attrName[effect.name]} ${oldValue} → ${profile.attr[effect.name]}.\n`;
           }
           oldVal = oldValue;
           newVal = effect.content;

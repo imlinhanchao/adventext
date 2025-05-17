@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Condition, ConditionType } from '@/api/scene';
-import { clone } from '@/utils';
+import { clone, isNumber } from '@/utils';
 import { FormInstance } from 'element-plus';
 import { pick } from 'lodash-es';
 import { ItemsContext, StoryContext } from './index';
@@ -50,11 +50,33 @@ defineExpose({
   open,
 });
 
+function isRightTime(value: string | number | number[]) {
+  if (typeof value === 'string') {
+    return value.match(/^\d+(,\d+)*$/);
+  }
+  if (Array.isArray(value)) {
+    return value.every((item) => isNumber(item));
+  }
+  return isNumber(value);
+}
+
 const formRef = ref<FormInstance>();
 const rules = computed(() => ({
   type: [{ required: true, message: '请选择条件类型', trigger: 'blur' }],
   name: [{ required: true, message: '请输入', trigger: 'blur' }],
-  content: [{ required: true, message: '请输入', trigger: 'blur' }],
+  content: [
+    { required: true, message: '请输入', trigger: 'blur' },
+    ...(data.value.type == 'Time' ? [{
+      validator: (_, value, callback) => {
+        if (value.year && !isRightTime(value.year)) return callback(new Error('年份应该填入数字或用逗号隔开表示年份范围'));
+        if (value.month && !isRightTime(value.month)) return callback(new Error('月份应该填入数字或用逗号隔开表示月份范围'));
+        if (value.day && !isRightTime(value.day)) return callback(new Error('日期应该填入数字或用逗号隔开表示日期范围'));
+        if (value.hour && !isRightTime(value.hour)) return callback(new Error('小时应该填入数字或用逗号隔开表示小时范围'));
+        if (value.minute && !isRightTime(value.minute)) return callback(new Error('分钟应该填入数字或用逗号隔开表示分钟范围'));
+        callback();
+      }
+    }] : [])
+  ],
   key: [{ required: true, message: '请输入', trigger: 'blur' }],
 }));
 
@@ -75,6 +97,17 @@ async function save () {
           : value;
       }
     });
+  }
+
+  if (data.value.type == 'Time') {
+    data.value.content = Object.entries(data.value.content as Recordable<string>).reduce((acc, [key, value]) => {
+      if (value.includes(',')) {
+        acc[key] = value.split(',').map((item) => parseInt(item));
+      } else if (value) {
+        acc[key] = parseInt(value);
+      }
+      return acc;
+    }, {});
   }
 
   saveResolve(data.value);
@@ -192,19 +225,19 @@ function searchAttr (type: string) {
       <template v-if="data.type === 'Time'">
         <el-form-item label="时间" prop="content">
           <section class="flex space-x-1">
-            <el-input type="number" :min="1" v-model="data.content.year">
+            <el-input :min="1" v-model="data.content.year">
               <template #suffix>年</template>
             </el-input>
-            <el-input type="number" :min="1" :max="12" v-model="data.content.month">
+            <el-input :min="1" :max="12" v-model="data.content.month">
               <template #suffix>月</template>
             </el-input>
-            <el-input type="number" :min="1" :max="31" v-model="data.content.day">
+            <el-input :min="1" :max="31" v-model="data.content.day">
               <template #suffix>日</template>
             </el-input>
-            <el-input type="number" :min="0" :max="23" v-model="data.content.hour">
+            <el-input :min="0" :max="23" v-model="data.content.hour">
               <template #suffix>时</template>
             </el-input>
-            <el-input type="number" :min="0" :max="59" v-model="data.content.minute">
+            <el-input :min="0" :max="59" v-model="data.content.minute">
               <template #suffix>分</template>
             </el-input>
           </section>
