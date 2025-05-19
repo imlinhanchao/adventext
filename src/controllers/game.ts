@@ -22,9 +22,6 @@ function fillVar(content: string, type: string, target: any) {
 
 function formatContent(content: string, profileAttr: any, value: string, itemTakeAttr?: any) {
   if (isNumber(content)) return content;
-  if (isNumber(Number(value))) {
-    return Number(value);
-  }
   content = fillVar(content, '\\$', itemTakeAttr);
   content = fillVar(content, '#', profileAttr);
   content = content.replace(/\s/g, '')
@@ -37,6 +34,9 @@ function formatContent(content: string, profileAttr: any, value: string, itemTak
     if (mat) {
       content = content.replace(/percent\(([\d.]+),*(\d+)*\)/, (Math.floor(Math.random() * 100) < parseFloat(mat[1]) ? parseInt(mat[2] || '1') : 0) + '');
     }
+  }
+  if (isNaN(parseFloat(content)) && value && isNaN(parseFloat(value))) {
+    return parseFloat(content) * parseFloat(value);
   }
   return isNaN(parseFloat(content)) ? content : parseFloat(content);
 }
@@ -646,7 +646,7 @@ export default class GameController {
     }
   }
 
-  getContent(profile: Profile, scene: Scene) {
+  async getContent(profile: Profile, scene: Scene, filter = false, timezone = new Date().getTimezoneOffset() / -60) {
     let content = scene.content;
 
     content = fillVar(content, '#', profile.attr);
@@ -656,6 +656,10 @@ export default class GameController {
         scene.content = scene.content.replaceAll(`\${${key}}`, value + '');
       }
     });
+
+    if (filter) {
+      scene.options = await this.updateOptions(scene, profile, timezone);
+    }
     scene.options.forEach(option => {
       if (option.append && !option.disabled) {
         if (content.includes('${' + option.text + '}')) {
@@ -684,6 +688,7 @@ export default class GameController {
       const userId = profile.userId;
       const option = scene?.options.find((option) => option.text === optionText);
       timezone = timezone ?? new Date().getTimezoneOffset() / -60;
+      const oldProfile = clone(profile);
 
       let message = '';
 
@@ -731,7 +736,7 @@ export default class GameController {
           scene: scene!.name,
           endId: profile.endId,
           from: profile.from,
-          content: this.getContent(profile, scene),
+          content: await this.getContent(oldProfile, scene, true, timezone),
           option: option.text,
           time: Date.now(),
         });
@@ -761,7 +766,7 @@ export default class GameController {
         scene: nextScene,
         next,
         message,
-        content: this.getContent(profile, nextScene),
+        content: await this.getContent(profile, nextScene),
       }
     } catch (err: any) {
       throw err;
@@ -778,7 +783,7 @@ export default class GameController {
         throw new Error(`缺少游戏资料！`);
       }
       scene.options = await this.updateOptions(scene, profile, timezone ?? new Date().getTimezoneOffset() / -60, records || []);
-      const content = this.getContent(profile, scene);
+      const content = await this.getContent(profile, scene);
       json(res, {
         options: scene.options,
         content,
@@ -897,7 +902,7 @@ export default class GameController {
           options: options.map(o => omit(o, ['conditions', 'effects'])),
         },
         story,
-        content: this.getContent(state, scene!)
+        content: await this.getContent(state, scene!)
       }
 
     } catch (error: any) {
