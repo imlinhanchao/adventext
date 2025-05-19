@@ -22,6 +22,9 @@ function fillVar(content: string, type: string, target: any) {
 
 function formatContent(content: string, profileAttr: any, value: string, itemTakeAttr?: any) {
   if (isNumber(content)) return content;
+  if (isNumber(Number(value))) {
+    return Number(value);
+  }
   content = fillVar(content, '\\$', itemTakeAttr);
   content = fillVar(content, '#', profileAttr);
   content = content.replace(/\s/g, '')
