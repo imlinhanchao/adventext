@@ -239,7 +239,7 @@ h3 {
 
 #profile .attr, #profile .inventory {
   margin-left: 2px;
-  display: inline-block;
+  display: inline;
 }
 
 .dialog {
