@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { deleteStory, getStoryList, Draft, publishStory, exportStory } from '@/api/draft';
-import { ElMessageBox } from 'element-plus';
+import { deleteStory, getStoryList, Draft, publishStory, exportStory, exportStorys } from '@/api/draft';
+import { ElMessageBox, ElTable } from 'element-plus';
 import Item from '@/views/draft/item.vue';
 import Approve from './approve.vue';
+import { copyTextToClipboard } from '@/hooks/web/useCopyToClipboard';
 
 const storyList = ref<Draft[]>([]);
 onMounted(() => {
@@ -20,6 +21,7 @@ const path = computed(() => {
   return route.path;
 });
 
+const tableRef = ref<InstanceType<typeof ElTable>>();
 const itemRef = ref<InstanceType<typeof Item>>();
 function add () {
   itemRef.value?.open();
@@ -37,13 +39,19 @@ function remove (row: Draft) {
     });
   });
 }
-async function exportJson (row: Draft) {
+async function copy (row: Draft) {
   const data = await exportStory(row.id!);
+  copyTextToClipboard(data);
+  ElMessage.success('复制成功');
+}
+async function exportAll () {
+  const selection = tableRef.value?.getSelectionRows();
+  const data = await exportStorys(selection.map((item) => item.id!));
   const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `${row.name}.json`;
+  a.download = `storys.json`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -76,10 +84,12 @@ const isApprove = !!route.meta.query;
 <template>
   <el-container>
     <el-main>
-      <el-table :data="storyList" style="width: 100%">
+      <el-table ref="tableRef" :data="storyList" style="width: 100%">
+        <el-table-column type="selection" width="55" align="center" />
         <el-table-column label="" align="center" width="120">
           <template #header>
             <ButtonEx content="新增" type="primary" link @click="add" icon="el-icon-circle-plus" />
+            <ButtonEx content="批量导出" link type="primary" icon="el-icon-download" @click="exportAll()" />
           </template>
           <template #default="{ row }">
             <ButtonEx
@@ -89,7 +99,7 @@ const isApprove = !!route.meta.query;
               content="推荐" link type="primary" icon="i-mingcute:send-plane-fill" @click="publish(row)"
               v-if="row.status == 0" />
             <ButtonEx content="删除" link type="danger" icon="el-icon-remove" @click="remove(row)" />
-            <ButtonEx content="导出" link type="primary" icon="el-icon-download" @click="exportJson(row)" />
+            <ButtonEx content="复制" link type="primary" icon="el-icon-document" @click="copy(row)" />
           </template>
         </el-table-column>
         <el-table-column prop="author" label="作者" v-if="isAdmin" width="200" align="center" />

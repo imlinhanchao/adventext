@@ -1,3 +1,4 @@
+import pako from "pako";
 import { Router, Request, Response } from "express";
 import GameController from "../controllers/game";
 import { StoryRepo, DraftRepo, SceneRepo, ItemRepo } from "../entities/";
@@ -5,6 +6,7 @@ import { error, json } from "../utils/route";
 import SceneRoute from './scene';
 import ItemRoute from './item';
 import { omit, pick } from "../utils";
+import { In } from "typeorm";
 
 const router = Router();
 router.post("/run", (req: Request, res: Response) => new GameController('draft').gameVirtual(req, res));
@@ -44,6 +46,44 @@ router.post("/", async (req, res) => {
   const result = await DraftRepo.save(newStory);
   json(res, result);
 });
+
+
+router.post('/export', async (req, res) => {
+  const ids = req.body;
+  if (!ids || ids.length === 0) {
+    return error(res, "请选择故事！");
+  }
+  const storys = await DraftRepo.findBy({ id: In(ids) });
+  if (!storys || storys.length === 0) {
+    return error(res, "故事不存在");
+  }
+  const scenes = await SceneRepo.find({
+    where: { storyId: In(ids) }
+  }).then(scenes => scenes.map((scene) => omit(scene, ['id', 'storyId', 'createTime', 'updateTime'])));
+  const items = await ItemRepo.find({
+    where: { storyId: In(ids) }
+  }).then(items => items.map((item) => omit(item, ['id', 'storyId', 'createTime', 'updateTime'])));
+
+  const dataZips = [];
+  for (let i = 0; i < storys.length; i++) {
+    const story = storys[i];
+    const scene = scenes.filter((scene) => scene.storyId === story.id);
+    const item = items.filter((item) => item.storyId === story.id);
+    const data = {
+      ...omit(story, ['id', 'status', 'comment', 'createTime', 'updateTime']),
+      scene,
+      item
+    }
+
+    const utf8Bytes = Buffer.from(JSON.stringify(data), 'utf8');
+    const compressed = pako.deflate(utf8Bytes);
+    const dataZip = Buffer.from(compressed).toString('base64');
+    dataZips.push(dataZip);
+  }
+
+  json(res, dataZips);
+});
+
 
 router.use('/:id', async (req, res, next) => {
   const story = await DraftRepo.findOneBy({ id: req.params.id });
@@ -101,11 +141,17 @@ router.get('/:id/export', async (req, res) => {
     where: { storyId: story.id }
   }).then(items => items.map((item) => omit(item, ['id', 'storyId', 'createTime', 'updateTime'])));
 
-  json(res, {
+  const data = {
     ...omit(story, ['id', 'status', 'comment', 'createTime', 'updateTime']),
     scenes,
     items
-  });
+  }
+
+  const utf8Bytes = Buffer.from(JSON.stringify(data), 'utf8');
+  const compressed = pako.deflate(utf8Bytes);
+  const dataZip = Buffer.from(compressed).toString('base64');
+
+  json(res, dataZip);
 });
 
 // 审核故事

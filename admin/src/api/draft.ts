@@ -124,3 +124,10 @@ export function exportStory(id: string) {
     url: `/draft/${id}/export`,
   });
 }
+
+export function exportStorys(data: string[]) {
+  return defHttp.post({
+    url: `/draft/export`,
+    data
+  });
+}
