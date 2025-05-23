@@ -41,6 +41,7 @@ export const AppDataSource = utils.config ? new DataSource({
   entities: [Record, Profile, User, Story, Scene, Draft, Item, End, RankView, ThirdParty],
   migrations: [],
   subscribers: [],
+  charset: "utf8mb4_unicode_ci"
 }) : {} as DataSource;
 
 export {
