@@ -3,8 +3,8 @@
   import { useUserStore } from '@/store/modules/user';
   import { ElNotification, FormInstance, FormRules } from 'element-plus';
   import Logo from '@/layouts/components/logo/index.vue';
-import { generateToken } from '@/api/user';
-import { useDark } from '@vueuse/core';
+  import { generateToken } from '@/api/user';
+  import { useDark } from '@vueuse/core';
 
   const formData = reactive({
     username: '',
@@ -50,18 +50,21 @@ import { useDark } from '@vueuse/core';
     }
   }
 
+  const tokenLoading = ref(true);
   generateToken().then((token) => {
     if (!token) return;
     userStore.setToken(token);
     userStore.getUserInfoAction();
-    router.replace(PageEnum.BASE_HOME)
+    return router.replace(PageEnum.BASE_HOME)
+  }).finally(() => {
+    tokenLoading.value = false;
   });
 
   useDark();
 </script>
 <template>
-  <el-container class="flex items-center justify-center h-full w-full">
-    <el-card>
+  <el-container class="flex items-center justify-center h-full w-full" v-loading="tokenLoading">
+    <el-card v-if="!tokenLoading">
       <template #header>
         <h2 class="text-center"><Logo /></h2>
       </template>

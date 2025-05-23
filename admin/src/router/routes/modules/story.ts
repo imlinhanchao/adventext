@@ -5,7 +5,7 @@ export default [
     path: '/story',
     component: LAYOUT,
     meta: {
-      order: 1,
+      order: 3,
       icon: 'i-bi:app',
       title: '投稿故事',
       isAdmin: true,

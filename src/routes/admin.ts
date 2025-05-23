@@ -8,6 +8,7 @@ import { ItemRepo, SceneRepo, StoryRepo, User, UserRepo } from '../entities';
 import DraftRoute from './draft';
 import StoryRoute from './story';
 import UserRoute from './user';
+import ThirdPartyRoute from './thirdParty';
 import pako from 'pako';
 import { In } from 'typeorm';
 import { omit } from '../utils';
@@ -116,5 +117,6 @@ router.use(authenticate(async (payload: JwtPayload, req, res, next) => {
 router.use("/user", UserRoute);
 router.use("/draft", DraftRoute);
 router.use("/story", StoryRoute);
+router.use("/third", ThirdPartyRoute);
 
 export default router;

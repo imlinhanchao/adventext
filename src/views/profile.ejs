@@ -2,7 +2,7 @@
 <article class="h-full w-full max-w-[700px]">
   <form action="" method="post">
     <header class="pb-10">
-        <h1 class="text-center">@<%= account.username %></h1>
+        <h1 class="text-center">@<%= account.nickname || account.username %></h1>
     </header>
 <% if (locals.user?.username == account.username) { %>
     <section>

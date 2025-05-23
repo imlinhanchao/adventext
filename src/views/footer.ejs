@@ -6,7 +6,7 @@
     <p><a href="/auth/login" id="login">登录</a> | <a href="/auth/register" id="register">注册</a></p>
   <% }else{ -%>
     <p>
-      @<a title="个人资料" href="/u/<%= user.username %>"><%= user.username %></a>
+      @<a title="个人资料" href="/u/<%= user.username %>"><%= user.nickname || user.username %></a>
       <% if (locals.name == 'index') { -%>
         / <a href="<%= locals.story.id %>/history">历史</a>
         / <a href="<%= locals.story.id %>/rank">排行榜</a>

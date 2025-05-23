@@ -6,6 +6,7 @@ import { clone, omit, shortTime } from '../utils';
 import { Inventory } from '../entities/Profile';
 import { isNumber, isString } from '../utils/is';
 import { Not } from 'typeorm';
+import { callFn, createFn } from '../utils/call';
 
 function fillVar(content: string, type: string, target: any) {
   const mat = content.match(new RegExp(`${type}(\\S+)${type}`, 'g'));
@@ -211,8 +212,8 @@ export default class GameController {
           }
         }
         if (condition.type === 'Fn') {
-          const fn = new Function('profile', 'value', 'itemSelect', 'let result = true;\n' + condition.content + '\nreturn result;');
-          const result = fn(clone(profile), valueText, itemTake?.name);
+          const fn = createFn('profile', 'value', 'itemSelect', 'let result = true;\n' + condition.content + '\nreturn result;');
+          const result = callFn(fn, clone(profile), valueText, itemTake?.name);
           if (result !== true) {
             throw new Error(typeof result != 'string' ? `你还没准备好` : result);
           }
@@ -434,9 +435,9 @@ export default class GameController {
           }
         }
         if (effect.type === 'Fn') {
-          const call = new Function('profile', 'addItem', 'setAttr', 'let message = "", next = null;\n' + effect.content + '\nreturn { message, next };');
+          const call = createFn('profile', 'addItem', 'setAttr', 'let message = "", next = null;\n' + effect.content + '\nreturn { message, next };');
           const items: any[] = []
-          const result = call(clone(profile), (name: string, count: number) => {
+          const result = callFn(call, clone(profile), (name: string, count: number) => {
             items.push({ name, count })
           }, (attr: { key: string; name?: string; value: string }) => {
             profile.attr[attr.key] = attr.value;

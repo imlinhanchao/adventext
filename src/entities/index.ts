@@ -9,6 +9,7 @@ import { Item } from "./Item";
 import { End } from "./End";
 import { User } from "./User";
 import { RankView } from './Rank';
+import { ThirdParty } from './ThirdParty';
 import utils from '../utils'
 
 @EventSubscriber()
@@ -37,7 +38,7 @@ export const AppDataSource = utils.config ? new DataSource({
   ...utils.config.database,
   synchronize: true,
   logging: false,
-  entities: [Record, Profile, User, Story, Scene, Draft, Item, End, RankView],
+  entities: [Record, Profile, User, Story, Scene, Draft, Item, End, RankView, ThirdParty],
   migrations: [],
   subscribers: [],
 }) : {} as DataSource;
@@ -51,6 +52,7 @@ export {
   Scene,
   Item,
   End,
+  ThirdParty
 }
 
 export const RecordRepo = utils.config ? AppDataSource.getRepository(Record) : {} as Repository<Record>;
@@ -62,3 +64,4 @@ export const SceneRepo = utils.config ? AppDataSource.getRepository(Scene) : {} 
 export const ItemRepo = utils.config ? AppDataSource.getRepository(Item) : {} as Repository<Item>;
 export const EndRepo = utils.config ? AppDataSource.getRepository(End) : {} as Repository<End>;
 export const RankRepo = utils.config ? AppDataSource.getRepository(RankView) : {} as Repository<RankView>;
+export const ThirdPartyRepo = utils.config ? AppDataSource.getRepository(ThirdParty) : {} as Repository<ThirdParty>;

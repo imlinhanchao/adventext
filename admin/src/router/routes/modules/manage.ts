@@ -4,7 +4,7 @@ export default [
     path: '/manage',
     component: LAYOUT,
     meta: {
-      order: 1,
+      order: 2,
       icon: 'i-ph:sword',
       title: '故事管理',
       isAdmin: true,
