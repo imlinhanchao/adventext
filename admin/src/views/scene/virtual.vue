@@ -4,8 +4,9 @@
   import { ScenesContext, StoryContext } from './index';
   import { Option, Scene } from '@/api/scene';
   import { Item } from '@/api/item';
-  import { isNumber } from '@/utils';
+  import { clone, isNumber } from '@/utils';
   import { formatDate } from '@vueuse/core';
+import { Inventory } from '@/api/draft';
 
   defineProps<{
     type: string;
@@ -50,7 +51,7 @@
 
   async function getValue(option: Option) {
     let value: string | false = '';
-    if (option.value?.startsWith('item:')) {
+    if (option.value?.startsWith('item:') || option.value?.startsWith('items:')) {
       const [_, msg, type] = option.value.split(':');
       let inventory = profile.value.inventory.filter((item) => (item.count || 0) > 0);
       if (type) inventory = inventory.filter((item) => item.type === type);
@@ -59,7 +60,7 @@
         message.value = type ? `你没有${type}` : '先去别处转转吧';
         return false;
       }
-      value = await selectItem(inventory, msg);
+      value = await selectItem(clone(inventory), msg, option.value?.startsWith('items:'));
       if (!value) return false;
     } else if (option.value) {
       value = prompt(option.value) || '';
@@ -121,12 +122,19 @@
 
   const itemSelector = ref(false);
   const dlgMessage = ref('');
-  const itemToSelect = ref<Item[]>([]);
+  const itemToSelect = ref<Inventory[]>([]);
+  const showCount = ref(false);
+  const itemCount = ref<Recordable<number>>({});
   let selectItemResolve: (value: string) => void;
-  function selectItem(inventory: Item[], message: string): Promise<string | false> {
+  function selectItem(inventory: Inventory[], message: string, needCount = false): Promise<string | false> {
     dlgMessage.value = message;
+    itemCount.value = {};
+    inventory.forEach((item) => {
+      itemCount.value[item.key] = 1;
+    });
     itemToSelect.value = inventory;
     itemSelector.value = true;
+    showCount.value = needCount;
     return new Promise((resolve) => {
       selectItemResolve = (value) => {
         itemSelector.value = false;
@@ -264,14 +272,23 @@
         <p class="mb-3">{{ dlgMessage }}</p>
         <p>
           <el-tag
-            class="cursor-pointer m-1"
+            class="cursor-pointer m-1 !pr-0"
             v-for="item in itemToSelect"
             :key="item.id"
-            @click="selectItemResolve(`item:${item.key}`)"
+            @click="selectItemResolve(showCount ? `item:${item.key}:${itemCount[item.key]}` : `item:${item.key}`)"
           >
             <el-tooltip :content="`[${item.type}]${item.description}`">
               <span>{{ item.name }}</span>
             </el-tooltip>
+            <el-input-number
+              v-if="showCount"
+              v-model="itemCount[item.key]"
+              size="small"
+              controls-position="right"
+              class="!w-16 ml-2 !border-none"
+              style="--el-border: none;--el-border-color:transparent;"
+              @click.stop
+            />
           </el-tag>
         </p>
       </el-dialog>

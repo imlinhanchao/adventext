@@ -232,6 +232,8 @@ function searchAttr (type: string) {
               class="bg-gray-100 dark:bg-gray-900 flex flex-col px-2 rounded-tl rounded-tr border border-b-0 border-[var(--el-border-color)]">
               <code>function check(</code>
               <code>　　profile: Profile, </code>
+              <code>　　inputText: string, </code>
+              <code>　　itemSelect: Inventory, </code>
               <code>　　addItem: (name: string, count: number) => void, </code>
               <code>　　setAttr: (attr: { key: string; name?: string; value: string }) => void</code>
               <code>): boolean {</code>

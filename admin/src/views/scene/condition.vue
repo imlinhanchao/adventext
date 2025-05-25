@@ -353,7 +353,7 @@ function searchAttr (type: string) {
           <section class="flex flex-col w-full">
             <span
               class="bg-gray-100 dark:bg-gray-900 flex flex-col px-2 rounded-tl rounded-tr border border-b-0 border-[var(--el-border-color)]">
-              <code>function check(profile: Profile, value: string, itemSelect: string): boolean {</code>
+              <code>function check(profile: Profile, inputText: string, itemSelect: Inventory): boolean {</code>
               <code>　　let result = true;</code>
             </span>
             <el-input

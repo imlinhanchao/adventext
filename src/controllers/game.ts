@@ -1,12 +1,12 @@
 import { Request, Response } from 'express';
-import { Record, Profile, Scene, User, StoryRepo, DraftRepo, ProfileRepo, EndRepo, SceneRepo, ItemRepo, RecordRepo, RankRepo } from "../entities";
+import { Record, Profile, Scene, User, StoryRepo, DraftRepo, ProfileRepo, EndRepo, SceneRepo, ItemRepo, RecordRepo, RankRepo, Item } from "../entities";
 import { render, json, error } from "../utils/route";
 import { Condition, Effect } from '../entities/Scene';
 import { clone, omit, shortTime } from '../utils';
 import { Inventory } from '../entities/Profile';
 import { isNumber, isString } from '../utils/is';
 import { Not } from 'typeorm';
-import { callFn, createFn } from '../utils/call';
+import { callFn, createFn, tryEval } from '../utils/call';
 
 function fillVar(content: string, type: string, target: any) {
   const mat = content.match(new RegExp(`${type}(\\S+)${type}`, 'g'));
@@ -39,7 +39,7 @@ function formatContent(content: string, profileAttr: any, value: string, itemTak
   if (isNaN(parseFloat(content)) && value && isNaN(parseFloat(value))) {
     return parseFloat(content) * parseFloat(value);
   }
-  return isNaN(parseFloat(content)) ? content : parseFloat(content);
+  return !content.trim().match(/^[\d.]+$/) ? tryEval(content) : parseFloat(content);
 }
 
 function operatorData(left: string | number, right: string | number, operator: string) {
@@ -204,6 +204,9 @@ export default class GameController {
       }
     }
 
+    const isItem = option?.value?.startsWith('item:');
+    const isItems = option?.value?.startsWith('items:');
+
     for (const condition of conditions) {
       try {
         if (condition.type === 'Time') {
@@ -212,8 +215,8 @@ export default class GameController {
           }
         }
         if (condition.type === 'Fn') {
-          const fn = createFn('profile', 'value', 'itemSelect', 'let result = true;\n' + condition.content + '\nreturn result;');
-          const result = callFn(fn, clone(profile), valueText, itemTake?.name);
+          const fn = createFn('profile', 'inputText', 'itemSelect', 'let result = true;\n' + condition.content + '\nreturn result;');
+          const result = callFn(fn, clone(profile), valueText, clone(itemTake));
           if (result !== true) {
             throw new Error(typeof result != 'string' ? `你还没准备好` : result);
           }
@@ -228,18 +231,29 @@ export default class GameController {
             throw new Error(`不是这个`);
           }
           let count = parseInt(condition.content || '0');
-          if (valueText && option.value && !option.value?.startsWith('item:')) {
+          if (!condition.content && valueText && option.value && !isItem && !isItems) {
             count = parseInt(valueText) * count
+          }
+          if (isItems && itemTake) {
+            count = itemTake.count;
           }
           if ((!inventory && condition.content === '') || !conditionOperator(inventory?.count || 0, count, condition.operator || '≥')) {
             if ((condition.operator || '>') == '>') throw new Error(`你需要 ${item.name}×${count}.`);
             else throw new Error('还不是时候');
           }
+          itemTake = undefined;
         }
         if (condition.type === 'ItemType') {
-          const inventory = profile.inventory.some((i) => i.type === condition.content && i.count > 0);
-          if (!inventory) {
-            throw new Error(`你需要 ${condition.content.toString()}.`);
+          if (itemTake) {
+            if (itemTake.type !== condition.content) {
+              throw new Error(`不是这种物品`);
+            }
+            itemTake = undefined;
+          } else {
+            const inventory = profile.inventory.some((i) => i.type === condition.content && i.count > 0);
+            if (!inventory) {
+              throw new Error(`你需要 ${condition.content.toString()}.`);
+            }
           }
         }
         if (condition.type === 'ItemAttr') {
@@ -269,22 +283,22 @@ export default class GameController {
             if (!inventory) {
               throw new Error(`你还没准备好.`);
             }
-          } else {
+          } else if (itemTake) {
             const attrs = Object.keys(condition.content);
             const inventory = attrs.every((attr) => {
-              if (condition.content[attr] === '') return !!itemTake.attributes[attr];
-              if (itemTake.attributes[attr] === undefined) {
+              if (condition.content[attr] === '') return !!itemTake!.attributes[attr];
+              if (itemTake!.attributes[attr] === undefined) {
                 return false;
               }
-              if (typeof itemTake.attributes[attr] === 'number') {
+              if (typeof itemTake!.attributes[attr] === 'number') {
                 return conditionOperator(
-                  itemTake.attributes[attr] * itemTake.count,
+                  itemTake!.attributes[attr] * itemTake!.count,
                   condition.content[attr].value || condition.content[attr],
                   condition.content[attr].operator || '≥'
                 );
               } else {
                 return conditionOperator(
-                  itemTake.attributes[attr],
+                  itemTake!.attributes[attr],
                   condition.content[attr].value || condition.content[attr],
                   condition.content[attr].operator || '='
                 );
@@ -293,6 +307,7 @@ export default class GameController {
             if (!inventory) {
               throw new Error(`你还没准备好.`);
             }
+            itemTake = undefined;
           }
         }
         if (condition.type === 'Attr') {
@@ -349,11 +364,15 @@ export default class GameController {
           effect.content = effect.content.replaceAll('\\n', '\n');
         }
         if (effect.type === 'Item') {
-          let item;
-          if (effect.name !== '$item') item = await this.getItem(effect.name);
+          let item: Item & { count?: number; } | null | undefined;
+          if (effect.name !== '$item') {
+            item = await this.getItem(effect.name);
+            item && (item.count = 1);
+          }
           else item = itemTake;
           if (!item) throw new Error(`物品 ${effect.name} 未找到.`)
           const inventory = profile.inventory.find((i) => i.key === item.key);
+          if (effect.content.replace) effect.content = effect.content.replace(/\$count/g, (itemTake?.count || 1) + '');
           let count = formatContent(effect.content || '1', profile.attr, value, itemTake?.attributes);
           if (!isNumber(count)) throw new Error(`Item ${effect.name} 效果获取数量失败！`)
           if (inventory) {
@@ -375,6 +394,7 @@ export default class GameController {
             profile.attr[effect.name] = content;
           }
           else if (typeof profile.attr[effect.name] === 'number') {
+            effect.content = effect.content.replace(/\$count/g, itemTake?.count + '');
             let count = formatContent(effect.content || '1', profile.attr, value, itemTake?.attributes);
             if (!isNumber(count)) throw new Error(`Attr ${effect.name} 效果获取数量失败！`)
             profile.attr[effect.name] = operatorData(profile.attr[effect.name], count, effect.operator);
@@ -435,9 +455,9 @@ export default class GameController {
           }
         }
         if (effect.type === 'Fn') {
-          const call = createFn('profile', 'addItem', 'setAttr', 'let message = "", next = null;\n' + effect.content + '\nreturn { message, next };');
+          const call = createFn('profile', 'addItem', 'setAttr', 'inputText', 'itemSelect', 'let message = "", next = null;\n' + effect.content + '\nreturn { message, next };');
           const items: any[] = []
-          const result = callFn(call, clone(profile), (name: string, count: number) => {
+          const result = callFn(call, clone(profile), value, clone(itemTake), (name: string, count: number) => {
             items.push({ name, count })
           }, (attr: { key: string; name?: string; value: string }) => {
             profile.attr[attr.key] = attr.value;
@@ -701,13 +721,17 @@ export default class GameController {
         throw new Error('缺少数值');
       }
 
-      let itemTake;
-      if (option?.value?.startsWith('item:')) {
-        const item = profile.inventory.find((i) => i.key === valueText.split(':')[1]);
+      let itemTake: Inventory | undefined, itemCount: number;
+      const isItem = option?.value?.startsWith('item:');
+      const isItems = option?.value?.startsWith('items:');
+      if (isItem || isItems) {
+        const values = valueText.split(':');
+        const item = profile.inventory.find((i) => i.key === values[1]);
         if (!item) {
           throw new Error(`物品 ${option.value} 未找到.`);
         }
-        itemTake = item;
+        itemTake = clone(item);
+        itemTake.count = !isItems ? 1 : parseInt(values[2]);
       }
 
       if (option.conditions) {

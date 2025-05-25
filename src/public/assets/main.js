@@ -47,7 +47,7 @@ function startGame(scene, state, content) {
             showMessage(type ? `你没有${type}` : '先去别处转转吧', 'error')
             return;
           }
-          value = await selectItem(inventory, message).catch(() => {
+          value = await selectItem(inventory, message, option.value?.startsWith('items:')).catch(() => {
             button.disabled = false
           });
           if (!value) return;
@@ -86,7 +86,7 @@ function startGame(scene, state, content) {
   showState(state)
 }
 
-function selectItem(inventory, message) {
+function selectItem(inventory, message, needCount=false) {
   return new Promise((resolve, reject) => {
     const cancel = document.getElementById('dialog-cancel');
     const content = document.getElementById('dialog-content');
@@ -103,7 +103,23 @@ function selectItem(inventory, message) {
     inventory.forEach(item => {
       const itemDiv = document.createElement('div');
       itemDiv.className = 'item cursor-pointer';
-      itemDiv.textContent = `${item.name}`;
+      itemDiv.innerHTML = `<span>${item.name}</span>`;
+      if (needCount) {
+        const countInput = document.createElement('input');
+        countInput.type = 'number';
+        countInput.min = 1;
+        countInput.max = item.count;
+        countInput.value = 1;
+        countInput.onchange = () => {
+          if (countInput.value < 1 || countInput.value > item.count) {
+            countInput.value = 1;
+          }
+        };
+        countInput.onclick = (e) => {
+          e.stopPropagation(); // 阻止点击事件冒泡
+        }
+        itemDiv.appendChild(countInput);
+      }
       itemDiv.onclick = () => {
         if (itemChoose.includes(item)) {
           itemChoose.splice(itemChoose.indexOf(item), 1);
@@ -112,7 +128,10 @@ function selectItem(inventory, message) {
           itemChoose.push(item);
           itemDiv.classList.add('selected');
         }
-        resolve(`item:${item.key}`);
+        if (needCount) {
+          const countInput = itemDiv.querySelector('input[type="number"]');
+          resolve(`item:${item.key}:${countInput.value}`);
+        } else resolve(`item:${item.key}`);
         dialog.style.visibility = 'hidden';
       };
       itemList.appendChild(itemDiv);

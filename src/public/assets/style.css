@@ -292,6 +292,14 @@ h3 {
   border: 1px solid var(--disabled-color);
   margin: 2px;
 }
+.item-list .item input {
+  border: none;
+  text-align: center;
+}
+.item-list .item input:focus, .item-list .item input:focus-visible, .item-list .item input:active {
+  border: none;
+  outline: none;
+}
 .item-list .item:hover,
 .item-list .item.selected {
   border-color: currentColor;
