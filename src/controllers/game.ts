@@ -231,7 +231,7 @@ export default class GameController {
             throw new Error(`不是这个`);
           }
           let count = parseInt(condition.content || '0');
-          if (!condition.content && valueText && option.value && !isItem && !isItems) {
+          if (valueText && option.value && !isItem && !isItems) {
             count = parseInt(valueText) * count
           }
           if (isItems && itemTake) {

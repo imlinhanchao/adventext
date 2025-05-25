@@ -39,7 +39,7 @@ function startGame(scene, state, content) {
       button.onclick = async () => {
         if (lock) return;
         let value;
-        if (option.value?.startsWith('item:')) {
+        if (option.value?.startsWith('item:') || option.value?.startsWith('items:')) {
           const [_, message, type] = option.value.split(':');
           let inventory = state.inventory.filter(item => item.count > 0);
           if (type) inventory = inventory.filter(item => item.type === type);
@@ -105,6 +105,7 @@ function selectItem(inventory, message, needCount=false) {
       itemDiv.className = 'item cursor-pointer';
       itemDiv.innerHTML = `<span>${item.name}</span>`;
       if (needCount) {
+        itemDiv.innerHTML += ' x'
         const countInput = document.createElement('input');
         countInput.type = 'number';
         countInput.min = 1;
