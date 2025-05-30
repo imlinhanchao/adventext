@@ -4,3 +4,4 @@ sessions
 config.json
 src/public/admin
 *.sh
+cache

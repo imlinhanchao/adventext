@@ -38,8 +38,8 @@ vscode 按下 F5 运行调试后端或运行 `npm start`
 # 安装后端依赖
 npm install
 
-# 安装前端依赖
-cd front && npm install
+# 安装 admin 前端依赖
+cd admin && npm install
 
 # 回到后端目录
 cd ..
@@ -63,3 +63,6 @@ npm run build
 npm install pm2 -g
 pm2 start -n adventext node -- index.js
 ```
+
+> [!NOTE]
+> 首个注册用户将会自动成为管理员，可以审核用户的文字游戏，公开发布。

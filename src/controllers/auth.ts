@@ -40,8 +40,14 @@ export async function register(params: { username: string; password: string }) {
 
   const sha256 = crypto.createHash('sha256');
   const hashedPassword = sha256.update(password + utils.config.secret.salt).digest('hex');
+  const user = new User(username, hashedPassword)
+  // 第一个用户默认为管理员
+  const first = await UserRepo.findOne({});
+  if (!first) {
+    user.isAdmin = true;
+  }
 
-  const newUser = UserRepo.create(new User(username, hashedPassword));
+  const newUser = UserRepo.create(user);
   return await UserRepo.save(newUser);
 }
 
