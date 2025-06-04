@@ -113,7 +113,7 @@
           <el-tooltip content="移动场景"><Icon icon="i-tdesign:move" /></el-tooltip>
           <span>{{ scene.name }}</span>
           <Icon title="起始场景" :size="20" color="#f63832" v-if="start" icon="i-lets-icons:flag-fill" />
-          <Icon title="结局" :size="20" color="#1f8bf4" v-if="scene.isEnd" icon="i-carbon:circle-filled" />
+          <Icon title="结局" :size="20" color="var(--color-primary)" v-if="scene.isEnd" icon="i-carbon:circle-filled" />
         </span>
         <span>
           <ButtonEx class="!group-hover:inline !hidden" icon="i-lets-icons:flag-duotone" v-if="!start && !scene.isEnd" link @click="$emit('start', scene)" content="设置为起始场景" />

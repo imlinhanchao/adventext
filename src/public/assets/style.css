@@ -1,5 +1,5 @@
 :root {
-  --primary-color: #007bff;
+  --primary-color: #963d09;
   --main-bg-color: #f4f4f9;
   --main-text-color: #131415;
   --main-border-color: #ccc;
@@ -13,7 +13,7 @@
 }
 
 .dark {
-  --primary-color: #0067d5;
+  --primary-color: #963d09;
   --main-bg-color: #131415;
   --main-text-color: #f1f2f3;
   --main-border-color: #555;

@@ -78,6 +78,9 @@ export default defineConfig(({ command, mode }: ConfigEnv): UserConfig => {
     },
 
     css: {
+      modules: {
+        localsConvention: 'camelCaseOnly'
+      },
       preprocessorOptions: {
         less: {
           javascriptEnabled: true,
