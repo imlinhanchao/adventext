@@ -10,7 +10,10 @@
     "import": "ts-node src/scripts/importStories.ts",
     "admin:dev": "cd admin && npm run dev",
     "admin:prebuild": "cd admin && npm run prebuild",
-    "admin:build": "cd admin && npm run build"
+    "admin:build": "cd admin && npm run build",
+    "docs:dev": "vitepress dev docs --host",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
   },
   "keywords": [],
   "author": "",
@@ -38,6 +41,7 @@
     "copyfiles": "^2.4.1",
     "rimraf": "^6.0.1",
     "ts-node": "^10.9.2",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "vitepress": "^1.6.3"
   }
 }
