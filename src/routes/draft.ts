@@ -84,6 +84,55 @@ router.post('/export', async (req, res) => {
   json(res, dataZips);
 });
 
+router.post('/import', async (req, res) => {
+  const dataZips = req.body;
+  if (!dataZips || dataZips.length === 0) {
+    return error(res, "没有需导入的故事！");
+  }
+  const stories = [];
+  for (let i = 0; i < dataZips.length; i++) {
+    const dataZip = dataZips[i] as string;
+    const buffer = new Uint8Array(Buffer.from(dataZip, 'base64'));
+    const data = JSON.parse(Buffer.from(pako.inflate(buffer)).toString());
+    if (!data.name || !data.author) {
+      return error(res, "故事数据不完整");
+    }
+    if (data.scenes && !Array.isArray(data.scenes)) {
+      return error(res, "故事场景数据不正确");
+    }
+    if (data.items && !Array.isArray(data.items)) {
+      return error(res, "故事物品数据不正确");
+    }
+    const newStory = DraftRepo.create(omit(data, ['scenes', 'items', 'id', 'status', 'comment']));
+    newStory.author = req.user?.username;
+    newStory.status = 0; // 默认状态为草稿
+    newStory.comment = '';
+    const result = await DraftRepo.save(newStory);
+    stories.push(result);
+
+    if (data.scenes && data.scenes.length > 0) {
+      const scenes = data.scenes.map((scene: any) => {
+        return SceneRepo.create({
+          ...omit(scene, ['id']),
+          storyId: result.id
+        });
+      });
+      await SceneRepo.save(scenes);
+    }
+
+    if (data.items && data.items.length > 0) {
+      const items = data.items.map((item: any) => {
+        return ItemRepo.create({
+          ...omit(item, ['id']),
+          storyId: result.id
+        });
+      });
+      await ItemRepo.save(items);
+    }
+  }
+  json(res, stories);
+});
+
 
 router.use('/:id', async (req, res, next) => {
   const story = await DraftRepo.findOneBy({ id: req.params.id });
