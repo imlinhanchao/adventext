@@ -1,0 +1,82 @@
+name: Deploy To Server
+
+on:
+  push:
+    branches: [ master ] # 只在 main 分支推送时触发
+  # 允许你从 Actions 选项卡手动运行此工作流程
+  workflow_dispatch:
+  
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+
+    - name: Install dependencies and build
+      run: |
+        cd admin
+        npm ci
+        cd ..
+        npm ci
+        npm run build
+        cd dist
+        npm ci --prod
+        cd ..
+
+    - name: Deploy to Server
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.SERVER_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        port: ${{ secrets.SSH_PORT || 22 }}
+        source: "dist/*"
+        target: ${{ secrets.DEPLOY_PATH }}
+        strip_components: 1
+        tar_tmp_path: /tmp/
+    
+    - name: Execute remote deployment script
+      uses: appleboy/ssh-action@v0.1.10
+      with:
+        host: ${{ secrets.SERVER_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        port: ${{ secrets.SSH_PORT || 22 }}
+        script: |
+          #!/bin/bash
+          set -e  # 失败时退出
+          
+          # 定义服务名称
+          SERVICE_NAME="adventext"
+          
+          # 检查 PM2 是否存在
+          if ! command -v pm2 &> /dev/null; then
+              echo "❌ PM2 未安装，请先安装 PM2: npm install -g pm2"
+              exit 1
+          fi
+
+          # 在程序目录启动
+          cd ${{ secrets.DEPLOY_PATH }}
+          
+          # 检查服务是否存在
+          if pm2 show $SERVICE_NAME &> /dev/null; then
+              echo "🔄 服务 $SERVICE_NAME 正在重启..."
+              pm2 restart $SERVICE_NAME
+          else
+              echo "🆕 服务 $SERVICE_NAME 不存在，正在创建..."
+              pm2 start -n $SERVICE_NAME node -- index.js
+          fi
+          
+          # 保存 PM2 进程列表
+          pm2 save
+          
+          echo "✅ 操作完成！"
+          echo "当前 PM2 服务列表："
+          pm2 list
