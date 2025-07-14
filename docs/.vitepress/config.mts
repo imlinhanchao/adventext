@@ -19,7 +19,37 @@ export default defineConfig({
           { text: '千屿引擎是什么?', link: '/guide/what-me.md' },
           { text: '快速开始', link: '/guide/getting-started.md' }
         ]
-      }
+      },
+      {
+        text: '故事',
+        items: [
+          { text: '属性', link: '/guide/story/attr.md' },
+          { text: '背包', link: '/guide/story/inventory.md' },
+        ],
+      },
+      {
+        text: '物品',
+        items: [
+          { text: '维护', link: '/guide/item/maintain.md' },
+          { text: '使用', link: '/guide/item/use.md' },
+        ],
+      },
+      {
+        text: '场景',
+        items: [
+          { text: '内容', link: '/guide/scene/content.md' },
+          { text: '选项', link: '/guide/scene/option.md' },
+          { text: '条件', link: '/guide/scene/condition.md' },
+          { text: '效果', link: '/guide/scene/effect.md' },
+        ]
+      },
+      {
+        text: '调试与发布',
+        items: [
+          { text: '调试', link: '/guide/debug.md' },
+          { text: '发布', link: '/guide/release.md' },
+        ],
+      },
     ],
 
     socialLinks: [

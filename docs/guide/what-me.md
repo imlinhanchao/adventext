@@ -14,5 +14,5 @@
 
 别让想法沉睡——
 
-[**开始创作**](./guide/quickstart.md)，就现在！
+[**开始创作**](./getting-started.md)，就现在！
 
