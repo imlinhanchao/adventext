@@ -5,6 +5,12 @@ name: Deploy VitePress site to Pages
 on:
   # 允许你从 Actions 选项卡手动运行此工作流程
   workflow_dispatch:
+  # 仅在推送到 master 且包含 docs 目录的文件时触发
+  push:
+    branches:
+      - master
+    paths:
+      - 'docs/**'
 
 # 设置 GITHUB_TOKEN 的权限，以允许部署到 GitHub Pages
 permissions:
