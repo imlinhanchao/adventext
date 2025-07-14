@@ -1,13 +1,22 @@
 import { resolve } from 'path';
+import { readFileSync, existsSync } from 'fs';
 import type { ConfigEnv, UserConfig } from 'vite';
 import { defineConfig, loadEnv } from 'vite';
 import { OUTPUT_DIR } from './build/constant';
 import { wrapperEnv } from './build/utils';
 import { createVitePlugins } from './build/vite/plugin';
-import config from '../src/config.json'
 
 function pathResolve(dir) {
   return resolve(process.cwd(), '.', dir);
+}
+
+function getWebPort() {
+  const filePath = pathResolve('src/config.json');
+  if (existsSync(filePath)) {
+    return JSON.parse(readFileSync(filePath, 'utf-8')).webport || 3000;
+  } else {
+    return 3000; // Default port if config file does not exist
+  }
 }
 
 export default defineConfig(({ command, mode }: ConfigEnv): UserConfig => {
@@ -57,7 +66,7 @@ export default defineConfig(({ command, mode }: ConfigEnv): UserConfig => {
       // Load proxy configuration from .env
       proxy: {
         "/api": {
-          target: `http://127.0.0.1:${config.webport}/api`,
+          target: `http://127.0.0.1:${getWebPort()}/api`,
           changeOrigin: true,
           ws: true,
           rewrite: (path) => path.replace(new RegExp(`^/api`), ''),
