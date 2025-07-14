@@ -22,6 +22,7 @@
     "echarts": "^5.5.1",
     "element-plus": "^2.9.9",
     "lodash-es": "^4.17.21",
+    "pako": "^2.1.0",
     "pinia": "^2.1.7",
     "qs": "^6.12.3",
     "sortablejs": "^1.15.6",

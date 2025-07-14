@@ -131,3 +131,10 @@ export function exportStorys(data: string[]) {
     data
   });
 }
+
+export function importStorys(dataZips: string[]) {
+  return defHttp.post({
+    url: `/draft/import`,
+    data: dataZips
+  });
+}
