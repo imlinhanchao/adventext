@@ -6,7 +6,9 @@
   import { Item } from '@/api/item';
   import { clone, isNumber } from '@/utils';
   import { formatDate } from '@vueuse/core';
-import { Inventory } from '@/api/draft';
+  import { Inventory } from '@/api/draft';
+  import DOMPurify from 'dompurify'; 
+  import { marked } from 'marked';
 
   defineProps<{
     type: string;
@@ -119,6 +121,10 @@ import { Inventory } from '@/api/draft';
       msgType.value = 'success';
     }
   }
+
+  const contentHTML = computed(() => {
+    return DOMPurify.sanitize(marked.parse(content.value, { async: true }) as any);
+  });
 
   const itemSelector = ref(false);
   const dlgMessage = ref('');
@@ -258,7 +264,8 @@ import { Inventory } from '@/api/draft';
       </section>
       <el-alert v-if="message" :type="msgType" :closable="false">{{ message }}</el-alert>
       <section>
-        <span class="whitespace-pre-wrap">{{ content }}</span>
+        <!-- eslint-disable-next-line vue/no-v-html -->
+        <span v-html="contentHTML"></span>
       </section>
       <section>
         <template v-for="o in currentScene.options" :key="o.text">

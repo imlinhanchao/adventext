@@ -3,7 +3,7 @@ function startGame(scene, state, content) {
   const optionsDiv = document.getElementById('options');
   showMessage('', 'info')
 
-  storyDiv.textContent = content;
+  storyDiv.innerHTML = DOMPurify.sanitize(marked?.parse(content) || content);
   optionsDiv.innerHTML = '';
 
   let lock = false;
