@@ -23,31 +23,30 @@ export default defineConfig({
       {
         text: '故事',
         items: [
-          { text: '属性', link: '/guide/story/attr.md' },
-          { text: '背包', link: '/guide/story/inventory.md' },
+          { text: '故事的属性', link: '/guide/story/attr.md' },
+          { text: '初始背包', link: '/guide/story/inventory.md' },
         ],
       },
       {
         text: '物品',
         items: [
-          { text: '维护', link: '/guide/item/maintain.md' },
-          { text: '使用', link: '/guide/item/use.md' },
+          { text: '维护物品列表', link: '/guide/item/maintain.md' },
         ],
       },
       {
         text: '场景',
         items: [
-          { text: '内容', link: '/guide/scene/content.md' },
-          { text: '选项', link: '/guide/scene/option.md' },
-          { text: '条件', link: '/guide/scene/condition.md' },
-          { text: '效果', link: '/guide/scene/effect.md' },
+          { text: '场景的内容', link: '/guide/scene/content.md' },
+          { text: '场景的选项', link: '/guide/scene/option.md' },
+          { text: '选项的条件', link: '/guide/scene/condition.md' },
+          { text: '选项的效果', link: '/guide/scene/effect.md' },
         ]
       },
       {
         text: '调试与发布',
         items: [
-          { text: '调试', link: '/guide/debug.md' },
-          { text: '发布', link: '/guide/release.md' },
+          { text: '如何调试', link: '/guide/debug.md' },
+          { text: '如何发布', link: '/guide/release.md' },
         ],
       },
     ],
