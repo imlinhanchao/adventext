@@ -55,7 +55,9 @@ jobs:
           #!/bin/bash
           set -e  # 失败时退出
 
-          source /etc/profile
+          source ~/.profile
+
+          echo $PATH
           
           # 定义服务名称
           SERVICE_NAME="adventext"
