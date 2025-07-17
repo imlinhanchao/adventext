@@ -9,7 +9,7 @@ export default defineConfig({
     logo: '/logo.svg',
 
     nav: [
-      { text: '快速开始', link: '/' },
+      { text: '快速开始', link: '/guide/getting-started.md' },
     ],
 
     sidebar: [
