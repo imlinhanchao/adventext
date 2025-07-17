@@ -188,9 +188,9 @@
           </span>
         </template>
         <el-input v-model="data.value" clearable type="textarea" />
-        <el-button @click="data.value = `item:${data.value?.split(':')[1] || data.value ||'提示：'}`" size="small">物品弹窗</el-button>
-        <el-button @click="data.value = `items:${data.value?.split(':')[1] || data.value ||'提示：'}`" size="small">物品弹窗(选择数量)</el-button>
-        <el-button @click="data.value = `item:${data.value?.split(':')[1] || data.value ||'提示：'}:类型`" size="small">物品弹窗(指定类型)</el-button>
+        <el-button @click="data.value = `item:${data.value?.split(':')[1] || data.value ||'提示信息'}`" size="small">物品弹窗</el-button>
+        <el-button @click="data.value = `items:${data.value?.split(':')[1] || data.value ||'提示信息'}`" size="small">物品弹窗(选择数量)</el-button>
+        <el-button @click="data.value = `item:${data.value?.split(':')[1] || data.value ||'提示信息'}:类型`" size="small">物品弹窗(指定类型)</el-button>
       </el-form-item>
       <el-divider>
         条件列表
