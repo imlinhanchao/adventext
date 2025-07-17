@@ -721,7 +721,7 @@ export default class GameController {
         throw new Error('缺少数值');
       }
 
-      let itemTake: Inventory | undefined, itemCount: number;
+      let itemTake: Inventory | undefined;
       const isItem = option?.value?.startsWith('item:');
       const isItems = option?.value?.startsWith('items:');
       if (isItem || isItems) {
