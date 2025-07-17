@@ -4,6 +4,7 @@
   import Menu from '@/layouts/components/menu/index.vue';
   import User from '@/layouts/components/user/index.vue';
   import Dark from '@/layouts/components/dark/index.vue';
+  import Help from '@/layouts/components/help/index.vue';
   import { useBreakpoint } from '@/hooks/event/useBreakpoint';
   import { useUserStore } from '@/store/modules/user';
 
@@ -18,6 +19,7 @@
     <span :class="{ 'absolute left-0 right-0 flex justify-center z-0': screenSM }"><BreadCrumb /></span>
     <Logo v-if="!screenSM" />
     <span class="flex items-center space-x-2">
+      <Help class="z-1" />
       <Dark class="z-1" />
       <User class="z-1" />
     </span>

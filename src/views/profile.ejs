@@ -37,7 +37,10 @@
       <h3>
         <a <%-locals.query.type !== 'draft' && 'href="?type=draft"' || '' -%>>我的草稿</a>
       </h3>
-      <a href="/admin/" title="创作故事" target="_blank" class="absolute right-2 !border-none">✚</a>
+      <span class="absolute right-2">
+        <a href="https://docs.adventext.fun/" title="创作帮助" target="_blank" class="!border-none">❓</a>
+        <a href="/admin/" title="创作故事" target="_blank" class="!border-none">✚</a>
+      </span>
     </header>
 <% } else { %>
     <section>
