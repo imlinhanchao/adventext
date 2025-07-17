@@ -51,3 +51,9 @@ export function exportStory(id: string) {
     url: `/story/${id}/export`,
   });
 }
+
+export function packageStory(id: string) {
+  return defHttp.get({
+    url: `/story/${id}/package`,
+  });
+}

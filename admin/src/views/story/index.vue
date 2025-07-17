@@ -1,7 +1,8 @@
 <script setup lang="ts">
-  import { deleteStory, exportStory, getStoryList, Story } from '@/api/story';
+  import { deleteStory, exportStory, getStoryList, packageStory, Story } from '@/api/story';
   import { ElMessageBox } from 'element-plus';
   import Item from '@/views/story/item.vue';
+import { copyTextToClipboard } from '@/hooks/web/useCopyToClipboard';
 
   const storyList = ref<Story[]>([]);
   onMounted(() => {
@@ -42,16 +43,28 @@
     URL.revokeObjectURL(url);
     ElMessage.success('导出成功');
   }
+  async function copy(row: Story) {
+    const data = await packageStory(row.id!);
+    copyTextToClipboard(data);
+    ElMessage.success('复制成功');
+  }
 </script>
 
 <template>
   <el-container>
     <el-main>
       <el-table :data="storyList" style="width: 100%">
-        <el-table-column label="" align="center" width="80">
+        <el-table-column label="" align="center" width="120">
           <template #default="{ row }">
             <ButtonEx content="删除" link type="danger" icon="el-icon-remove" @click="remove(row)" />
             <ButtonEx content="导出" link type="primary" icon="el-icon-download" @click="exportJson(row)" />
+            <ButtonEx
+              content="复制"
+              link
+              type="primary"
+              icon="el-icon-document"
+              @click="copy(row)"
+            />
           </template>
         </el-table-column>
         <el-table-column prop="name" label="名称" width="200" align="center">

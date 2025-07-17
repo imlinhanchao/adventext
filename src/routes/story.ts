@@ -1,3 +1,4 @@
+import pako from "pako";
 import { Router, Request, Response } from "express";
 import GameController from "../controllers/game";
 import { ItemRepo, SceneRepo, Story, StoryRepo } from "../entities/";
@@ -82,6 +83,28 @@ router.get('/:id/export', async (req, res) => {
     scenes,
     items
   });
+});
+
+router.get('/:id/package', async (req, res) => {
+  const story = req.story!;
+  const scenes = await SceneRepo.find({
+    where: { storyId: story.id }
+  }).then(scenes => scenes.map((scene) => omit(scene, ['id', 'storyId', 'createTime', 'updateTime'])));
+  const items = await ItemRepo.find({
+    where: { storyId: story.id }
+  }).then(items => items.map((item) => omit(item, ['id', 'storyId', 'createTime', 'updateTime'])));
+
+  const data = {
+    ...omit(story, ['id', 'status', 'comment', 'createTime', 'updateTime']),
+    scenes,
+    items
+  }
+
+  const utf8Bytes = Buffer.from(JSON.stringify(data), 'utf8');
+  const compressed = pako.deflate(utf8Bytes);
+  const dataZip = Buffer.from(compressed).toString('base64');
+
+  json(res, dataZip);
 });
 
 router.use('/:id', SceneRoute);
