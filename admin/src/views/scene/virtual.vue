@@ -123,7 +123,7 @@
   }
 
   const contentHTML = computed(() => {
-    return DOMPurify.sanitize(marked.parse(content.value, { async: true }) as any);
+    return DOMPurify.sanitize(marked(content.value) as any);
   });
 
   const itemSelector = ref(false);
