@@ -34,6 +34,19 @@ export default defineConfig({
         ]
       },
       {
+        text: '示例',
+        items: [
+          { text: '故事开端', link: '/guide/example/start.md' },
+          { text: '获得残剑', link: '/guide/example/get-sword.md' },
+          { text: '捡块玄铁', link: '/guide/example/get-iron.md' },
+          { text: '首次战斗', link: '/guide/example/first-fight.md' },
+          { text: '做点买卖', link: '/guide/example/trade.md' },
+          { text: '升级装备', link: '/guide/example/upgrade.md' },
+          { text: '山洞奇遇', link: '/guide/example/cave.md' },
+          { text: '结局', link: '/guide/example/end.md' },
+        ]
+      },
+      {
         text: '故事',
         items: [
           { text: '故事的属性', link: '/guide/story/attr.md' },
