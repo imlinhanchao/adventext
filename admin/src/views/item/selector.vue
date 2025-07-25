@@ -12,7 +12,6 @@
     inventory?: boolean;
     readonly?: boolean;
   }>();
-  const emit = defineEmits(['confirm']);
 
   const query = reactive({
     name: '',
@@ -24,9 +23,8 @@
   const visible = ref(false);
   function search() {
     itemApi.value.getList(query).then((data) => {
-      emit('confirm', data);
       items.value = data.map((item) => {
-        const selectedItem = selected.value.find((i) => i.id === item.id);
+        const selectedItem = selected.value.find((i) => i.key === item.key);
         return {
           ...item,
           count: selectedItem?.count || 1,
@@ -113,7 +111,7 @@
           <el-table-column label="#" width="50" v-if="!readonly">
             <template #default="{ row }">
               <el-checkbox
-                :model-value="selected.some((r) => r.id == row.id)"
+                :model-value="selected.some((r) => r.key == row.key)"
                 @change="select(row, $event as boolean)"
               />
             </template>
