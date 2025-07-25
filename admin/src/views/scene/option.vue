@@ -244,7 +244,11 @@
             <el-button v-if="row.type == 'Item'" link icon="el-icon-edit" size="small" @click="editItem(row.name)" />
           </template>
         </el-table-column>
-        <el-table-column prop="content" label="内容" show-overflow-tooltip />
+        <el-table-column prop="content" label="内容" show-overflow-tooltip>
+          <template #default="{ row }">
+            <span>{{ row.operator || '' }}{{ row.content }}</span>
+          </template>
+        </el-table-column>
         <el-table-column label="操作" width="100px" align="center">
           <template #header>
             <el-button type="primary" link size="small" @click="addEffect">
