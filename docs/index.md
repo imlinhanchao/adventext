@@ -3,7 +3,7 @@ layout: home
 
 hero:
   name: 千屿引擎
-  text: 一个文字冒险游戏引擎与编辑器
+  text: 文字冒险游戏引擎与编辑器
   tagline: 书写你的世界
   actions:
     - theme: brand
