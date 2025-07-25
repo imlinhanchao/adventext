@@ -29,7 +29,7 @@
     name: [{ required: true, message: '请输入名称', trigger: 'blur' }],
     description: [{ required: true, message: '请输入描述', trigger: 'blur' }],
     key: [{ required: true, message: '请输入Key', trigger: 'blur' }],
-    value: [{ required: true, message: '请输入值', trigger: 'blur' }],
+    value: [{ required: true, message: '请弹窗输入', trigger: 'blur' }],
   };
 
   const formData = computed(() => ({ ...data.value, baseAttr: baseAttr.value }));

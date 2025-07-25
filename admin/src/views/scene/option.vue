@@ -170,13 +170,13 @@
         <el-input type="number" v-if="(data.loop ?? 0) >= 0" v-model="data.loop" :min="0" />
         <span v-else>不可重复</span>
       </el-form-item>
-      <el-form-item label="客户端输入提示" prop="value">
+      <el-form-item label="弹窗提示" prop="value">
         <template #label>
           <span>
             <el-tooltip placement="top">
               <template #content>
                 <p>
-                  用于在玩家选择选项时弹出一个输入框，其值用于类型为<b>输入值</b>的条件判断。
+                  用于在玩家选择选项时弹出一个输入框，其值用于类型为<b>弹窗输入</b>的条件判断。
                 </p>
                 <p>
                   若条件与影响有需要指定物品，则可使用 item[s]:提示内容:物品类型（物品类型非必须）弹出选择物品。items 表示需要用户选择数量，item 表示不需要选择数量。
@@ -184,7 +184,7 @@
               </template>
               <Icon icon="i-ep:info-filled" :size="14" />
             </el-tooltip>
-            客户端输入提示
+            弹窗提示
           </span>
         </template>
         <el-input v-model="data.value" clearable type="textarea" />

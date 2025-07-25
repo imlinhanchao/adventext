@@ -335,8 +335,12 @@ export default class GameController {
           }
         }
         if (condition.type === 'Value') {
-          if (condition.content !== valueText) {
-            throw new Error(`密码错误`);
+          if (isNumber(Number(valueText)) && !conditionOperator(Number(valueText), condition.content, condition.operator || '=')) {
+            throw new Error(`数值错误`);
+          } else if ((!condition.operator || condition.operator == '=') && valueText != condition.content) {
+            throw new Error(`数值错误`);
+          } else if (valueText == condition.content) {
+            throw new Error(`数值错误`);
           }
         }
       } catch (error) {

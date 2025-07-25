@@ -197,12 +197,12 @@ function searchAttr (type: string) {
             当前角色是否拥有包含指定属性的物品，比如设定 100 能量，则需要当前角色的物品中有包含 100 能量的物品才会判定成功，如果有多个物品，则会求和。
           </p>
           <p>
-            若在选项有设定<b>客户端输入提示</b>弹出选择物品，此处将会限制仅检查所选物品。如果不设定值，则只要有具备该属性的物品就判定为成功。
+            若在选项有设定<b>弹窗提示</b>弹出选择物品，此处将会限制仅检查所选物品。如果不设定值，则只要有具备该属性的物品就判定为成功。
           </p>
         </div>
         <span v-else-if="data.type == 'Item'">当前角色是否拥有设定的物品，比如设定物品为树枝，数量为20，则需要当前角色的物品中有树枝，且数量大于等于 20 才会判定成功。</span>
         <span v-else-if="data.type == 'ItemType'">当前角色是否拥有设定的物品类型，比如设定物品类型为燃料，则需要当前角色中有类型为燃料的物品，且数量大于等于 1 才会判定成功。</span>
-        <span v-else-if="data.type == 'Value'">选择此类型，必须在选项设定<b>客户端输入提示</b>，当玩家输入值等于设定值时才会判定成功。</span>
+        <span v-else-if="data.type == 'Value'">选择此类型，必须在选项设定<b>弹窗提示</b>，当玩家弹窗输入等于设定值时才会判定成功。</span>
         <div v-else-if="data.type == 'Fn'">
           <p>选择此类型，将会执行设定的函数内容，通过给<code>result</code>赋值或直接 return 返回判定结果。函数参数为 <code>profile</code>：当前玩家的 Profile
             对象，<code>value</code>：玩家选择选项时填写的值，<code>itemSelect</code>：玩家选择选项时选择的物品。</p>
@@ -316,7 +316,7 @@ function searchAttr (type: string) {
                 <template #content>
                   <p>
                     可以输入数字，或 rand(x,y) 表示 x~y 的随机数，percent(x,y) 表示 x% 的概率获得 y 个，y 省略则表示 1
-                    个，两个函数可嵌套使用。若<b>客户端输入提示</b>玩家输入为数字，则将会使用该值再乘以数量。
+                    个，两个函数可嵌套使用。若<b>弹窗提示</b>玩家输入为数字，则将会使用该值再乘以数量。
                   </p>
                 </template>
                 <Icon icon="i-ep:info-filled" />
@@ -326,7 +326,7 @@ function searchAttr (type: string) {
           </template>
           <el-input type="number" v-model="data.content" :min="0">
             <template #prepend>
-              <el-select v-model="data.operator" class="!w-60px">
+              <el-select v-model="data.operator" class="!w-60px" placeholder="≥">
                 <el-option label="=" value="=" />
                 <el-option label="!=" value="!=" />
                 <el-option label="<" value="<" />
@@ -345,7 +345,18 @@ function searchAttr (type: string) {
       </template>
       <template v-if="data.type === 'Value'">
         <el-form-item label="值" prop="content">
-          <el-input v-model="data.content" clearable />
+          <el-input v-model="data.content" clearable>
+            <template #prepend>
+              <el-select v-model="data.operator" class="!w-60px" placeholder="=">
+                <el-option label="=" value="=" />
+                <el-option label="!=" value="!=" />
+                <el-option label="<" value="<" />
+                <el-option label=">" value=">" />
+                <el-option label="≤" value="≤" />
+                <el-option label="≥" value="≥" />
+              </el-select>
+            </template>
+          </el-input>
         </el-form-item>
       </template>
       <template v-if="data.type === 'Fn'">

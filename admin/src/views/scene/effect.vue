@@ -94,10 +94,10 @@ function searchAttr (type: string) {
           <code>-</code>、<code>/</code>、<code>*</code>，则需要保证值的运算结果为数字。
         </span>
         <span v-else-if="data.type == 'ItemAttr'">
-          值只能是正数，会从背包<b>扣除</b>指定属性名的值之和等于设定值的物品，若<b>客户端输入值</b>设置了选择物品，则会将扣除范围限定在选择的物品上。
+          值只能是正数，会从背包<b>扣除</b>指定属性名的值之和等于设定值的物品，若<b>弹窗提示</b>设置了选择物品，则会将扣除范围限定在选择的物品上。
         </span>
         <span v-else-if="data.type == 'Item'">
-          会从背包修改指定物品的数量，设置正值则新增，负值则扣除，若<b>客户端输入值</b>设置了选择物品，可以通过
+          会从背包修改指定物品的数量，设置正值则新增，负值则扣除，若<b>弹窗提示</b>设置了选择物品，可以通过
           <code>$item</code> 指代选择的物品。
         </span>
         <div v-else-if="data.type == 'Fn'">
@@ -149,7 +149,7 @@ function searchAttr (type: string) {
             <span>
               <el-tooltip
                 effect="dark"
-                content="可以使用 $value 表示输入值，rand(x,y) 表示 x~y 的随机数，percent(x,y) 表示 x% 的概率增加 y，y 省略则表示 1，，两个函数可嵌套使用，还可以通过 $物品属性名$ 获取玩家选择物品的属性的值，#玩家属性名# 获取玩家的属性的值。">
+                content="可以使用 $value 表示弹窗输入，rand(x,y) 表示 x~y 的随机数，percent(x,y) 表示 x% 的概率增加 y，y 省略则表示 1，，两个函数可嵌套使用，还可以通过 $物品属性名$ 获取玩家选择物品的属性的值，#玩家属性名# 获取玩家的属性的值。">
                 <Icon icon="i-ep:info-filled" :size="14" />
               </el-tooltip>
               属性值
@@ -184,7 +184,7 @@ function searchAttr (type: string) {
             <span>
               <el-tooltip
                 effect="dark"
-                content="此处设置表示消耗对应属性名的属性值之和的物品，可以设置选项物品弹窗来精确控制对应物品。可以使用 $value 表示输入值，rand(x,y) 表示 x~y 的随机数，percent(x,y) 表示 x% 的概率为 y，y 省略则表示 1，两个函数可嵌套使用，还可以通过 $物品属性名$ 获取玩家选择物品的属性的值，#玩家属性名# 获取玩家的属性的值。此字段最后运算非数字将会报错！">
+                content="此处设置表示消耗对应属性名的属性值之和的物品，可以设置选项物品弹窗来精确控制对应物品。可以使用 $value 表示弹窗输入，rand(x,y) 表示 x~y 的随机数，percent(x,y) 表示 x% 的概率为 y，y 省略则表示 1，两个函数可嵌套使用，还可以通过 $物品属性名$ 获取玩家选择物品的属性的值，#玩家属性名# 获取玩家的属性的值。此字段最后运算非数字将会报错！">
                 <Icon icon="i-ep:info-filled" :size="14" />
               </el-tooltip>
               物品属性值
@@ -281,7 +281,7 @@ function searchAttr (type: string) {
         <p>
           <el-button @click="data.content = 'rand(1,100)'">随机数</el-button>
           <el-button @click="data.content = 'percent(10,2)'">概率数</el-button>
-          <el-button @click="data.content = '$value'">输入值</el-button>
+          <el-button @click="data.content = '$value'">弹窗输入</el-button>
         </p>
       </template>
       <ItemSelector v-if="story" ref="itemSelectorRef" :story="story.id!" :type="type" @confirm="items = $event" />

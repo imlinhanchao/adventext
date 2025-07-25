@@ -25,7 +25,7 @@ export class Option {
    */
   loop: number;
   /**
-   * 客户端输入提示文本
+   * 弹窗提示文本
    */
   value?: string;
   /**
@@ -57,13 +57,13 @@ export const ConditionType = {
   ItemType: '物品类型',
   ItemAttr: '物品属性',
   Attr: '属性',
-  Value: '输入值',
+  Value: '弹窗输入',
   Fn: '函数判定',
 };
 
 export class Condition {
   /**
-   * 条件类型，Time：时间，Item:物品，ItemType：物品类型，ItemAttr:物品属性,Attr:属性,Value:输入值，Fn:函数判定
+   * 条件类型，Time：时间，Item:物品，ItemType：物品类型，ItemAttr:物品属性,Attr:属性,Value:弹窗输入，Fn:函数判定
    */
   type: string = '';
   /**
