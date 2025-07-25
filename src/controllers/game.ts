@@ -485,6 +485,7 @@ export default class GameController {
         }
         if (effect.tip) {
           msg = effect.tip.replace(/\$item/g, itemTake?.name || '')
+            .replace(/\$count/g, (itemTake?.count || '') + '')
             .replace(/\$value/g, value || '')
             .replace(/\$old/g, oldVal || '')
             .replace(/\$new/g, newVal || '');
