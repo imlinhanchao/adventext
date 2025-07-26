@@ -20,7 +20,7 @@
     <main class="flex-1 overflow-auto">
 <% if (list.length > 0) { %>
       <section class="w-full pl-5 h-full overflow-auto space-y-3">
-        <p class="text-center"><a href="/s/<%=story.id-%>">继续游玩</a></p>
+        <p class="text-center"><a href="/<%=type-%>/<%=story.id-%>">继续游玩</a></p>
 <% list.forEach(function(record, i) { %>
         <section class="flex flex-col w-full space-y-2 hover:bg-gray-100 dark:hover:bg-gray-800 p-2 rounded-md">
           <span class="line-clamp-2" onclick="open('<%=record.content%>')">

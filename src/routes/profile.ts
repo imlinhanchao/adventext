@@ -32,6 +32,10 @@ async function getStories(user: User, req: Request, res: Response) {
   return stories;
 }
 
+router.get("/", userSession(async (user: User, req: Request, res: Response) => {
+  res.redirect('/u/' + user.username);
+}));
+
 router.get("/:username", userSession(async (user: User, req: Request, res: Response, next) => {
   const username = req.params.username;
   let account;

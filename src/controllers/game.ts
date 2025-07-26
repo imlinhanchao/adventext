@@ -594,6 +594,7 @@ export default class GameController {
           endId: Number(end),
           ends,
           profile: {},
+          type: this.type.slice(0, 1),
         });
 
       const list = await RecordRepo.find({
@@ -619,6 +620,7 @@ export default class GameController {
         endId: Number(end),
         ends,
         profile: profile || {},
+        type: this.type.slice(0, 1),
       })
     } catch (err: any) {
       error(res, err.message)
