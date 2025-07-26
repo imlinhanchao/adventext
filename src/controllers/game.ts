@@ -318,7 +318,7 @@ export default class GameController {
             if (typeof profile.attr[key] === 'number') {
               if (!conditionOperator(
                 profile.attr[key],
-                parseFloat(value.value || value.toString()),
+                parseFloat(value.value ?? value.toString()),
                 value.operator || '≥'
               )) {
                 throw new Error(`你还没准备好.`);
@@ -326,7 +326,7 @@ export default class GameController {
             } else {
               if (!conditionOperator(
                 profile.attr[key],
-                value.value || value,
+                value.value ?? value,
                 value.operator || '='
               )) {
                 throw new Error(`你还没准备好.`);

@@ -11,7 +11,7 @@ function pathResolve(dir) {
 }
 
 function getWebPort() {
-  const filePath = pathResolve('src/config.json');
+  const filePath = pathResolve('../src/config.json');
   if (existsSync(filePath)) {
     return JSON.parse(readFileSync(filePath, 'utf-8')).webport || 3000;
   } else {

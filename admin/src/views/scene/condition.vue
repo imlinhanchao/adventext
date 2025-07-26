@@ -27,7 +27,7 @@ function open (condition?: Condition) {
       return {
         key,
         operator: value.operator,
-        value: value.value || value.toString(),
+        value: value.value ?? value.toString(),
       };
     });
   } else if (data.value.type == 'Attr') {
@@ -35,7 +35,7 @@ function open (condition?: Condition) {
       return {
         key,
         operator: value.operator,
-        value: value.value || value.toString(),
+        value: value.value ?? value.toString(),
       };
     });
   } else {
