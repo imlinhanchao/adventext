@@ -16,7 +16,7 @@
 
   watch(data, (val) => {
     emit('update:modelValue', `${val.type}:${val.tip}:${val.category}`.replace(/^:|:$/, ''));
-  })
+  }, { deep: true });
 
   function loadDataFromValue(value?: string) {
     if (!value) {
