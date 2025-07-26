@@ -15,7 +15,11 @@
   })
 
   watch(data, (val) => {
-    emit('update:modelValue', `${val.type}:${val.tip}:${val.category}`.replace(/^:|:$/, ''));
+    let value = val.type ? `${val.type}:${val.tip}` : val.tip;
+    if (val.type && val.category) {
+      value += `:${val.category}`;
+    }
+    emit('update:modelValue', value);
   }, { deep: true });
 
   function loadDataFromValue(value?: string) {
@@ -30,7 +34,7 @@
     const [type, tip, category] = value.split(':');
     data.value.tip = tip ?? type;
     data.value.category = category ?? '';
-    data.value.type = tip ? type : '';
+    data.value.type = tip != undefined ? type : '';
   }
 
   onMounted(() => {
