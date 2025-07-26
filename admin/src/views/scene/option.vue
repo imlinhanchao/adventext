@@ -4,6 +4,7 @@
   import { FormInstance } from 'element-plus';
   import ConditionForm from './condition.vue';
   import EffectForm from './effect.vue';
+  import ScenePrompt from './prompt.vue';
   import ItemForm from '@/views/item/item.vue';
   import { ItemApi, Item } from '@/api/item';
 
@@ -170,28 +171,7 @@
         <el-input type="number" v-if="(data.loop ?? 0) >= 0" v-model="data.loop" :min="0" />
         <span v-else>不可重复</span>
       </el-form-item>
-      <el-form-item label="弹窗提示" prop="value">
-        <template #label>
-          <span>
-            <el-tooltip placement="top">
-              <template #content>
-                <p>
-                  用于在玩家选择选项时弹出一个输入框，其值用于类型为<b>弹窗输入</b>的条件判断。
-                </p>
-                <p>
-                  若条件与影响有需要指定物品，则可使用 item[s]:提示内容:物品类型（物品类型非必须）弹出选择物品。items 表示需要用户选择数量，item 表示不需要选择数量。
-                </p>
-              </template>
-              <Icon icon="i-ep:info-filled" :size="14" />
-            </el-tooltip>
-            弹窗提示
-          </span>
-        </template>
-        <el-input v-model="data.value" clearable type="textarea" />
-        <el-button @click="data.value = `item:${data.value?.split(':')[1] || data.value ||'提示信息'}`" size="small">物品弹窗</el-button>
-        <el-button @click="data.value = `items:${data.value?.split(':')[1] || data.value ||'提示信息'}`" size="small">物品弹窗(选择数量)</el-button>
-        <el-button @click="data.value = `item:${data.value?.split(':')[1] || data.value ||'提示信息'}:类型`" size="small">物品弹窗(指定类型)</el-button>
-      </el-form-item>
+      <ScenePrompt v-model="data.value" />
       <el-divider>
         条件列表
         <el-tooltip placement="top">
