@@ -738,7 +738,7 @@ export default class GameController {
           throw new Error(`物品 ${option.value} 未找到.`);
         }
         itemTake = clone(item);
-        itemTake.count = !isItems ? 1 : parseInt(values[2]);
+        itemTake.count = !isItems ? item.count : parseInt(values[2]);
       }
 
       if (option.conditions) {

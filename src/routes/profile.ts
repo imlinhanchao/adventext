@@ -3,8 +3,9 @@ import { Request, Response } from 'express';
 import { Router } from "express";
 import { userSession } from "../utils/auth";
 import { error, render } from "../utils/route";
-import { DraftRepo, StoryRepo, User, UserRepo } from '../entities';
+import { DraftRepo, EndRepo, StoryRepo, User, UserRepo } from '../entities';
 import utils, { omit } from "../utils";
+import { In } from "typeorm";
 
 const router = Router();
 
@@ -12,7 +13,7 @@ async function getStories(user: User, req: Request, res: Response) {
   let stories;
   const username = req.params.username;
   if (user && user.username === username) {
-    if (req.query.type === 'draft') {
+    if (req.params.type === 'draft') {
       stories = await DraftRepo.find({
         where: {
           author: user.username,
@@ -21,7 +22,7 @@ async function getStories(user: User, req: Request, res: Response) {
     }
   }
 
-  if (user.username !== username || req.query.type !== 'draft') {
+  if (user.username !== username || req.params.type !== 'draft') {
     stories = await StoryRepo.find({
       where: {
         author: username,
@@ -32,6 +33,27 @@ async function getStories(user: User, req: Request, res: Response) {
   return stories;
 }
 
+async function getStoryWithEnd(user: User, req: Request, res: Response) {
+  const ends = await EndRepo.find({
+    where: {
+      user: user.id,
+    },
+  });
+
+  const storyIds = ends.map(end => end.storyId);
+
+  const stories = await StoryRepo.find({
+    where: {
+      id: In(storyIds),
+    },
+  });
+
+  return stories.map(story => ({ 
+    ...omit(story, ['createTime', 'updateTime']), 
+    ends: ends.filter(end => end.storyId === story.id) 
+  }));
+}
+
 router.get("/", userSession(async (user: User, req: Request, res: Response) => {
   res.redirect('/u/' + user.username);
 }));
@@ -39,7 +61,32 @@ router.get("/", userSession(async (user: User, req: Request, res: Response) => {
 router.get("/:username", userSession(async (user: User, req: Request, res: Response, next) => {
   const username = req.params.username;
   let account;
-  
+
+  if (!user || user.username !== username) {
+    account = await UserRepo.findOneBy({ username });
+    if (!account) {
+      return next();
+    }
+  } else {
+    account = user;
+  }
+
+  const stories = await getStoryWithEnd(user, req, res);
+
+  render(res, "profile", req).title(user.username).render({
+    account,
+    stories,
+  });
+}));
+
+router.get("/:username/:type", userSession(async (user: User, req: Request, res: Response, next) => {
+  const username = req.params.username;
+  let account;
+
+  if (req.params.type !== 'story' && req.params.type !== 'draft') {
+    return next();
+  }
+
   if (!user || user.username !== username) {
     account = await UserRepo.findOneBy({ username });
     if (!account) {
@@ -51,7 +98,7 @@ router.get("/:username", userSession(async (user: User, req: Request, res: Respo
 
   const stories = await getStories(user, req, res);
 
-  render(res, "profile", req).title(user.username).render({
+  render(res, "dashboard", req).title(user.username).render({
     stories,
     account,
   })
@@ -61,7 +108,7 @@ router.post('/:username', userSession(async (user: User, req: Request, res: Resp
   const username = req.params.username;
   let account = await UserRepo.findOneBy({ username });
   if (!account) {
-      return next();
+    return next();
   }
 
   if (user.username === username) {
@@ -77,9 +124,9 @@ router.post('/:username', userSession(async (user: User, req: Request, res: Resp
       }
       account.password = crypto.createHash('sha256').update(password + utils.config.secret.salt).digest('hex');
     }
-  
+
     account.nickname = nickname;
-  
+
     account = await UserRepo.save(account);
     req.session.user = omit(account, User.unsafeKey);
     req.session.save();
