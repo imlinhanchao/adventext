@@ -197,6 +197,23 @@ function initGame(story) {
     });
 }
 
+function resetGame(storyId) {
+  if(!confirm('确定要重置游戏进度吗？这将清除所有当前的游戏进度。')) return;
+  fetch(`./reset`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    credentials: 'include',
+    body: JSON.stringify({
+      timezone: new Date().getTimezoneOffset() / -60
+    })
+  }).then(res => res.json())
+    .then(res => {
+      location.reload();
+    });
+}
+
 const isDarkModeInSystem = window.matchMedia("(prefers-color-scheme: dark)").matches;
 
 function initDarkMode() {
