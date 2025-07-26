@@ -53,8 +53,10 @@
         <span class="user-info"><b>上次登录：</b> <script>document.write(new Date(<%=Number(user.lastLogin)-%>).toLocaleString())</script></span>
       </p>
     </section>
-    <header class="mt-10">
-      <h3 class="text-center">TA的成就</h3>
+    <header class="flex space-x-2 items-center justify-center mt-10 relative">
+      <h3 class="text-center">
+        <a href="/u/<%=account.username%>">TA的成就</a>
+      </h3>
       <span>/</span>
       <h3 class="text-center">TA的故事</h3>
     </header>

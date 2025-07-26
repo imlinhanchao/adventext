@@ -71,7 +71,7 @@ router.get("/:username", userSession(async (user: User, req: Request, res: Respo
     account = user;
   }
 
-  const stories = await getStoryWithEnd(user, req, res);
+  const stories = await getStoryWithEnd(account, req, res);
 
   render(res, "profile", req).title(user.username).render({
     account,
