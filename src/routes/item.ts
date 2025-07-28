@@ -38,9 +38,8 @@ router.get("/items", async (req, res) => {
 router.post("/item", async (req, res) => {
   const story = req.story!;
 
-  const existingItem = await ItemRepo.findOneBy({ name: req.body.name, storyId: story.id });
-  if (existingItem) {
-    return error(res, "物品名称已存在" );
+  if (await ItemRepo.findOneBy({ key: req.body.key, storyId: story.id })) {
+    return error(res, "物品已存在" );
   }
 
   const newItem = ItemRepo.create({ ...req.body, storyId: story.id });
@@ -53,9 +52,9 @@ router.post("/item", async (req, res) => {
 // 更新物品
 router.put("/item/:itemId", async (req, res) => {
   const story = req.story!;
-  const existingItem = await ItemRepo.findOneBy({ name: req.body.name, storyId: story.id });
+  const existingItem = await ItemRepo.findOneBy({ key: req.body.key, storyId: story.id });
   if (existingItem && existingItem.id !== Number(req.params.itemId)) {
-    return error(res, "物品名称已存在" );
+    return error(res, "物品已存在" );
   }
   
   const item = await ItemRepo.findOneBy({ id: Number(req.params.itemId), storyId: story.id });

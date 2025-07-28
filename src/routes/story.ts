@@ -5,6 +5,7 @@ import { ItemRepo, SceneRepo, Story, StoryRepo } from "../entities/";
 import { error, json } from "../utils/route";
 import SceneRoute from './scene';
 import ItemRoute from './item';
+import TargetRoute from './target';
 import { omit } from "../utils";
 
 const router = Router();
@@ -77,11 +78,15 @@ router.get('/:id/export', async (req, res) => {
   const items = await ItemRepo.find({
     where: { storyId: story.id }
   }).then(items => items.map((item) => omit(item, ['id', 'storyId', 'createTime', 'updateTime'])));
+  const achievements = await ItemRepo.find({
+    where: { storyId: story.id }
+  }).then(items => items.map((item) => omit(item, ['id', 'storyId', 'createTime', 'updateTime'])));
 
   json(res, {
     ...omit(story, ['id', 'status', 'comment', 'createTime', 'updateTime', 'sourceId']),
     scenes,
-    items
+    items,
+    achievements,
   });
 });
 
@@ -93,11 +98,15 @@ router.get('/:id/package', async (req, res) => {
   const items = await ItemRepo.find({
     where: { storyId: story.id }
   }).then(items => items.map((item) => omit(item, ['id', 'storyId', 'createTime', 'updateTime'])));
+  const achievements = await ItemRepo.find({
+    where: { storyId: story.id }
+  }).then(items => items.map((item) => omit(item, ['id', 'storyId', 'createTime', 'updateTime'])));
 
   const data = {
     ...omit(story, ['id', 'status', 'comment', 'createTime', 'updateTime']),
     scenes,
-    items
+    items,
+    achievements,
   }
 
   const utf8Bytes = Buffer.from(JSON.stringify(data), 'utf8');
@@ -109,5 +118,6 @@ router.get('/:id/package', async (req, res) => {
 
 router.use('/:id', SceneRoute);
 router.use('/:id', ItemRoute);
+router.use('/:id', TargetRoute);
 
 export default router;

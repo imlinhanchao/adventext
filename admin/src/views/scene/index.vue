@@ -5,14 +5,16 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 import { useEventListener } from '@/hooks/event/useEventListener';
 import SceneForm from './item.vue';
 import { ItemApi, Item } from '@/api/item';
-import { ItemsContext, ScenesContext, StoryContext } from './index';
+import { ItemsContext, ScenesContext, StoryContext, TargetsContext } from './index';
 import ItemSelector from '@/views/item/selector.vue';
+import TargetSelector from '@/views/target/selector.vue';
 import Virtual from './virtual.vue';
 import StoryForm from '@/views/story/item.vue';
 import DraftForm from '@/views/draft/item.vue';
 import { useBreakpoint } from '@/hooks/event/useBreakpoint';
 import { Draft } from '@/api/draft';
 import { Story } from '@/api/story';
+import { Target, TargetApi } from '@/api/target';
 
 const { screenSM: isMobile } = useBreakpoint();
 
@@ -21,11 +23,14 @@ const storyId = route.params.story as string;
 const type = route.meta.type as string;
 const story = ref<Draft>(new Draft());
 const items = ref<Item[]>([]);
+const targets = ref<Target[]>([]);
 const scenes = ref<Scene[]>([]);
 const sceneApi = new SceneApi(storyId, type);
 const itemApi = new ItemApi(storyId, type);
+const targetApi = new TargetApi(storyId, type);
 
 provide(ItemsContext, items);
+provide(TargetsContext, targets);
 provide(StoryContext, story);
 provide(ScenesContext, scenes);
 
@@ -36,6 +41,7 @@ onMounted(() => {
     loadScene(),
     loadStory(),
     loadItem(),
+    loadTarget(),
   ]).then(() => {
     loading.value = false;
   });
@@ -53,6 +59,11 @@ function loadStory () {
 function loadItem () {
   return itemApi.getList().then((data) => {
     items.value = data;
+  });
+}
+function loadTarget () {
+  return targetApi.getList().then((data) => {
+    targets.value = data;
   });
 }
 function updateSceneName (oldName: string, name: string) {
@@ -243,6 +254,13 @@ function viewItemList () {
   });
 }
 
+const targetListRef = ref<InstanceType<typeof TargetSelector>>();
+function viewTargetList () {
+  targetListRef.value?.open().then(async () => {
+    targets.value = await targetApi.getList();
+  });
+}
+
 const isVirtual = ref(false);
 function virtualRun () {
   isVirtual.value = !isVirtual.value;
@@ -274,6 +292,9 @@ function virtualRun () {
                 <ButtonEx icon="i-ph:sword" type="warning" @click="viewItemList" plain>
                   <span class="btn-text">管理物品</span>
                 </ButtonEx>
+                <ButtonEx icon="i-mingcute:bling-line" type="danger" @click="viewTargetList" plain>
+                  <span class="btn-text">成就维护</span>
+                </ButtonEx>
                 <ButtonEx
                   :icon="!isVirtual ? 'i-solar:play-bold' : 'i-solar:stop-bold'" type="success"
                   @click="virtualRun" :plain="!isVirtual">
@@ -303,6 +324,7 @@ function virtualRun () {
           </el-main>
           <span @mousedown.stop>
             <ItemSelector ref="itemListRef" :story="storyId" :type="type" readonly @close="loadItem" />
+            <TargetSelector ref="targetListRef" :story="storyId" :type="type" readonly @close="loadTarget" />
             <SceneForm
               ref="sceneFormRef" :story="storyId" :type="type" :scenes="scenes"
               @update-name="updateSceneName" />

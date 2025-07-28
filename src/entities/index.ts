@@ -6,6 +6,7 @@ import { Draft } from "./Draft";
 import { Story } from "./Story";
 import { Scene } from "./Scene";
 import { Item } from "./Item";
+import { Target } from './Target';
 import { End } from "./End";
 import { User } from "./User";
 import { RankView } from './Rank';
@@ -38,7 +39,7 @@ export const AppDataSource = utils.config ? new DataSource({
   ...utils.config.database,
   synchronize: true,
   logging: false,
-  entities: [Record, Profile, User, Story, Scene, Draft, Item, End, RankView, ThirdParty],
+  entities: [Record, Profile, User, Story, Scene, Draft, Item, Target, End, RankView, ThirdParty],
   migrations: [],
   subscribers: [],
   charset: "utf8mb4_unicode_ci"
@@ -52,6 +53,7 @@ export {
   Draft,
   Scene,
   Item,
+  Target,
   End,
   ThirdParty
 }
@@ -63,6 +65,7 @@ export const StoryRepo = utils.config ? AppDataSource.getRepository(Story) : {} 
 export const DraftRepo = utils.config ? AppDataSource.getRepository(Draft) : {} as Repository<Draft>;
 export const SceneRepo = utils.config ? AppDataSource.getRepository(Scene) : {} as Repository<Scene>;
 export const ItemRepo = utils.config ? AppDataSource.getRepository(Item) : {} as Repository<Item>;
+export const TargetRepo = utils.config ? AppDataSource.getRepository(Target) : {} as Repository<Target>;
 export const EndRepo = utils.config ? AppDataSource.getRepository(End) : {} as Repository<End>;
 export const RankRepo = utils.config ? AppDataSource.getRepository(RankView) : {} as Repository<RankView>;
 export const ThirdPartyRepo = utils.config ? AppDataSource.getRepository(ThirdParty) : {} as Repository<ThirdParty>;
