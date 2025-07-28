@@ -52,7 +52,11 @@
             <ButtonEx content="删除" link type="danger" icon="el-icon-remove" @click="remove(row)" />
           </template>
         </el-table-column>
-        <el-table-column prop="username" label="用户名" align="center" min-width="120" />
+        <el-table-column prop="username" label="用户名" align="center" min-width="120">
+          <template #default="{ row }">
+            <a :href="`/u/${row.username}`" target="_blank">{{ row.username }}</a>
+          </template>
+        </el-table-column>
         <el-table-column prop="nickname" label="昵称" align="center" min-width="100" />
         <el-table-column
           prop="lastLogin"
