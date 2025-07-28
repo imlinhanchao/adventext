@@ -167,10 +167,23 @@
   }
 
   const jumpScene = ref('');
-  function jumpToScene(scene: string) {
+  async function jumpToScene(scene: string) {
     if (!scene) return;
     const targetScene = sceneMap.value[scene];
     if (!targetScene) return;
+    
+    const next = targetScene.name;
+    const { options, content: updateContent } = await updateOptions(
+      sceneMap.value[next],
+      profile.value,
+      records.value,
+    ).finally(() => {
+      loading.value = false;
+    });
+    sceneMap.value[next].options = options;
+    content.value = updateContent;
+    currentScene.value = sceneMap.value[next];
+
     currentScene.value = targetScene;
     profile.value.scene = targetScene.name;
     jumpScene.value = '';

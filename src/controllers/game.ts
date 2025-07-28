@@ -335,10 +335,13 @@ export default class GameController {
           }
         }
         if (condition.type === 'Value') {
-          if (isNumber(Number(valueText)) && !conditionOperator(Number(valueText), condition.content, condition.operator || '=')) {
-            throw new Error(`数值错误`);
-          } else if ((!condition.operator || condition.operator == '=') && valueText != condition.content) {
-            throw new Error(`数值错误`);
+          if (isNumber(Number(valueText))) {
+            if (!conditionOperator(Number(valueText), Number(condition.content), condition.operator || '='))
+              throw new Error(`数值错误`);
+          } else if ((!condition.operator || condition.operator == '=')) {
+            if (valueText != condition.content) {
+              throw new Error(`数值错误`);
+            }
           } else if (valueText == condition.content) {
             throw new Error(`数值错误`);
           }
