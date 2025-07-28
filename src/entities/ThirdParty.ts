@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
 
-@Entity()
+@Entity({ comment: '第三方登录配置' })
 export class ThirdParty {
   @PrimaryGeneratedColumn()
   id: number;

@@ -42,7 +42,7 @@ export class Effect {
   }
 }
 
-@Entity()
+@Entity({ comment: '场景'})
 export class Scene {
   @PrimaryGeneratedColumn()
   id: number;

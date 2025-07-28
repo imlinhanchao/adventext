@@ -8,7 +8,7 @@ export class Inventory extends Item {
   count: number;
 }
 
-@Entity()
+@Entity({ comment: '玩家档案' })
 export class Profile {
   @PrimaryGeneratedColumn()
   id: number;

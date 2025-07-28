@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 import { Inventory } from './Profile';
 
-@Entity()
+@Entity({ comment: '故事草稿'})
 export class Draft {
   @PrimaryGeneratedColumn('uuid')
   id: string;

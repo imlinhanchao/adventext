@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
-@Entity()
+@Entity({ comment: '玩家游玩记录'})
 export class Record {
   @PrimaryGeneratedColumn()
   id: number;
