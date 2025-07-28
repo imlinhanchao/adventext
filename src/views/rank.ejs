@@ -24,7 +24,7 @@
               <tr <%- rank.username === locals.user.username ? 'class="font-bold"': '' -%>>
                   <td><%= (i+1+(page-1)*size) %></td>
                   <td class="lower-font"><a href="/u/<%=rank.username%>">
-                    <%= rank.nickname %></a>
+                    <%= rank.nickname || rank.username %></a>
                   </td>
                   <td><%= rank.endCount %></td>
                   <td><%= rank.totalCost %></td>
