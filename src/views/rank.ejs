@@ -26,7 +26,7 @@
                   <td><%= (i+1+(page-1)*size) %></td>
                   <td class="lower-font <%= rank.username === locals.user.username ? 'text-primary font-bold' : '' %>">
                     <a href="/u/<%=rank.username%>">
-                      <%= rank.nickname %>
+                      <%= rank.nickname || rank.username %>
                     </a>
                   </td>
                   <td><%= rank.endCount %></td>
