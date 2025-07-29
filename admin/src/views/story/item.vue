@@ -27,6 +27,7 @@
 
   const rules = {
     name: [{ required: true, message: '请输入名称', trigger: 'blur' }],
+    author: [{ required: true, message: '请输入作者', trigger: 'blur' }],
     description: [{ required: true, message: '请输入描述', trigger: 'blur' }],
     key: [{ required: true, message: '请输入Key', trigger: 'blur' }],
     value: [{ required: true, message: '请弹窗输入', trigger: 'blur' }],
@@ -78,13 +79,13 @@
     append-to-body
   >
     <el-form ref="formRef" label-width="auto" :model="formData" :rules="rules" class="colon">
-      <el-form-item label="名称" name="name">
+      <el-form-item label="名称" prop="name">
         <el-input v-model.trim="data.name" />
       </el-form-item>
-      <el-form-item label="作者" name="name">
+      <el-form-item label="作者" prop="author">
         <el-input v-model="data.author" />
       </el-form-item>
-      <el-form-item label="描述" name="description">
+      <el-form-item label="描述" prop="description">
         <el-input v-model="data.description" type="textarea" />
       </el-form-item>
       <el-form-item label="人物基础属性" class="no-error" />
