@@ -915,35 +915,37 @@ export default class GameController {
         order: { createTime: 'DESC' },
       });
       const storyIds = stories.map((s) => s.id);
-      const endScenes = storyIds.length ? await SceneRepo.createQueryBuilder("scene")
-        .select("scene.storyId", "storyId")
-        .addSelect("COUNT(*)", "count")
-        .where("scene.storyId IN (:...storyIds)", { storyIds })
-        .andWhere("scene.isEnd = :isEnd", { isEnd: true })
-        .groupBy("scene.storyId")
-        .getRawMany() : [];
-      const targetCounts = storyIds.length ? await TargetRepo.createQueryBuilder("target")
-        .select("target.storyId", "storyId")
-        .addSelect("COUNT(*)", "count")
-        .where("target.storyId IN (:...storyIds)", { storyIds })
-        .groupBy("target.storyId")
-        .getRawMany() : [];
-      let finish = [], achievements = [];
-      if (req.session.user) {
-        finish = await EndRepo.createQueryBuilder("end")
-        .select("end.storyId", "storyId")
-        .addSelect("COUNT(*)", "count")
-        .where("end.storyId IN (:...storyIds)", { storyIds })
-        .andWhere("end.user = :userId", { userId: req.session.user.id })
-        .groupBy("end.storyId")
-        .getRawMany();
-        achievements = await AchievementRepo.createQueryBuilder("achievement")
-          .select("achievement.storyId", "storyId")
+      let finish = [], achievements = [], endScenes = [], targetCounts = [];
+      if (storyIds.length) {
+        endScenes = storyIds.length ? await SceneRepo.createQueryBuilder("scene")
+          .select("scene.storyId", "storyId")
           .addSelect("COUNT(*)", "count")
-          .where("achievement.storyId IN (:...storyIds)", { storyIds })
-          .andWhere("achievement.user = :userId", { userId: req.session.user.id })
-          .groupBy("achievement.storyId")
+          .where("scene.storyId IN (:...storyIds)", { storyIds })
+          .andWhere("scene.isEnd = :isEnd", { isEnd: true })
+          .groupBy("scene.storyId")
+          .getRawMany() : [];
+        targetCounts = storyIds.length ? await TargetRepo.createQueryBuilder("target")
+          .select("target.storyId", "storyId")
+          .addSelect("COUNT(*)", "count")
+          .where("target.storyId IN (:...storyIds)", { storyIds })
+          .groupBy("target.storyId")
+          .getRawMany() : [];
+        if (req.session.user) {
+          finish = await EndRepo.createQueryBuilder("end")
+          .select("end.storyId", "storyId")
+          .addSelect("COUNT(*)", "count")
+          .where("end.storyId IN (:...storyIds)", { storyIds })
+          .andWhere("end.user = :userId", { userId: req.session.user.id })
+          .groupBy("end.storyId")
           .getRawMany();
+          achievements = await AchievementRepo.createQueryBuilder("achievement")
+            .select("achievement.storyId", "storyId")
+            .addSelect("COUNT(*)", "count")
+            .where("achievement.storyId IN (:...storyIds)", { storyIds })
+            .andWhere("achievement.user = :userId", { userId: req.session.user.id })
+            .groupBy("achievement.storyId")
+            .getRawMany();
+        }
       }
       render(res, 'stories', req).render({
         stories: stories.map((story) => {
