@@ -37,9 +37,9 @@ export class EntitySubscriber implements EntitySubscriberInterface {
 
 export const AppDataSource = utils.config ? new DataSource({
   type: "mysql",
+  logging: false,
   ...utils.config.database,
   synchronize: true,
-  logging: false,
   entities: [Record, Profile, User, Story, Scene, Draft, Item, Target, End, RankView, Achievement, ThirdParty],
   migrations: [],
   subscribers: [],

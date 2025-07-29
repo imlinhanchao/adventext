@@ -915,19 +915,19 @@ export default class GameController {
         order: { createTime: 'DESC' },
       });
       const storyIds = stories.map((s) => s.id);
-      const endScenes = await SceneRepo.createQueryBuilder("scene")
+      const endScenes = storyIds.length ? await SceneRepo.createQueryBuilder("scene")
         .select("scene.storyId", "storyId")
         .addSelect("COUNT(*)", "count")
         .where("scene.storyId IN (:...storyIds)", { storyIds })
         .andWhere("scene.isEnd = :isEnd", { isEnd: true })
         .groupBy("scene.storyId")
-        .getRawMany();
-      const targetCounts = await TargetRepo.createQueryBuilder("target")
+        .getRawMany() : [];
+      const targetCounts = storyIds.length ? await TargetRepo.createQueryBuilder("target")
         .select("target.storyId", "storyId")
         .addSelect("COUNT(*)", "count")
         .where("target.storyId IN (:...storyIds)", { storyIds })
         .groupBy("target.storyId")
-        .getRawMany();
+        .getRawMany() : [];
       let finish = [], achievements = [];
       if (req.session.user) {
         finish = await EndRepo.createQueryBuilder("end")
