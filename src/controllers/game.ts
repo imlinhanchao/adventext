@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { Record, Profile, Scene, User, StoryRepo, DraftRepo, ProfileRepo, EndRepo, SceneRepo, ItemRepo, RecordRepo, RankRepo, Item } from "../entities";
+import { Record, Profile, Scene, User, StoryRepo, DraftRepo, ProfileRepo, EndRepo, SceneRepo, ItemRepo, RecordRepo, RankRepo, Item, TargetRepo, AchievementRepo, Achievement, Target } from "../entities";
 import { render, json, error } from "../utils/route";
 import { Condition, Effect } from '../entities/Scene';
 import { clone, omit, shortTime } from '../utils';
@@ -155,8 +155,12 @@ export default class GameController {
     return await SceneRepo.findOneBy({ name: scene, storyId });
   }
 
-  async getItem(item: string) {
-    return await ItemRepo.findOneBy({ key: item });
+  async getItem(key: string, storyId: string) {
+    return await ItemRepo.findOneBy({ key, storyId });
+  }
+
+  async getTarget(key: string, storyId: string) {
+    return await TargetRepo.findOneBy({ key, storyId });
   }
 
   async getStory(id: string) {
@@ -221,8 +225,18 @@ export default class GameController {
             throw new Error(typeof result != 'string' ? `你还没准备好` : result);
           }
         }
+        if (condition.type === 'Target') {
+          const item = await this.getTarget(condition.name, profile.storyId);
+          if (!item) {
+            throw new Error(`成就${condition.name}不存在`);
+          }
+          const achievement = await AchievementRepo.findOneBy({ key: item.key, user: profile.userId });
+          if (!achievement) {
+            throw new Error(`你还没准备好。`);
+          }
+        }
         if (condition.type === 'Item') {
-          const item = await this.getItem(condition.name);
+          const item = await this.getItem(condition.name, profile.storyId);
           if (!item) {
             throw new Error(`物品${condition.name}未找到`);
           }
@@ -370,10 +384,31 @@ export default class GameController {
           effect.content = effect.content.replace(/\$value/g, value);
           effect.content = effect.content.replaceAll('\\n', '\n');
         }
+        if (effect.type === 'Target') {
+          let target: Target | null | undefined;
+          target = await this.getTarget(effect.name, profile.storyId);
+          if (!target) throw new Error(`成就 ${effect.name} 不存在.`);
+          const achievement = await AchievementRepo.findOneBy({ key: target.key, user: profile.userId });
+          if (!achievement) {
+            const newAchievement = AchievementRepo.create({
+              user: profile.userId,
+              fromProfile: profile.id,
+              targetId: target.id,
+              storyId: profile.storyId,
+              key: target.key,
+              name: target.name,
+              description: target.description,
+              from: profile.scene,
+              time: Date.now(),
+            });
+            await AchievementRepo.save(newAchievement);
+            msg += `获得成就 ${target.name}.\n`;
+          }
+        }
         if (effect.type === 'Item') {
           let item: Item & { count?: number; } | null | undefined;
           if (effect.name !== '$item') {
-            item = await this.getItem(effect.name);
+            item = await this.getItem(effect.name, profile.storyId);
             item && (item.count = 1);
           }
           else item = itemTake;
@@ -477,7 +512,7 @@ export default class GameController {
             const myItem = profile.inventory.find(i => i.key == item.name);
             if (myItem) myItem.count += item.count;
             else {
-              const itemInstance = await this.getItem(item.name);
+              const itemInstance = await this.getItem(item.name, profile.storyId);
               if (!itemInstance) throw new Error(`物品 ${item.name} 未找到.`)
               profile.inventory.push({ ...itemInstance, count: item.count || 1 })
             }
