@@ -922,7 +922,13 @@ export default class GameController {
         .andWhere("scene.isEnd = :isEnd", { isEnd: true })
         .groupBy("scene.storyId")
         .getRawMany();
-      let finish = [];
+      const targetCounts = await TargetRepo.createQueryBuilder("target")
+        .select("target.storyId", "storyId")
+        .addSelect("COUNT(*)", "count")
+        .where("target.storyId IN (:...storyIds)", { storyIds })
+        .groupBy("target.storyId")
+        .getRawMany();
+      let finish = [], achievements = [];
       if (req.session.user) {
         finish = await EndRepo.createQueryBuilder("end")
         .select("end.storyId", "storyId")
@@ -931,17 +937,29 @@ export default class GameController {
         .andWhere("end.user = :userId", { userId: req.session.user.id })
         .groupBy("end.storyId")
         .getRawMany();
+        achievements = await AchievementRepo.createQueryBuilder("achievement")
+          .select("achievement.storyId", "storyId")
+          .addSelect("COUNT(*)", "count")
+          .where("achievement.storyId IN (:...storyIds)", { storyIds })
+          .andWhere("achievement.user = :userId", { userId: req.session.user.id })
+          .groupBy("achievement.storyId")
+          .getRawMany();
       }
       render(res, 'stories', req).render({
         stories: stories.map((story) => {
           const end = endScenes.find((e) => e.storyId == story.id);
           const findEndItem = finish.find((e) => e.storyId == story.id);
+          const targetCount = targetCounts.find((e) => e.storyId == story.id);
+          const achievementCount = achievements.find((e) => e.storyId == story.id);
           return {
             ...story,
             end: end ? parseInt(end.count) : 0,
             finish: findEndItem ? parseInt(findEndItem.count) : 0,
+            target: targetCount ? parseInt(targetCount.count) : 0,
+            achievement: achievementCount ? parseInt(achievementCount.count) : 0,
           }
         }),
+        isLogin: !!req.session.user,
       })
     } catch (error: any) {
       render(res, 'index', req).error(error.message).render()

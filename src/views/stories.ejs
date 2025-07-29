@@ -11,7 +11,19 @@
                   <a href="<%=query.type === 'draft' ? '/d' : '/s'-%>/<%=story.id-%>">
                     <%= story.name %>
                   </a>
-                  <span>(<span title="已完成"><%= story.finish %></span>/<span title="结局"><%= story.end %></span>)</span>
+                  <span class="p-1 inline-block text-gray-500 dark:text-light-900 text-xs">
+                    <% if (locals.isLogin) { %>
+                    <span class="space-x-1">
+                      <span title="结局" class="border-current border-dashed border p-1 rounded">📍<%= story.finish %>/<%= story.end %></span> 
+                      <% if (story.target) { %><span title="成就" class="border-current border p-1 rounded">🏆<%= story.achievement %>/<%= story.target %></span><% } %>
+                    </span>
+                    <% } else { %>
+                    <span class="space-x-1">
+                      <span title="结局" class="border-current border-dashed p-1 border rounded">📍<%= story.end %> </span> 
+                      <% if (story.target) { %><span title="成就" class="border-current p-1 border rounded">🏆<%= story.target %></span> <% } %>
+                    </span>
+                    <% } %>
+                  </span>
                 </span>
                 <span>
                   <a href="/u/<%= story.author %>" class="text-gray-500 dark:text-light-900 text-sm truncate"

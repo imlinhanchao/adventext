@@ -3,7 +3,7 @@ import { Request, Response } from 'express';
 import { Router } from "express";
 import { userSession } from "../utils/auth";
 import { error, render } from "../utils/route";
-import { DraftRepo, EndRepo, StoryRepo, User, UserRepo } from '../entities';
+import { AchievementRepo, DraftRepo, EndRepo, StoryRepo, User, UserRepo } from '../entities';
 import utils, { omit } from "../utils";
 import { In } from "typeorm";
 
@@ -39,8 +39,13 @@ async function getStoryWithEnd(user: User, req: Request, res: Response) {
       user: user.id,
     },
   });
+  const achievements = await AchievementRepo.find({
+    where: {
+      user: user.id
+    },
+  });
 
-  const storyIds = ends.map(end => end.storyId);
+  const storyIds = ends.map(end => end.storyId).concat(achievements.map(ach => ach.storyId));
 
   const stories = await StoryRepo.find({
     where: {
@@ -50,7 +55,8 @@ async function getStoryWithEnd(user: User, req: Request, res: Response) {
 
   return stories.map(story => ({ 
     ...omit(story, ['createTime', 'updateTime']), 
-    ends: ends.filter(end => end.storyId === story.id) 
+    ends: ends.filter(end => end.storyId === story.id),
+    achievements: achievements.filter(ach => ach.storyId === story.id)
   }));
 }
 
