@@ -10,12 +10,13 @@
     <main class="h-full overflow-auto">
       <section class="w-full pl-5 h-full py-5">
 <% if (list.length > 0) { %>
-        <table id="user_list" class="text-center m-auto w-full max-w-[500px]">
+        <table id="user_list" class="text-center m-auto w-full max-w-[800px]">
           <thead>
               <tr>
                   <th class="th_number">排名</th>
                   <th class="th_name">玩家</th>
                   <th class="th_stage">已解锁结局</th>
+                  <th class="th_stage">已取得成就</th>
                   <th class="th_date">总耗时</th>
               </tr>
           </thead>
@@ -23,10 +24,13 @@
 <% list.forEach(function(rank, i) { %>
               <tr <%- rank.username === locals.user.username ? 'class="font-bold"': '' -%>>
                   <td><%= (i+1+(page-1)*size) %></td>
-                  <td class="lower-font"><a href="/u/<%=rank.username%>">
-                    <%= rank.nickname %></a>
+                  <td class="lower-font <%= rank.username === locals.user.username ? 'text-primary font-bold' : '' %>">
+                    <a href="/u/<%=rank.username%>">
+                      <%= rank.nickname %>
+                    </a>
                   </td>
                   <td><%= rank.endCount %></td>
+                  <td><%= rank.achievementCount %></td>
                   <td><%= rank.totalCost %></td>
               </tr>
 <% }); %>

@@ -677,7 +677,7 @@ export default class GameController {
 
       const list = await RankRepo.find({
         where: { storyId, username: Not(story.author) },
-        order: { endCount: 'DESC', totalCost: 'ASC' },
+        order: { endCount: 'DESC', achievementCount: 'DESC', totalCost: 'ASC' },
         take: size,
         skip: (page - 1) * size,
       }).then((data) => {

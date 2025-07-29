@@ -342,3 +342,7 @@ input {
 .dark .light-icon {
   display: none;
 }
+
+.text-primary {
+  color: var(--primary-color);
+}
