@@ -8,3 +8,10 @@ export const StoryContext = Symbol('ItemsContext') as InjectionKey<Ref<Story | D
 export const ItemsContext = Symbol('ItemsContext') as InjectionKey<Ref<Item[]>>;
 export const TargetsContext = Symbol('TargetsContext') as InjectionKey<Ref<Target[]>>;
 export const ScenesContext = Symbol('ItemsContext') as InjectionKey<Ref<Scene[]>>;
+
+export function contentFormat({ content }: { content: any }) {
+  if (typeof content === 'object') {
+    return JSON.stringify(content);
+  }
+  return content;
+}

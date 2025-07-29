@@ -11,6 +11,7 @@
 
   defineProps<{
     type: string;
+    forEffect?: boolean;
   }>();
 
   const visible = ref(false);
@@ -495,7 +496,7 @@
           </section>
         </el-form-item>
       </template>
-      <el-form-item label="失败提示" prop="tip">
+      <el-form-item label="失败提示" prop="tip" v-if="!forEffect">
         <template #label>
           <span>
             <el-tooltip
@@ -509,7 +510,7 @@
         </template>
         <el-input v-model="data.tip" clearable type="textarea" />
       </el-form-item>
-      <el-form-item label="用于隐藏选项" prop="isHide">
+      <el-form-item label="用于隐藏选项" prop="isHide" v-if="!forEffect">
         <template #label>
           <span>
             <el-tooltip content="条件不成立时将隐藏选项" placement="top">

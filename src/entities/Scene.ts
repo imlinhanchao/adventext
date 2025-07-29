@@ -34,6 +34,7 @@ export class Effect {
   operator?: string;
   content: string;
   tip?: string;
+  conditions?: Condition[];
 
   constructor(name: string, type: string, content: string) {
     this.name = name;

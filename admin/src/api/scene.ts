@@ -118,6 +118,10 @@ export class Effect {
    * 效果提示
    */
   tip?: string;
+  /**
+   * 条件列表
+   */
+  conditions?: Condition[];
 
   constructor(name: string = '', type: string = '', content: string = '', operator: string = '=') {
     this.name = name;

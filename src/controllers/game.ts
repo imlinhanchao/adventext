@@ -374,14 +374,19 @@ export default class GameController {
   }
 
 
-  async runEffects(profile: Profile, effects: Effect[], value: string, itemTake?: Inventory) {
+  async runEffects(profile: Profile, effects: Effect[], option: any, valueText: string, timezone: number, itemTake?: Inventory) {
     try {
       let message = '', next = null;
       for (const effect of effects) {
+        if (effect.conditions?.length &&
+          (!await this.checkConditions(effect.conditions, profile, option, valueText, timezone, itemTake)
+            .catch(() => false))) {
+          continue;
+        }
         let msg = '', oldVal = '', newVal = '';
         effect.operator = effect.operator || '=';
         if (isString(effect.content)) {
-          effect.content = effect.content.replace(/\$value/g, value);
+          effect.content = effect.content.replace(/\$value/g, valueText);
           effect.content = effect.content.replaceAll('\\n', '\n');
         }
         if (effect.type === 'Target') {
@@ -415,7 +420,7 @@ export default class GameController {
           if (!item) throw new Error(`物品 ${effect.name} 未找到.`)
           const inventory = profile.inventory.find((i) => i.key === item.key);
           if (effect.content.replace) effect.content = effect.content.replace(/\$count/g, (itemTake?.count || 1) + '');
-          let count = formatContent(effect.content || '1', profile.attr, value, itemTake?.attributes);
+          let count = formatContent(effect.content || '1', profile.attr, valueText, itemTake?.attributes);
           if (!isNumber(count)) throw new Error(`Item ${effect.name} 效果获取数量失败！`)
           if (inventory) {
             inventory.count += count;
@@ -432,12 +437,12 @@ export default class GameController {
         if (effect.type === 'Attr') {
           const oldValue = profile.attr[effect.name] || '';
           if (profile.attr[effect.name] === undefined) {
-            const content = formatContent(effect.content || '1', profile.attr, value, itemTake?.attributes);
+            const content = formatContent(effect.content || '1', profile.attr, valueText, itemTake?.attributes);
             profile.attr[effect.name] = content;
           }
           else if (typeof profile.attr[effect.name] === 'number') {
             effect.content = effect.content.replace(/\$count/g, itemTake?.count + '');
-            let count = formatContent(effect.content || '1', profile.attr, value, itemTake?.attributes);
+            let count = formatContent(effect.content || '1', profile.attr, valueText, itemTake?.attributes);
             if (!isNumber(count)) throw new Error(`Attr ${effect.name} 效果获取数量失败！`)
             profile.attr[effect.name] = operatorData(profile.attr[effect.name], count, effect.operator);
           }
@@ -461,7 +466,7 @@ export default class GameController {
             if (!inventorys.length) {
               throw new Error(`你没有包含${attr}的物品.`);
             }
-            let count = formatContent(effect.content || '1', profile.attr, value);
+            let count = formatContent(effect.content || '1', profile.attr, valueText);
             if (!isNumber(count)) throw new Error(`ItemAttr ${effect.name} 效果获取数量失败！`)
             let total = 0;
             for (const inventory of inventorys) {
@@ -481,7 +486,7 @@ export default class GameController {
             if (itemTake.attributes[effect.name] === undefined) {
               throw new Error(`物品 ${itemTake.name} 不包含属性 ${effect.name}.`);
             }
-            let count = formatContent(effect.content || '1', profile.attr, value, itemTake.attributes);
+            let count = formatContent(effect.content || '1', profile.attr, valueText, itemTake.attributes);
             if (!isNumber(count)) throw new Error(`ItemAttr ${effect.name} 效果获取数量失败！`)
             const itemCount = Math.ceil(count / itemTake.attributes[effect.name]);
             if (itemCount > itemTake.count) {
@@ -499,7 +504,7 @@ export default class GameController {
         if (effect.type === 'Fn') {
           const call = createFn('profile', 'addItem', 'setAttr', 'inputText', 'itemSelect', 'let message = "", next = null;\n' + effect.content + '\nreturn { message, next };');
           const items: any[] = []
-          const result = callFn(call, clone(profile), value, clone(itemTake), (name: string, count: number) => {
+          const result = callFn(call, clone(profile), valueText, clone(itemTake), (name: string, count: number) => {
             items.push({ name, count })
           }, (attr: { key: string; name?: string; value: string }) => {
             profile.attr[attr.key] = attr.value;
@@ -524,7 +529,7 @@ export default class GameController {
         if (effect.tip) {
           msg = effect.tip.replace(/\$item/g, itemTake?.name || '')
             .replace(/\$count/g, (itemTake?.count || '') + '')
-            .replace(/\$value/g, value || '')
+            .replace(/\$value/g, valueText || '')
             .replace(/\$old/g, oldVal || '')
             .replace(/\$new/g, newVal || '');
           msg = fillVar(msg, '\\$', itemTake?.attributes);
@@ -624,16 +629,16 @@ export default class GameController {
       }
 
       if (!end) return render(res, 'record', req).title('游戏记录').logo(story.name).render({
-          list: [],
-          total: 0,
-          page,
-          size,
-          story,
-          endId: Number(end),
-          ends,
-          profile: {},
-          type: this.type.slice(0, 1),
-        });
+        list: [],
+        total: 0,
+        page,
+        size,
+        story,
+        endId: Number(end),
+        ends,
+        profile: {},
+        type: this.type.slice(0, 1),
+      });
 
       const list = await RecordRepo.find({
         where: { storyId, endId: Number(end), user: user.id },
@@ -784,7 +789,7 @@ export default class GameController {
       }
 
       let next = option.next;
-      let result = await this.runEffects(profile, option.effects || [], valueText, itemTake);
+      let result = await this.runEffects(profile, option.effects || [], option, valueText, timezone, itemTake);
       if (result.next) next = result.next;
       if (result.message) message += result.message;
       if (result.profile) profile = result.profile;
@@ -932,12 +937,12 @@ export default class GameController {
           .getRawMany() : [];
         if (req.session.user) {
           finish = await EndRepo.createQueryBuilder("end")
-          .select("end.storyId", "storyId")
-          .addSelect("COUNT(*)", "count")
-          .where("end.storyId IN (:...storyIds)", { storyIds })
-          .andWhere("end.user = :userId", { userId: req.session.user.id })
-          .groupBy("end.storyId")
-          .getRawMany();
+            .select("end.storyId", "storyId")
+            .addSelect("COUNT(*)", "count")
+            .where("end.storyId IN (:...storyIds)", { storyIds })
+            .andWhere("end.user = :userId", { userId: req.session.user.id })
+            .groupBy("end.storyId")
+            .getRawMany();
           achievements = await AchievementRepo.createQueryBuilder("achievement")
             .select("achievement.storyId", "storyId")
             .addSelect("COUNT(*)", "count")
@@ -980,8 +985,8 @@ export default class GameController {
       const { state, scene } = await this.gameState(userId, req.params.storyId);
 
       const options = await this.updateOptions(
-        scene!, 
-        state, 
+        scene!,
+        state,
         req.body?.timezone ?? new Date().getTimezoneOffset() / -60
       ).then((options) => options.filter(o => !o.disabled));
 

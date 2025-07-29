@@ -7,6 +7,7 @@
   import ScenePrompt from './prompt.vue';
   import ItemForm from '@/views/item/item.vue';
   import { ItemApi, Item } from '@/api/item';
+  import { contentFormat } from './index';
 
   const props = defineProps<{
     scenes: Scene[];
@@ -90,12 +91,6 @@
     itemRef.value?.open(item);
   }
 
-  function contentFormat({ content }: { content: any }) {
-    if (typeof content === 'object') {
-      return JSON.stringify(content);
-    }
-    return content;
-  }
 </script>
 
 <template>
@@ -177,7 +172,7 @@
         <el-tooltip placement="top">
           <template #content>
             <p>
-              用于对玩家选择选项的前置判断，确认玩家是否满足触发影响的条件。也可以通过勾选<b>用于隐藏选项</b>，在获取选项阶段用于过滤选项。
+              用于对玩家选择选项的前置判断，确认玩家是否满足触发选项的条件。也可以通过勾选<b>用于隐藏选项</b>，在获取选项阶段用于过滤选项。
             </p>
           </template>
           <Icon icon="i-ep:info-filled" :size="14" />
