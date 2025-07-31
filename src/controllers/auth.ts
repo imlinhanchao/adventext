@@ -3,6 +3,7 @@ import { UserRepo } from '../entities';
 import { User } from '../entities/User';
 import { generateToken } from "../utils/auth";
 import utils, { omit } from '../utils';
+import { IsNull, Not } from "typeorm";
 
 export async function login(params: { username: string; password: string }, needToken = false) {
   const { username, password } = params;
@@ -42,7 +43,9 @@ export async function register(params: { username: string; password: string }) {
   const hashedPassword = sha256.update(password + utils.config.secret.salt).digest('hex');
   const user = new User(username, hashedPassword)
   // 第一个用户默认为管理员
-  const first = await UserRepo.findOne({});
+  const first = await UserRepo.findOne({
+    where: { id: Not(IsNull()) },
+  });
   if (!first) {
     user.isAdmin = true;
   }
