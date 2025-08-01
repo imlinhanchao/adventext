@@ -408,7 +408,7 @@
         :type="type"
         @confirm="items = $event"
       />
-      <ConditionForm ref="conditionRef" :type="type" for-effect />
+      <ConditionForm ref="conditionRef" :type="type" check-only />
     </el-form>
     <template #footer>
       <el-button @click="visible = false">取消</el-button>

@@ -5,7 +5,7 @@ import { Condition, Effect } from '../entities/Scene';
 import { clone, omit, shortTime } from '../utils';
 import { Inventory } from '../entities/Profile';
 import { isNumber, isString } from '../utils/is';
-import { Not } from 'typeorm';
+import { In, Not } from 'typeorm';
 import { callFn, createFn, tryEval } from '../utils/call';
 
 function fillVar(content: string, type: string, target: any) {
@@ -123,6 +123,7 @@ function conditionCheckTime(condition: Condition, timezone: number) {
 
 export default class GameController {
   private type: string;
+  private achievements?: Achievement[];
 
   constructor(type: string) {
     this.type = type;
@@ -159,6 +160,14 @@ export default class GameController {
     return await ItemRepo.findOneBy({ key, storyId });
   }
 
+  async getAchievement(key: string, userId: number) {
+    if (this.achievements) {
+      return this.achievements.find(a => a.key == key);
+    } else {
+      return await AchievementRepo.findOneBy({ key, user: userId });
+    }
+  }
+
   async getTarget(key: string, storyId: string) {
     return await TargetRepo.findOneBy({ key, storyId });
   }
@@ -167,7 +176,7 @@ export default class GameController {
     return await this.storyRepo.findOneBy({ id });
   }
 
-  async updateOptions(story: Scene, state: Profile, timezone: number, records?: Record[]) {
+  async updateOptions(story: Scene, state: Profile, timezone: number, records?: Record[], achievements?: Achievement[]) {
     for (const option of story.options) {
       let record;
       if (!records) {
@@ -182,13 +191,13 @@ export default class GameController {
       }
       option.disabled = option.loop !== undefined && record && (option.loop < 0 || Date.now() - record.time < option.loop * 1000);
       if (option.disabled) continue;
-      option.disabled = !(await this.checkConditions(option.conditions?.filter(c => c.isHide) || [], state, option, '', timezone).catch(() => false));
+      option.disabled = !(await this.checkConditions(option.conditions?.filter(c => c.isHide) || [], state, option, '', timezone, undefined, achievements).catch(() => false));
     }
 
     return story.options;
   }
 
-  async checkConditions(conditions: Condition[], profile: Profile, option: any, valueText: string, timezone: number, itemTake?: Inventory) {
+  async checkConditions(conditions: Condition[], profile: Profile, option: any, valueText: string, timezone: number, itemTake?: Inventory, achievements?: Achievement[]) {
     function conditionOperator(left: number, right: number, operator: string) {
       switch (operator) {
         case '=':
@@ -230,7 +239,7 @@ export default class GameController {
           if (!item) {
             throw new Error(`成就${condition.name}不存在`);
           }
-          const achievement = await AchievementRepo.findOneBy({ key: item.key, user: profile.userId });
+          const achievement = await this.getAchievement(item.key, profile.userId);
           if (!achievement) {
             throw new Error(`你还没准备好。`);
           }
@@ -374,7 +383,7 @@ export default class GameController {
   }
 
 
-  async runEffects(profile: Profile, effects: Effect[], option: any, valueText: string, timezone: number, itemTake?: Inventory) {
+  async runEffects(profile: Profile, effects: Effect[], option: any, valueText: string, timezone: number, itemTake?: Inventory, achievements?: any[], virtual = false) {
     try {
       let message = '', next = null;
       for (const effect of effects) {
@@ -393,19 +402,24 @@ export default class GameController {
           let target: Target | null | undefined;
           target = await this.getTarget(effect.name, profile.storyId);
           if (!target) throw new Error(`成就 ${effect.name} 不存在.`);
-          const achievement = await AchievementRepo.findOneBy({ key: target.key, user: profile.userId });
-          if (!achievement) {
-            const newAchievement = AchievementRepo.create({
-              user: profile.userId,
-              fromProfile: profile.id,
-              targetId: target.id,
-              storyId: profile.storyId,
-              key: target.key,
-              name: target.name,
-              description: target.description,
-              from: profile.scene,
-              time: Date.now(),
-            });
+          let achievement = {
+            user: profile.userId,
+            fromProfile: profile.id,
+            targetId: target.id,
+            storyId: profile.storyId,
+            key: target.key,
+            name: target.name,
+            description: target.description,
+            from: profile.scene,
+            time: Date.now(),
+          } as Achievement;
+          if (virtual) {
+            if (!achievements?.some((a: Achievement) => a.key === achievement?.key)) {
+              achievements?.push(achievement);
+              msg += `获得成就 ${target.name}.\n`;
+            }
+          } else if (!(await AchievementRepo.findOneBy({ key: target.key, user: profile.userId }))) {
+            const newAchievement = AchievementRepo.create(achievement);
             await AchievementRepo.save(newAchievement);
             msg += `获得成就 ${target.name}.\n`;
           }
@@ -534,6 +548,7 @@ export default class GameController {
             .replace(/\$new/g, newVal || '');
           msg = fillVar(msg, '\\$', itemTake?.attributes);
           msg = fillVar(msg, '#', profile.attr);
+          msg += '\n'
         }
         message += msg;
       }
@@ -601,6 +616,21 @@ export default class GameController {
     }
   }
 
+  async resetAchievement(user: User, req: Request, res: Response, next: () => void) {
+    try {
+      const userId = user.id;
+      const storyId = req.params.storyId;
+
+      if (this.type != 'draft') return next();
+
+      await AchievementRepo.delete({ user: userId, storyId });
+
+      json(res, { message: '游戏成就已重置' })
+    } catch (err: any) {
+      error(res, err.message)
+    }
+  }
+
   async record(user: User, req: Request, res: Response, next: () => void) {
     try {
       const storyId = req.params.storyId;
@@ -628,6 +658,11 @@ export default class GameController {
         end = (profile?.endId ?? '') + '';
       }
 
+      const achievements = await AchievementRepo.find({
+        where: { user: user.id, storyId },
+        order: { time: 'DESC' },
+      });
+
       if (!end) return render(res, 'record', req).title('游戏记录').logo(story.name).render({
         list: [],
         total: 0,
@@ -638,6 +673,7 @@ export default class GameController {
         ends,
         profile: {},
         type: this.type.slice(0, 1),
+        achievements,
       });
 
       const list = await RecordRepo.find({
@@ -664,6 +700,7 @@ export default class GameController {
         ends,
         profile: profile || {},
         type: this.type.slice(0, 1),
+        achievements,
       })
     } catch (err: any) {
       error(res, err.message)
@@ -700,7 +737,7 @@ export default class GameController {
       const totalPlayer = await ProfileRepo.createQueryBuilder('profile')
         .select('COUNT(DISTINCT profile.userId)', 'total')
         .where('profile.storyId = :storyId', { storyId })
-        .getRawOne().then((data) => data.total);
+        .getRawOne().then((data) => data.total);       
 
       render(res, 'rank', req).title('排行榜').logo(story.name).render({
         list,
@@ -753,13 +790,14 @@ export default class GameController {
     return content;
   }
 
-  async gameExcute(profile: Profile, scene: Scene, { option: optionText, value: valueText, timezone }: any, virtual = false) {
+  async gameExcute(profile: Profile, scene: Scene, { option: optionText, value: valueText, timezone, achievements }: any, virtual = false) {
     try {
       const storyId = profile.storyId;
       const userId = profile.userId;
       const option = scene?.options.find((option) => option.text === optionText);
       timezone = timezone ?? new Date().getTimezoneOffset() / -60;
       const oldProfile = clone(profile);
+      this.achievements = achievements;
 
       let message = '';
 
@@ -789,11 +827,10 @@ export default class GameController {
       }
 
       let next = option.next;
-      let result = await this.runEffects(profile, option.effects || [], option, valueText, timezone, itemTake);
+      let result = await this.runEffects(profile, option.effects || [], option, valueText, timezone, itemTake, achievements, virtual);
       if (result.next) next = result.next;
       if (result.message) message += result.message;
       if (result.profile) profile = result.profile;
-
       if (next === '<back>') {
         next = profile.from;
       }
@@ -821,18 +858,48 @@ export default class GameController {
       profile.scene = nextScene.name;
 
       if (!virtual) {
-        nextScene!.options = await this.updateOptions(nextScene!, profile, timezone);
-
-        if (nextScene.isEnd) {
-          await this.addEnd(nextScene, profile);
-        }
-
         const currentState = await ProfileRepo.findOneBy({ userId, storyId, isEnd: false });
         if (currentState) {
           Object.assign(currentState, profile);
           await ProfileRepo.save(currentState);
         } else {
-          await ProfileRepo.save(profile);
+          profile = await ProfileRepo.save(profile);
+        }
+      }
+
+      const targets = await TargetRepo.findBy({ storyId });
+
+      await Promise.all(targets.filter(t => t.conditions?.length).map(async (t) => {
+        if (await this.checkConditions(t.conditions, profile, option, valueText, timezone).catch(() => false)) {
+          let achievement = {
+            user: userId,
+            fromProfile: profile.id,
+            targetId: t.id,
+            storyId: storyId,
+            key: t.key,
+            name: t.name,
+            description: t.description,
+            from: profile.from,
+            time: Date.now(),
+          } as Achievement;
+          if (virtual) {
+            if (!achievements?.some((a: Achievement) => a.key === achievement?.key)) {
+              achievements?.push(achievement);
+              message += `获得成就 ${achievement.name}.\n`;
+            }
+          } else if (!(await AchievementRepo.findOneBy({ key: achievement.key, user: profile.userId }))) {
+            const newAchievement = AchievementRepo.create(achievement);
+            await AchievementRepo.save(newAchievement);
+            message += `获得成就 ${achievement.name}.\n`;
+          }
+        };
+      }));
+
+      if (!virtual) {
+        nextScene!.options = await this.updateOptions(nextScene!, profile, timezone);
+
+        if (nextScene.isEnd) {
+          await this.addEnd(nextScene, profile);
         }
       }
 
@@ -842,6 +909,7 @@ export default class GameController {
         next,
         message,
         content: await this.getContent(profile, nextScene),
+        achievements,
       }
     } catch (err: any) {
       throw err;
@@ -850,13 +918,14 @@ export default class GameController {
 
   async optionFilter(req: Request, res: Response) {
     try {
-      const { scene, profile, timezone, records } = req.body;
+      const { scene, profile, timezone, records, achievements } = req.body;
       if (!scene) {
         throw new Error(`缺少运行场景！`);
       }
       if (!profile) {
         throw new Error(`缺少游戏资料！`);
       }
+      this.achievements = achievements;
       scene.options = await this.updateOptions(scene, profile, timezone ?? new Date().getTimezoneOffset() / -60, records || []);
       const content = await this.getContent(profile, scene);
       json(res, {

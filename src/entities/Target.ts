@@ -1,4 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Condition } from './Scene';
 
 @Entity({ comment: '可解锁成就'})
 export class Target {
@@ -16,4 +17,8 @@ export class Target {
 
   @Column('varchar', { length: 1024, comment: '描述' })
   description: string;
+
+  @Column("json", { comment: '解锁成就的条件' })
+  conditions: Condition[] = [];
+  
 }

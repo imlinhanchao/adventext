@@ -1,7 +1,10 @@
 <script setup lang="ts">
+  import { Condition, ConditionType } from '@/api/scene';
   import { TargetApi, Target } from '@/api/target';
   import { clone } from '@/utils';
   import { FormInstance } from 'element-plus';
+  import ConditionForm from '@/views/scene/condition.vue';
+  import { contentFormat } from '@/views/scene/';
 
   const props = defineProps<{
     storyId: string;
@@ -47,6 +50,18 @@
     visible.value = false;
   }
   
+  const conditionRef = ref<InstanceType<typeof ConditionForm>>();
+  function addCon() {
+    conditionRef.value?.open().then((condition: Condition) => {
+      if (!data.value.conditions) data.value.conditions = []
+      data.value.conditions.push(condition);
+    });
+  }
+  function editCon(condition: Condition) {
+    conditionRef.value?.open(condition).then((data: Condition) => {
+      Object.assign(condition, data);
+    });
+  }
 </script>
 <template>
   <el-dialog :title="data.id ? '成就更新' : '成就创建'" v-model="visible" width="800px" @close="emit('close')" append-to-body>
@@ -60,6 +75,38 @@
       <el-form-item label="描述" prop="description">
         <el-input v-model="data.description" clearable type="textarea" />
       </el-form-item>
+      <ConditionForm ref="conditionRef" :type="type" check-only />
+      <el-divider>
+        获得的条件
+        <el-tooltip placement="top">
+          <template #content>
+            <p>
+              用于触发效果的前置判断，确认玩家是否满足触发效果的条件。不设置则只要触发选项就触发效果。
+            </p>
+          </template>
+          <Icon icon="i-ep:info-filled" :size="14" />
+        </el-tooltip>
+      </el-divider>
+      <el-table :data="data.conditions" border stripe>
+        <el-table-column prop="type" label="类型" :formatter="({type}) => ConditionType[type]" />
+        <el-table-column prop="name" label="条件对象" />
+        <el-table-column prop="content" label="内容" show-overflow-tooltip :formatter="contentFormat" />
+        <el-table-column label="操作" width="100px" align="center">
+          <template #header>
+            <el-button type="primary" link size="small" @click="addCon">
+              <Icon icon="i-ep:circle-plus" />
+            </el-button>
+          </template>
+          <template #default="{ row, $index }">
+            <el-button type="primary" link size="small" @click="editCon(row)">
+              <Icon icon="i-ep:edit" />
+            </el-button>
+            <el-button type="danger" link size="small" @click="data.conditions?.splice($index, 1)">
+              <Icon icon="i-ep:remove" />
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
     </el-form>
     <template #footer>
       <span class="flex justify-end">

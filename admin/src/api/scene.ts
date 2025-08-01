@@ -60,6 +60,7 @@ export const ConditionType = {
   Attr: '属性',
   Value: '弹窗输入',
   Fn: '函数判定',
+  Circle: '周目数',
 };
 
 export class Condition {

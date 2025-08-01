@@ -1,7 +1,45 @@
 import { ErrorMessageMode } from '#/axios';
 import { defHttp } from '@/utils/http';
+import { Condition } from './scene';
 
-
+export interface Achievement {
+  /**
+   * 用户id
+   */
+  user: number;
+  /**
+   * 来自的Profile
+   */
+  fromProfile: number;
+  /**
+   * 成就id
+   */
+  targetId: number;
+  /**
+   * 故事id
+   */
+  storyId: string;
+  /**
+   * 成就的key
+   */
+  key: string;
+  /**
+   * 成就名称
+   */
+  name: string;
+  /**
+   * 成就描述
+   */
+  description: string;
+  /**
+   * 来自场景
+   */
+  from: string;
+  /**
+   * 颁发时间
+   */
+  time: number;
+}
 export class Target {
   /**
    * 成就Id
@@ -27,6 +65,10 @@ export class Target {
    * 描述
    */
   description: string = '';
+  /**
+   * 条件列表
+   */
+  conditions: Condition[] = [];
 
   constructor(name: string = '') {
     this.key = name;

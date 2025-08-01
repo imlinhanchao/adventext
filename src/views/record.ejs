@@ -23,7 +23,10 @@
         <p class="text-center">
           <a href="/<%=type-%>/<%=story.id-%>">继续游玩</a>
           <span class="mx-2">/</span>
-          <a onclick="resetGame('<%=story.id-%>')" href="javascript:void(0)">重置进度</a>
+          <% if (type == 'd') { %><a onclick="resetGame()" href="javascript:void(0)" class="text-red-500">重置进度</a>
+          <span class="mx-2">/</span>
+          <a onclick="resetAchievement()" href="javascript:void(0)" class="text-red-500">重置成就</a>
+          <% } %>
         </p>
 <% list.forEach(function(record, i) { %>
         <section class="flex flex-col w-full space-y-2 hover:bg-gray-100 dark:hover:bg-gray-800 p-2 rounded-md">
@@ -44,6 +47,16 @@
 <% } -%>
       </section>
     </main>
+    <footer>
+      <section>
+        <% if (achievements.length) {%><b>已获得成就：</b><% }%>
+        <% achievements.forEach(function(ach) { %>
+        <span class="text-gray-500 dark:text-light-900 border bg-current border-current rounded-md p-1" title="成就：<%= ach.description || ach.name %>">
+          <span class="text-white"><%= ach.name %></span>
+        </span>
+        <% }); %>
+      </section>
+    </footer>
   </article>
 
 <%- include('footer') %>

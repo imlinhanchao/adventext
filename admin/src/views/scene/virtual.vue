@@ -1,4 +1,5 @@
 <script setup lang="tsx">
+  import TargetSelector from '@/views/target/selector.vue';
   import ItemSelector from '@/views/item/selector.vue';
   import { gameRun, Profile, SceneRecord, updateOptions } from '@/api/game';
   import { ScenesContext, StoryContext } from './index';
@@ -40,12 +41,14 @@
   const msgType = ref<'success' | 'warning' | 'info' | 'error'>('info');
   const message = ref('');
   const records = ref<SceneRecord[]>([]);
+  const achievements = ref<Achievement[]>([]);
 
   onMounted(async () => {
     const { options, content: text } = await updateOptions(
       currentScene.value,
       profile.value,
       records.value,
+      achievements.value,
     );
     currentScene.value.options = options;
     content.value = text;
@@ -82,11 +85,13 @@
       state,
       next,
       message: msg,
+      achievements: achies,
     } = await gameRun({
       option: option.text,
       profile: profile.value,
       scene: currentScene.value,
       timezone: new Date().getTimezoneOffset() / -60,
+      achievements: achievements.value,
       value,
     }).catch((err) => {
       msgType.value = 'error';
@@ -97,6 +102,7 @@
 
     if (!scene) return;
 
+    achievements.value = achies || [];
     profile.value = state;
     records.value.unshift(new SceneRecord(currentScene.value, option.text, profile.value.from, content.value));
 
@@ -104,6 +110,7 @@
       sceneMap.value[next || scene.name],
       profile.value,
       records.value,
+      achievements.value,
     ).finally(() => {
       loading.value = false;
     });
@@ -156,6 +163,13 @@
     });
   }
 
+  const targetSelectorRef = ref<InstanceType<typeof TargetSelector>>();
+  function addAchievement() {
+    targetSelectorRef.value?.open(achievements.value).then((items: Achievement[]) => {
+      achievements.value = items;
+    });
+  }
+
   function addAttr() {
     const key = prompt('请输入属性key');
     if (!key) return;
@@ -177,6 +191,7 @@
       sceneMap.value[next],
       profile.value,
       records.value,
+      achievements.value,
     ).finally(() => {
       loading.value = false;
     });
@@ -275,6 +290,25 @@
           </el-tooltip>
         </span>
       </section>
+      <section class="space-x-2">
+        <label class="bg-black text-white p-1 mr-1 rounded">
+          <ButtonEx
+            link
+            icon="el-icon-plus"
+            class="!text-inherit"
+            content="手动添加"
+            @click="addAchievement"
+          />
+          成就
+        </label>
+        <span v-for="item in achievements" :key="item.id">
+          <el-tooltip :content="item.description">
+            <span>
+              {{ item.name }}({{ item.key }})
+            </span>
+          </el-tooltip>
+        </span>
+      </section>
       <el-alert v-if="message" :type="msgType" :closable="false">{{ message }}</el-alert>
       <section>
         <!-- eslint-disable-next-line vue/no-v-html -->
@@ -288,6 +322,7 @@
         </template>
       </section>
       <ItemSelector ref="itemRef" :story="story.id!" multiple inventory :type="type" />
+      <TargetSelector ref="targetSelectorRef" :story="story.id!" :type="type" multiple />
       <el-dialog v-model="itemSelector" width="400px">
         <p class="mb-3">{{ dlgMessage }}</p>
         <p>
