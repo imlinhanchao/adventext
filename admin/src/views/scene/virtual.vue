@@ -1,5 +1,5 @@
 <script setup lang="tsx">
-  import TargetSelector from '@/views/achievement/selector.vue';
+  import TargetSelector from '@/views/targets/selector.vue';
   import ItemSelector from '@/views/item/selector.vue';
   import { gameRun, Profile, SceneRecord, updateOptions } from '@/api/game';
   import { ScenesContext, StoryContext } from './index';

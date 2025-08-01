@@ -5,9 +5,7 @@
   import { pick } from 'lodash-es';
   import { ItemsContext, StoryContext, TargetsContext } from './index';
   import ItemSelector from '@/views/item/selector.vue';
-  import TargetSelector from '@/views/achievement/selector.vue';
   import { Item } from '@/api/item';
-  import { Target } from '@/api/target';
 
   defineProps<{
     type: string;
@@ -159,7 +157,6 @@
   const targets = inject(TargetsContext);
 
   const itemSelectorRef = ref<InstanceType<typeof ItemSelector>>();
-  const targetSelectorRef = ref<InstanceType<typeof TargetSelector>>();
   const itemTypes = computed<string[]>(() =>
     Array.from(new Set(items?.value.map((item) => item.type) || [])),
   );
@@ -381,15 +378,6 @@
                   item.value
                 }}</span>
               </div>
-            </template>
-            <template #suffix>
-              <ButtonEx
-                icon="i-ep:search"
-                content="选择"
-                type="primary"
-                link
-                @click="targetSelectorRef?.open().then((item: Target) => (data.name = item.key))"
-              />
             </template>
           </el-autocomplete>
         </el-form-item>

@@ -7,7 +7,7 @@ import SceneForm from './item.vue';
 import { ItemApi, Item } from '@/api/item';
 import { ItemsContext, ScenesContext, StoryContext, TargetsContext } from './index';
 import ItemSelector from '@/views/item/selector.vue';
-import TargetSelector from '@/views/achievement/selector.vue';
+import TargetSelector from '@/views/targets/selector.vue';
 import Virtual from './virtual.vue';
 import StoryForm from '@/views/story/item.vue';
 import DraftForm from '@/views/draft/item.vue';
