@@ -1,6 +1,7 @@
 import { defHttp } from '@/utils/http';
 import { Scene } from './scene';
 import { Inventory } from './draft';
+import { Achievement } from './target';
 
 export class Profile {
 
@@ -88,7 +89,7 @@ export class SceneRecord {
 /**
  * 模拟运行游戏
  */
-export function gameRun(data: { scene: Scene, profile: Profile, option: string, timezone?: number, value: string }) {
+export function gameRun(data: { scene: Scene, profile: Profile, option: string, timezone?: number, value: string, achievements?: Achievement[], circle?: number }) {
   return defHttp.post({
     url: `/story/run`,
     data

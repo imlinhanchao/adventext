@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import { TargetApi, Target } from '@/api/target';
-  import TargetForm from '@/views/target/item.vue';
+  import TargetForm from '@/views/achievement/item.vue';
   import { ElMessageBox } from 'element-plus';
 
   const query = reactive({

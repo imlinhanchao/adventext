@@ -5,7 +5,7 @@
   import { pick } from 'lodash-es';
   import { ItemsContext, StoryContext, TargetsContext } from './index';
   import ItemSelector from '@/views/item/selector.vue';
-  import TargetSelector from '@/views/target/selector.vue';
+  import TargetSelector from '@/views/achievement/selector.vue';
   import { Item } from '@/api/item';
   import { Target } from '@/api/target';
 

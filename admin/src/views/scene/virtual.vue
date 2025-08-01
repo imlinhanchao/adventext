@@ -1,5 +1,5 @@
 <script setup lang="tsx">
-  import TargetSelector from '@/views/target/selector.vue';
+  import TargetSelector from '@/views/achievement/selector.vue';
   import ItemSelector from '@/views/item/selector.vue';
   import { gameRun, Profile, SceneRecord, updateOptions } from '@/api/game';
   import { ScenesContext, StoryContext } from './index';
@@ -7,6 +7,7 @@
   import { Item } from '@/api/item';
   import { clone, isNumber } from '@/utils';
   import { formatDate } from '@vueuse/core';
+  import { Achievement } from '@/api/target';
   import { Inventory } from '@/api/draft';
   import DOMPurify from 'dompurify'; 
   import { marked } from 'marked';
@@ -165,7 +166,7 @@
 
   const targetSelectorRef = ref<InstanceType<typeof TargetSelector>>();
   function addAchievement() {
-    targetSelectorRef.value?.open(achievements.value).then((items: Achievement[]) => {
+    targetSelectorRef.value?.open(achievements.value as any).then((items: Achievement[]) => {
       achievements.value = items;
     });
   }
@@ -301,7 +302,7 @@
           />
           成就
         </label>
-        <span v-for="item in achievements" :key="item.id">
+        <span v-for="item in achievements" :key="item.key">
           <el-tooltip :content="item.description">
             <span>
               {{ item.name }}({{ item.key }})

@@ -1,7 +1,7 @@
 <script lang="ts" setup>
   import { TargetApi, Target } from '@/api/target';
   import { clone } from '@/utils';
-  import TargetForm from '@/views/target/item.vue';
+  import TargetForm from '@/views/achievement/item.vue';
   import { ElMessageBox } from 'element-plus';
 
   const props = defineProps<{
