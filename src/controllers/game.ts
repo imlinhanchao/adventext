@@ -124,6 +124,7 @@ function conditionCheckTime(condition: Condition, timezone: number) {
 export default class GameController {
   private type: string;
   private achievements?: Achievement[];
+  private circle?: number;
 
   constructor(type: string) {
     this.type = type;
@@ -165,6 +166,17 @@ export default class GameController {
       return this.achievements.find(a => a.key == key);
     } else {
       return await AchievementRepo.findOneBy({ key, user: userId });
+    }
+  }
+
+  async getCircle(storyId: string, userId: number) {
+    if (this.circle !== undefined) {
+      return this.circle;
+    } else {
+      const ends = await EndRepo.find({
+        where: { storyId, user: userId },
+      });
+      return ends.length + 1;
     }
   }
 
@@ -241,6 +253,12 @@ export default class GameController {
           }
           const achievement = await this.getAchievement(item.key, profile.userId);
           if (!achievement) {
+            throw new Error(`你还没准备好。`);
+          }
+        }
+        if (condition.type === 'Circle') {
+          const circle = await this.getCircle(profile.storyId, profile.userId);
+          if (!conditionOperator(circle, condition.content, condition.operator || '=')) {
             throw new Error(`你还没准备好。`);
           }
         }
@@ -790,7 +808,7 @@ export default class GameController {
     return content;
   }
 
-  async gameExcute(profile: Profile, scene: Scene, { option: optionText, value: valueText, timezone, achievements }: any, virtual = false) {
+  async gameExcute(profile: Profile, scene: Scene, { option: optionText, value: valueText, timezone, achievements, circle }: any, virtual = false) {
     try {
       const storyId = profile.storyId;
       const userId = profile.userId;
@@ -798,6 +816,7 @@ export default class GameController {
       timezone = timezone ?? new Date().getTimezoneOffset() / -60;
       const oldProfile = clone(profile);
       this.achievements = achievements;
+      this.circle = circle;
 
       let message = '';
 
