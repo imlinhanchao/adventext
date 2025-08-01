@@ -53,21 +53,23 @@ export class Option {
 
 export const ConditionType = {
   Time: '时间',
+  Target: '成就',
   Item: '物品',
   ItemType: '物品类型',
   ItemAttr: '物品属性',
   Attr: '属性',
   Value: '弹窗输入',
   Fn: '函数判定',
+  Circle: '周目数',
 };
 
 export class Condition {
   /**
-   * 条件类型，Time：时间，Item:物品，ItemType：物品类型，ItemAttr:物品属性,Attr:属性,Value:弹窗输入，Fn:函数判定
+   * 条件类型，Time：时间，Target: 成就，Item:物品，ItemType：物品类型，ItemAttr:物品属性,Attr:属性,Value:弹窗输入，Fn:函数判定
    */
   type: string = '';
   /**
-   * 条件物品名，类型为 Item 时选择
+   * 条件物品/成就名，类型为 Item/Target 时选择
    */
   name: string = '';
   /**
@@ -90,6 +92,7 @@ export class Condition {
 
 export const EffectType = {
   Item: '获得物品',
+  Target: '获得成就',
   ItemAttr: '物品属性（消耗）',
   Attr: '属性变化',
   Fn: '函数调用',
@@ -116,6 +119,10 @@ export class Effect {
    * 效果提示
    */
   tip?: string;
+  /**
+   * 条件列表
+   */
+  conditions?: Condition[];
 
   constructor(name: string = '', type: string = '', content: string = '', operator: string = '=') {
     this.name = name;

@@ -197,7 +197,7 @@ function initGame(story) {
     });
 }
 
-function resetGame(storyId) {
+function resetGame() {
   if(!confirm('确定要重置游戏进度吗？这将清除所有当前的游戏进度。')) return;
   fetch(`./reset`, {
     method: 'POST',
@@ -207,6 +207,24 @@ function resetGame(storyId) {
     credentials: 'include',
     body: JSON.stringify({
       timezone: new Date().getTimezoneOffset() / -60
+    })
+  }).then(res => res.json())
+    .then(res => {
+      location.reload();
+    });
+}
+
+function resetAchievement() {
+  if(!confirm('确定要重置游戏成就吗？这将清除所有当前获得的游戏成就。')) return;
+  fetch(`./reset`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    credentials: 'include',
+    body: JSON.stringify({
+      timezone: new Date().getTimezoneOffset() / -60,
+      achievement: true
     })
   }).then(res => res.json())
     .then(res => {

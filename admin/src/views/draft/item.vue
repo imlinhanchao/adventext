@@ -78,10 +78,10 @@
     append-to-body
   >
     <el-form ref="formRef" label-width="auto" :model="formData" :rules="rules" class="colon">
-      <el-form-item label="名称" name="name">
+      <el-form-item label="名称" prop="name">
         <el-input v-model.trim="data.name" />
       </el-form-item>
-      <el-form-item label="描述" name="description">
+      <el-form-item label="描述" prop="description">
         <el-input v-model="data.description" type="textarea" />
       </el-form-item>
       <el-form-item label="人物基础属性" class="no-error" />

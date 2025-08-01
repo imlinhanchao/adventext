@@ -82,9 +82,14 @@
               </span>
             </section>
             <section class="space-x-2">
+            <% story.achievements.forEach(function(ach) { %>
+              <span class="text-xs text-gray-500 dark:text-light-900 border bg-current border-current rounded p-1" title="成就：<%= ach.description || ach.name %>">
+                <span class="text-white">🏆 <%= ach.name %></span>
+              </span>
+            <% }); %>
             <% story.ends.forEach(function(end) { %>
               <span class="text-xs text-gray-500 dark:text-light-900 border bg-current border-current rounded p-1" title="结局：<%= end.end %>">
-                <span class="text-white"><%= end.end %></span>
+                <span class="text-white">📍 <%= end.end %></span>
               </span>
             <% }); %>
             </section>

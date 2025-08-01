@@ -1,225 +1,284 @@
 <script setup lang="ts">
-import { Condition, ConditionType } from '@/api/scene';
-import { clone, isNumber } from '@/utils';
-import { FormInstance } from 'element-plus';
-import { pick } from 'lodash-es';
-import { ItemsContext, StoryContext } from './index';
-import ItemSelector from '@/views/item/selector.vue';
-import { Item } from '@/api/item';
+  import { Condition, ConditionType } from '@/api/scene';
+  import { clone, isNumber } from '@/utils';
+  import { FormInstance } from 'element-plus';
+  import { pick } from 'lodash-es';
+  import { ItemsContext, StoryContext, TargetsContext } from './index';
+  import ItemSelector from '@/views/item/selector.vue';
+  import TargetSelector from '@/views/target/selector.vue';
+  import { Item } from '@/api/item';
+  import { Target } from '@/api/target';
 
-defineProps<{
-  type: string;
-}>();
+  defineProps<{
+    type: string;
+    checkOnly?: boolean;
+  }>();
 
-const visible = ref(false);
-const data = ref<Condition>(new Condition());
-const formData = computed(() => ({ ...data.value, attr: attr.value }));
+  const visible = ref(false);
+  const data = ref<Condition>(new Condition());
+  const formData = computed(() => ({ ...data.value, attr: attr.value }));
 
-let saveResolve: (condition: Condition) => void;
-function open (condition?: Condition) {
-  visible.value = true;
-  data.value = clone(condition || new Condition());
-  itemAttr.value = [];
-  profileAttr.value = [];
+  let saveResolve: (condition: Condition) => void;
+  function open(condition?: Condition) {
+    visible.value = true;
+    data.value = clone(condition || new Condition());
+    itemAttr.value = [];
+    profileAttr.value = [];
 
-  if (data.value.type == 'ItemAttr') {
-    itemAttr.value = Object.entries(data.value.content).map(([key, value]: any) => {
-      return {
-        key,
-        operator: value.operator,
-        value: value.value ?? value.toString(),
-      };
+    if (data.value.type == 'ItemAttr') {
+      itemAttr.value = Object.entries(data.value.content).map(([key, value]: any) => {
+        return {
+          key,
+          operator: value.operator,
+          value: value.value ?? value.toString(),
+        };
+      });
+    } else if (data.value.type == 'Attr') {
+      profileAttr.value = Object.entries(data.value.content).map(([key, value]: any) => {
+        return {
+          key,
+          operator: value.operator,
+          value: value.value ?? value.toString(),
+        };
+      });
+    } else {
+      initTypeContent();
+    }
+    return new Promise((resolve) => {
+      saveResolve = resolve;
     });
-  } else if (data.value.type == 'Attr') {
-    profileAttr.value = Object.entries(data.value.content).map(([key, value]: any) => {
-      return {
-        key,
-        operator: value.operator,
-        value: value.value ?? value.toString(),
-      };
-    });
-  } else {
-    initTypeContent();
   }
-  return new Promise((resolve) => {
-    saveResolve = resolve;
+
+  defineExpose({
+    open,
   });
-}
 
-defineExpose({
-  open,
-});
-
-function isRightTime(value: string | number | number[]) {
-  if (typeof value === 'string') {
-    return value.match(/^\d+(,\d+)*$/);
+  function isRightTime(value: string | number | number[]) {
+    if (typeof value === 'string') {
+      return value.match(/^\d+(,\d+)*$/);
+    }
+    if (Array.isArray(value)) {
+      return value.every((item) => isNumber(item));
+    }
+    return isNumber(value);
   }
-  if (Array.isArray(value)) {
-    return value.every((item) => isNumber(item));
-  }
-  return isNumber(value);
-}
 
-const formRef = ref<FormInstance>();
-const rules = computed(() => ({
-  type: [{ required: true, message: '请选择条件类型', trigger: 'blur' }],
-  name: [{ required: true, message: '请输入', trigger: 'blur' }],
-  content: [
-    { required: true, message: '请输入', trigger: 'blur' },
-    ...(data.value.type == 'Time' ? [{
-      validator: (_, value, callback) => {
-        if (value.year && !isRightTime(value.year)) return callback(new Error('年份应该填入数字或用逗号隔开表示年份范围'));
-        if (value.month && !isRightTime(value.month)) return callback(new Error('月份应该填入数字或用逗号隔开表示月份范围'));
-        if (value.day && !isRightTime(value.day)) return callback(new Error('日期应该填入数字或用逗号隔开表示日期范围'));
-        if (value.hour && !isRightTime(value.hour)) return callback(new Error('小时应该填入数字或用逗号隔开表示小时范围'));
-        if (value.minute && !isRightTime(value.minute)) return callback(new Error('分钟应该填入数字或用逗号隔开表示分钟范围'));
-        callback();
+  const formRef = ref<FormInstance>();
+  const rules = computed(() => ({
+    type: [{ required: true, message: '请选择条件类型', trigger: 'blur' }],
+    name: [{ required: true, message: '请输入', trigger: 'blur' }],
+    content: [
+      { required: true, message: '请输入', trigger: 'blur' },
+      ...(data.value.type == 'Time'
+        ? [
+            {
+              validator: (_, value, callback) => {
+                if (value.year && !isRightTime(value.year))
+                  return callback(new Error('年份应该填入数字或用逗号隔开表示年份范围'));
+                if (value.month && !isRightTime(value.month))
+                  return callback(new Error('月份应该填入数字或用逗号隔开表示月份范围'));
+                if (value.day && !isRightTime(value.day))
+                  return callback(new Error('日期应该填入数字或用逗号隔开表示日期范围'));
+                if (value.hour && !isRightTime(value.hour))
+                  return callback(new Error('小时应该填入数字或用逗号隔开表示小时范围'));
+                if (value.minute && !isRightTime(value.minute))
+                  return callback(new Error('分钟应该填入数字或用逗号隔开表示分钟范围'));
+                callback();
+              },
+            },
+          ]
+        : []),
+    ],
+    key: [{ required: true, message: '请输入', trigger: 'blur' }],
+  }));
+
+  async function save() {
+    if (!(await formRef.value?.validate())) {
+      return;
+    }
+
+    if (data.value.type == 'Attr' || data.value.type == 'ItemAttr') {
+      data.value.content = {};
+      attr.value.forEach((item) => {
+        if (item.key) {
+          const value = isNaN(parseFloat(item.value)) ? item.value : parseFloat(item.value);
+          data.value.content[item.key] = item.operator ? { operator: item.operator, value } : value;
+        }
+      });
+    }
+
+    if (data.value.type == 'Time') {
+      data.value.content = Object.entries(data.value.content as Recordable<string>).reduce(
+        (acc, [key, value]) => {
+          if (value.includes(',')) {
+            acc[key] = value.split(',').map((item) => parseInt(item));
+          } else if (value) {
+            acc[key] = parseInt(value);
+          }
+          return acc;
+        },
+        {},
+      );
+    }
+
+    saveResolve(data.value);
+    visible.value = false;
+  }
+
+  function initTypeContent() {
+    if (data.value.type === 'Item') {
+      if (isNaN(data.value.content)) data.value.content = 0;
+    }
+    if (data.value.type === 'Fn' || data.value.type === 'ItemType' || data.value.type === 'Value') {
+      if (typeof data.value.content != 'string') data.value.content = '';
+    }
+    if (data.value.type === 'Time') {
+      if (typeof data.value.content != 'object') data.value.content = {};
+      else {
+        data.value.content = pick(data.value.content, ['year', 'month', 'day', 'hour', 'minute']);
       }
-    }] : [])
-  ],
-  key: [{ required: true, message: '请输入', trigger: 'blur' }],
-}));
-
-async function save () {
-  if (!(await formRef.value?.validate())) {
-    return;
-  }
-
-  if (data.value.type == 'Attr' || data.value.type == 'ItemAttr') {
-    data.value.content = {};
-    attr.value.forEach((item) => {
-      if (item.key) {
-        const value = isNaN(parseFloat(item.value))
-          ? item.value
-          : parseFloat(item.value);
-        data.value.content[item.key] = item.operator
-          ? { operator: item.operator, value }
-          : value;
-      }
-    });
-  }
-
-  if (data.value.type == 'Time') {
-    data.value.content = Object.entries(data.value.content as Recordable<string>).reduce((acc, [key, value]) => {
-      if (value.includes(',')) {
-        acc[key] = value.split(',').map((item) => parseInt(item));
-      } else if (value) {
-        acc[key] = parseInt(value);
-      }
-      return acc;
-    }, {});
-  }
-
-  saveResolve(data.value);
-  visible.value = false;
-}
-
-function initTypeContent () {
-  if (data.value.type === 'Item') {
-    if (isNaN(data.value.content)) data.value.content = 0;
-  }
-  if (data.value.type === 'Fn' || data.value.type === 'ItemType' || data.value.type === 'Value') {
-    if (typeof data.value.content != 'string') data.value.content = '';
-  }
-  if (data.value.type === 'Time') {
-    if (typeof data.value.content != 'object') data.value.content = {};
-    else {
-      data.value.content = pick(data.value.content, ['year', 'month', 'day', 'hour', 'minute']);
+    }
+    if (data.value.type === 'ItemAttr' || data.value.type === 'Attr') {
+      if (typeof data.value.content != 'object') data.value.content = {};
     }
   }
-  if (data.value.type === 'ItemAttr' || data.value.type === 'Attr') {
-    if (typeof data.value.content != 'object') data.value.content = {};
+
+  const profileAttr = ref<{ key: string; value: string; operator?: string }[]>([]);
+  const itemAttr = ref<{ key: string; value: string; operator?: string }[]>([]);
+  const attr = computed(() => {
+    if (data.value.type === 'ItemAttr') {
+      return itemAttr.value;
+    } else if (data.value.type === 'Attr') {
+      return profileAttr.value;
+    }
+    return [];
+  });
+
+  const story = inject(StoryContext);
+  const items = inject(ItemsContext);
+  const targets = inject(TargetsContext);
+
+  const itemSelectorRef = ref<InstanceType<typeof ItemSelector>>();
+  const targetSelectorRef = ref<InstanceType<typeof TargetSelector>>();
+  const itemTypes = computed<string[]>(() =>
+    Array.from(new Set(items?.value.map((item) => item.type) || [])),
+  );
+  const itemAttrs = computed(
+    () =>
+      items?.value
+        .map((item) =>
+          Object.keys(item.attributes).map((a) => ({
+            value: a,
+            label: item.attrName[a],
+          })),
+        )
+        .flat()
+        .filter((item, index, self) => index === self.findIndex((t) => t.value === item.value)) ||
+      [],
+  );
+  const defaultAttrs = computed(() =>
+    Array.from(
+      new Set(
+        Object.keys(story?.value?.attr || {}).map((a) => ({
+          value: a,
+          label: story?.value?.attrName[a],
+        })),
+      ),
+    ),
+  );
+  function searchTarget(query: string, cb) {
+    const list =
+      targets?.value.filter(
+        (item) => item.key.includes(query) || item.name.includes(query) || !query,
+      ) || [];
+    cb(list.map((item) => ({ value: item.key, label: item.name })));
   }
-}
-
-const profileAttr = ref<{ key: string; value: string, operator?: string }[]>([]);
-const itemAttr = ref<{ key: string; value: string, operator?: string }[]>([]);
-const attr = computed(() => {
-  if (data.value.type === 'ItemAttr') {
-    return itemAttr.value;
-  } else if (data.value.type === 'Attr') {
-    return profileAttr.value;
+  function searchItem(query: string, cb) {
+    const list =
+      items?.value.filter(
+        (item) => item.key.includes(query) || item.name.includes(query) || !query,
+      ) || [];
+    cb(list.map((item) => ({ value: item.key, label: item.name })));
   }
-  return [];
-});
-
-const story = inject(StoryContext);
-const items = inject(ItemsContext);
-
-const itemSelectorRef = ref<InstanceType<typeof ItemSelector>>();
-const itemTypes = computed<string[]>(() =>
-  Array.from(new Set(items?.value.map((item) => item.type) || [])),
-);
-const itemAttrs = computed(() =>
-  items?.value.map(
-    (item) => Object.keys(item.attributes).map(
-      a => ({
-        value: a, label: item.attrName[a]
-      })
-    )
-  ).flat().filter(
-    (item, index, self) => index === self.findIndex((t) => t.value === item.value)
-  ) || []
-);
-const defaultAttrs = computed(() =>
-  Array.from(
-    new Set(
-      Object.keys(story?.value?.attr || {}).map(
-        a => ({
-          value: a, label: story?.value?.attrName[a]
-        })
-      )
-    )
-  )
-);
-function searchItemType (query: string, cb) {
-  const items = itemTypes.value.filter((item) => item.includes(query) || !query);
-  cb(items.map(item => ({ value: item })));
-}
-function searchAttr (type: string) {
-  return (query: string, cb) => {
-    const items = (type == 'Attr' ? defaultAttrs : itemAttrs).value.filter((item) => item.value.includes(query) || item.label?.includes(query) || !query);
-    cb(items);
+  function searchItemType(query: string, cb) {
+    const items = itemTypes.value.filter((item) => item.includes(query) || !query);
+    cb(items.map((item) => ({ value: item })));
   }
-}
-
+  function searchAttr(type: string) {
+    return (query: string, cb) => {
+      const items = (type == 'Attr' ? defaultAttrs : itemAttrs).value.filter(
+        (item) => item.value.includes(query) || item.label?.includes(query) || !query,
+      );
+      cb(items);
+    };
+  }
 </script>
 
 <template>
   <el-dialog title="条件" v-model="visible" width="600px">
     <el-form ref="formRef" :model="formData" label-width="auto" :rules="rules">
       <el-alert v-if="data.type" :closable="false" class="!mb-2">
-        <span v-if="data.type == 'Time'">当前时间是否为设定的时间，比如设定 12 时，则需要当前时间在 12:00 ~ 12:59 时才会判定成功。</span>
-        <span v-else-if="data.type == 'Attr'">当前角色是否拥有设定的属性，比如设定 100 体力，则需要当前角色的体力大于等于 100
-          才会判定成功。如果不设定值，则只要具备属性就判定为成功。</span>
+        <span v-if="data.type == 'Time'"
+        >当前时间是否为设定的时间，比如设定 12 时，则需要当前时间在 12:00 ~ 12:59
+          时才会判定成功。</span
+        >
+        <span v-else-if="data.type == 'Attr'"
+        >当前角色是否拥有设定的属性，比如设定 100 体力，则需要当前角色的体力大于等于 100
+          才会判定成功。如果不设定值，则只要具备属性就判定为成功。</span
+        >
         <div v-else-if="data.type == 'ItemAttr'">
           <p>
-            当前角色是否拥有包含指定属性的物品，比如设定 100 能量，则需要当前角色的物品中有包含 100 能量的物品才会判定成功，如果有多个物品，则会求和。
+            当前角色是否拥有包含指定属性的物品，比如设定 100 能量，则需要当前角色的物品中有包含 100
+            能量的物品才会判定成功，如果有多个物品，则会求和。
           </p>
           <p>
             若在选项有设定<b>弹窗提示</b>弹出选择物品，此处将会限制仅检查所选物品。如果不设定值，则只要有具备该属性的物品就判定为成功。
           </p>
         </div>
-        <span v-else-if="data.type == 'Item'">当前角色是否拥有设定的物品，比如设定物品为树枝，数量为20，则需要当前角色的物品中有树枝，且数量大于等于 20 才会判定成功。</span>
-        <span v-else-if="data.type == 'ItemType'">当前角色是否拥有设定的物品类型，比如设定物品类型为燃料，则需要当前角色中有类型为燃料的物品，且数量大于等于 1 才会判定成功。</span>
-        <span v-else-if="data.type == 'Value'">选择此类型，必须在选项设定<b>弹窗提示</b>，当玩家弹窗输入等于设定值时才会判定成功。</span>
+        <span v-else-if="data.type == 'Item'"
+        >当前角色是否拥有设定的物品，比如设定物品为树枝，数量为20，则需要当前角色的物品中有树枝，且数量大于等于
+          20 才会判定成功。</span
+        >
+        <span v-else-if="data.type == 'Target'"
+        >当前角色是否拥有设定的成就，比如设定成就为打败怪物，则需要当前角色的成就中有打败怪物，
+          才会判定成功。</span
+        >
+        <span v-else-if="data.type == 'ItemType'"
+        >当前角色是否拥有设定的物品类型，比如设定物品类型为燃料，则需要当前角色中有类型为燃料的物品，且数量大于等于
+          1 才会判定成功。</span
+        >
+        <span v-else-if="data.type == 'Value'"
+        >选择此类型，必须在选项设定<b>弹窗提示</b>，当玩家弹窗输入等于设定值时才会判定成功。</span
+        >
         <div v-else-if="data.type == 'Fn'">
-          <p>选择此类型，将会执行设定的函数内容，通过给<code>result</code>赋值或直接 return 返回判定结果。函数参数为 <code>profile</code>：当前玩家的 Profile
-            对象，<code>value</code>：玩家选择选项时填写的值，<code>itemSelect</code>：玩家选择选项时选择的物品。</p>
-          <p><code>profile</code>： 对象的属性包括 <code>attr</code>（属性对象
-            Map）、<code>inventory</code>（背包物品数组）、<code>scene</code>（当前场景对象）。</p>
+          <p
+          >选择此类型，将会执行设定的函数内容，通过给<code>result</code>赋值或直接 return
+            返回判定结果。函数参数为 <code>profile</code>：当前玩家的 Profile
+            对象，<code>value</code>：玩家选择选项时填写的值，<code>itemSelect</code>：玩家选择选项时选择的物品。</p
+          >
+          <p
+          ><code>profile</code>： 对象的属性包括 <code>attr</code>（属性对象
+            Map）、<code>inventory</code>（背包物品数组）、<code>scene</code>（当前场景对象）。</p
+          >
           <p>
-            <code>inventory</code>：当前玩家的背包物品列表，包含属性<code>key</code>（物品标识符）、<code>name</code>（物品名称）、<code>count</code>（物品数量）、<code>attr</code>（物品属性对象
+            <code>inventory</code
+            >：当前玩家的背包物品列表，包含属性<code>key</code>（物品标识符）、<code>name</code>（物品名称）、<code>count</code>（物品数量）、<code>attr</code>（物品属性对象
             Map）。
           </p>
           <p>
-            <code>scene</code>：当前场景对象，包含属性<code>name</code>（场景名称）、<code>content</code>（场景内容）、<code>options</code>（场景选项数组）。
+            <code>scene</code
+            >：当前场景对象，包含属性<code>name</code>（场景名称）、<code>content</code>（场景内容）、<code>options</code>（场景选项数组）。
           </p>
         </div>
       </el-alert>
       <el-form-item label="条件类型" prop="type">
         <el-select v-model="data.type" @change="initTypeContent">
-          <el-option v-for="item in Object.entries(ConditionType)" :key="item[0]" :label="item[1]" :value="item[0]" />
+          <el-option
+            v-for="item in Object.entries(ConditionType)"
+            :key="item[0]"
+            :label="item[1]"
+            :value="item[0]"
+          />
         </el-select>
       </el-form-item>
       <template v-if="data.type === 'Time'">
@@ -252,7 +311,9 @@ function searchAttr (type: string) {
                   <template #default="{ item }">
                     <div class="flex items-center">
                       <span class="font-bold">{{ item.label || item.value }}</span>
-                      <span class="text-xs text-gray-500 ml-2" v-if="item.label">{{ item.value }}</span>
+                      <span class="text-xs text-gray-500 ml-2" v-if="item.label">{{
+                        item.value
+                      }}</span>
                     </div>
                   </template>
                 </el-autocomplete>
@@ -263,7 +324,8 @@ function searchAttr (type: string) {
             <template #header>
               <el-tooltip
                 effect="dark"
-                content="可以输入 rand(x,y) 表示 x~y 的随机数，percent(x,y) 表示 x x% 的概率为 y，y 省略则表示 1，，两个函数可嵌套使用">
+                content="可以输入 rand(x,y) 表示 x~y 的随机数，percent(x,y) 表示 x x% 的概率为 y，y 省略则表示 1，，两个函数可嵌套使用"
+              >
                 <Icon icon="i-ep:info-filled" :size="14" />
               </el-tooltip>
               值
@@ -288,26 +350,71 @@ function searchAttr (type: string) {
           <el-table-column label="操作" width="80" align="center">
             <template #header>
               <ButtonEx
-                content="添加" icon="i-ep:circle-plus" type="primary" link size="small"
-                @click="attr.push({ key: '', value: '' })" />
+                content="添加"
+                icon="i-ep:circle-plus"
+                type="primary"
+                link
+                size="small"
+                @click="attr.push({ key: '', value: '' })"
+              />
             </template>
             <template #default="{ $index }">
               <ButtonEx
-                content="删除" icon="i-ep:remove" type="danger" link size="small"
-                @click="attr.splice($index, 1)" />
+                content="删除"
+                icon="i-ep:remove"
+                type="danger"
+                link
+                size="small"
+                @click="attr.splice($index, 1)"
+              />
             </template>
           </el-table-column>
         </el-table>
       </template>
-      <template v-if="data.type === 'Item'">
-        <el-form-item label="物品" prop="name">
-          <el-input v-model="data.name" clearable>
+      <template v-if="data.type === 'Target'">
+        <el-form-item label="成就" prop="name">
+          <el-autocomplete :fetch-suggestions="searchTarget" v-model="data.name" clearable>
+            <template #default="{ item }">
+              <div class="flex items-center">
+                <span class="font-bold">{{ item.label }}</span>
+                <span class="text-xs text-gray-500 ml-2" v-if="item.value != item.label">{{
+                  item.value
+                }}</span>
+              </div>
+            </template>
             <template #suffix>
               <ButtonEx
-                icon="i-ep:search" content="选择" type="primary" link
-                @click="itemSelectorRef?.open().then((item: Item) => (data.name = item.key))" />
+                icon="i-ep:search"
+                content="选择"
+                type="primary"
+                link
+                @click="targetSelectorRef?.open().then((item: Target) => (data.name = item.key))"
+              />
             </template>
-          </el-input>
+          </el-autocomplete>
+        </el-form-item>
+      </template>
+      <template v-if="data.type === 'Item'">
+        <el-form-item label="物品" prop="name">
+          <el-autocomplete :fetch-suggestions="searchItem" v-model="data.name" clearable>
+            <template #default="{ item }">
+              <div class="flex items-center">
+                <span class="font-bold">{{ item.label }}</span>
+                <span class="text-xs text-gray-500 ml-2" v-if="item.value != item.label">{{
+                  item.value
+                }}</span>
+              </div>
+            </template>
+            <template #suffix>
+              <ButtonEx
+                icon="i-ep:search"
+                content="选择"
+                type="primary"
+                link
+                @click="itemSelectorRef?.open().then((item: Item) => (data.name = item.key))"
+              />
+            </template>
+          </el-autocomplete>
         </el-form-item>
         <el-form-item label="数量" prop="content">
           <template #label>
@@ -315,7 +422,8 @@ function searchAttr (type: string) {
               <el-tooltip effect="dark">
                 <template #content>
                   <p>
-                    可以输入数字，或 rand(x,y) 表示 x~y 的随机数，percent(x,y) 表示 x% 的概率获得 y 个，y 省略则表示 1
+                    可以输入数字，或 rand(x,y) 表示 x~y 的随机数，percent(x,y) 表示 x% 的概率获得 y
+                    个，y 省略则表示 1
                     个，两个函数可嵌套使用。若<b>弹窗提示</b>玩家输入为数字，则将会使用该值再乘以数量。
                   </p>
                 </template>
@@ -363,28 +471,38 @@ function searchAttr (type: string) {
         <el-form-item label="函数" prop="content">
           <section class="flex flex-col w-full">
             <span
-              class="bg-gray-100 dark:bg-gray-900 flex flex-col px-2 rounded-tl rounded-tr border border-b-0 border-[var(--el-border-color)]">
-              <code>function check(profile: Profile, inputText: string, itemSelect: Inventory): boolean {</code>
+              class="bg-gray-100 dark:bg-gray-900 flex flex-col px-2 rounded-tl rounded-tr border border-b-0 border-[var(--el-border-color)]"
+            >
+              <code
+              >function check(profile: Profile, inputText: string, itemSelect: Inventory): boolean
+                {</code
+              >
               <code>　　let result = true;</code>
             </span>
             <el-input
-              v-model="data.content" clearable type="textarea" :autosize="{ minRows: 3 }"
+              v-model="data.content"
+              clearable
+              type="textarea"
+              :autosize="{ minRows: 3 }"
               class="border-l border-r border-[var(--el-border-color)]"
-              style="--el-input-border-radius: 0;--el-input-border-color:transparent;" />
+              style="--el-input-border-radius: 0; --el-input-border-color: transparent"
+            />
             <span
-              class="bg-gray-100 dark:bg-gray-900 flex flex-col px-2 rounded-bl rounded-br border border-t-0 border-[var(--el-border-color)]">
+              class="bg-gray-100 dark:bg-gray-900 flex flex-col px-2 rounded-bl rounded-br border border-t-0 border-[var(--el-border-color)]"
+            >
               <code>　　return result;</code>
               <code>}</code>
             </span>
           </section>
         </el-form-item>
       </template>
-      <el-form-item label="失败提示" prop="tip">
+      <el-form-item label="失败提示" prop="tip" v-if="!checkOnly">
         <template #label>
           <span>
             <el-tooltip
               content="条件不成立时将弹出提示，若不设置将使用游戏引擎默认提示，可以通过 $物品属性名$ 获取玩家选择物品的属性的值，#玩家属性名# 获取玩家的属性的值。"
-              placement="top">
+              placement="top"
+            >
               <Icon icon="i-ep:info-filled" class="ml-1" />
             </el-tooltip>
             失败提示
@@ -392,7 +510,7 @@ function searchAttr (type: string) {
         </template>
         <el-input v-model="data.tip" clearable type="textarea" />
       </el-form-item>
-      <el-form-item label="用于隐藏选项" prop="isHide">
+      <el-form-item label="用于隐藏选项" prop="isHide" v-if="!checkOnly">
         <template #label>
           <span>
             <el-tooltip content="条件不成立时将隐藏选项" placement="top">
@@ -403,7 +521,8 @@ function searchAttr (type: string) {
         </template>
         <el-switch v-model="data.isHide" />
       </el-form-item>
-      <ItemSelector v-if="story" ref="itemSelectorRef" :story="story.id!" :type="type" @confirm="items = $event" />
+      <ItemSelector v-if="story" ref="itemSelectorRef" :story="story.id!" :type="type" />
+      <TargetSelector v-if="story" ref="targetSelectorRef" :story="story.id!" :type="type" />
     </el-form>
     <template #footer>
       <el-button @click="visible = false">取消</el-button>

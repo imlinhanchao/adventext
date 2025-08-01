@@ -10,8 +10,10 @@ import { ViewEntity, DataSource, ViewColumn } from 'typeorm';
     .addSelect("SUM(end.cost)", "totalCost") // 总耗时
     .addSelect("user.nickname", "nickname") // 用户昵称
     .addSelect("user.username", "username") // 用户名
+    .addSelect("COUNT(DISTINCT achievement.id)", "achievementCount") // 成就数量
     .from("end", "end")
     .innerJoin("user", "user", "user.id = end.user") // 关联 user 表
+    .leftJoin("achievement", "achievement", "achievement.user = end.user") // 关联 achievement 表
     .groupBy("end.user")
     .addGroupBy("end.storyId")
     .addGroupBy("user.nickname")
@@ -35,4 +37,7 @@ export class RankView {
 
   @ViewColumn()
   username: string;
+  
+  @ViewColumn()
+  achievementCount: number;
 }

@@ -6,10 +6,12 @@ import { Draft } from "./Draft";
 import { Story } from "./Story";
 import { Scene } from "./Scene";
 import { Item } from "./Item";
+import { Target } from './Target';
 import { End } from "./End";
 import { User } from "./User";
 import { RankView } from './Rank';
 import { ThirdParty } from './ThirdParty';
+import { Achievement } from './Achievement';
 import utils from '../utils'
 
 @EventSubscriber()
@@ -35,10 +37,10 @@ export class EntitySubscriber implements EntitySubscriberInterface {
 
 export const AppDataSource = utils.config ? new DataSource({
   type: "mysql",
+  logging: false,
   ...utils.config.database,
   synchronize: true,
-  logging: false,
-  entities: [Record, Profile, User, Story, Scene, Draft, Item, End, RankView, ThirdParty],
+  entities: [Record, Profile, User, Story, Scene, Draft, Item, Target, End, RankView, Achievement, ThirdParty],
   migrations: [],
   subscribers: [],
   charset: "utf8mb4_unicode_ci"
@@ -52,7 +54,9 @@ export {
   Draft,
   Scene,
   Item,
+  Target,
   End,
+  Achievement,
   ThirdParty
 }
 
@@ -63,6 +67,8 @@ export const StoryRepo = utils.config ? AppDataSource.getRepository(Story) : {} 
 export const DraftRepo = utils.config ? AppDataSource.getRepository(Draft) : {} as Repository<Draft>;
 export const SceneRepo = utils.config ? AppDataSource.getRepository(Scene) : {} as Repository<Scene>;
 export const ItemRepo = utils.config ? AppDataSource.getRepository(Item) : {} as Repository<Item>;
+export const TargetRepo = utils.config ? AppDataSource.getRepository(Target) : {} as Repository<Target>;
 export const EndRepo = utils.config ? AppDataSource.getRepository(End) : {} as Repository<End>;
+export const AchievementRepo = utils.config ? AppDataSource.getRepository(Achievement) : {} as Repository<Achievement>;
 export const RankRepo = utils.config ? AppDataSource.getRepository(RankView) : {} as Repository<RankView>;
 export const ThirdPartyRepo = utils.config ? AppDataSource.getRepository(ThirdParty) : {} as Repository<ThirdParty>;

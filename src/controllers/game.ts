@@ -1,11 +1,11 @@
 import { Request, Response } from 'express';
-import { Record, Profile, Scene, User, StoryRepo, DraftRepo, ProfileRepo, EndRepo, SceneRepo, ItemRepo, RecordRepo, RankRepo, Item } from "../entities";
+import { Record, Profile, Scene, User, StoryRepo, DraftRepo, ProfileRepo, EndRepo, SceneRepo, ItemRepo, RecordRepo, RankRepo, Item, TargetRepo, AchievementRepo, Achievement, Target } from "../entities";
 import { render, json, error } from "../utils/route";
 import { Condition, Effect } from '../entities/Scene';
 import { clone, omit, shortTime } from '../utils';
 import { Inventory } from '../entities/Profile';
 import { isNumber, isString } from '../utils/is';
-import { Not } from 'typeorm';
+import { In, Not } from 'typeorm';
 import { callFn, createFn, tryEval } from '../utils/call';
 
 function fillVar(content: string, type: string, target: any) {
@@ -123,6 +123,7 @@ function conditionCheckTime(condition: Condition, timezone: number) {
 
 export default class GameController {
   private type: string;
+  private achievements?: Achievement[];
 
   constructor(type: string) {
     this.type = type;
@@ -155,15 +156,27 @@ export default class GameController {
     return await SceneRepo.findOneBy({ name: scene, storyId });
   }
 
-  async getItem(item: string) {
-    return await ItemRepo.findOneBy({ key: item });
+  async getItem(key: string, storyId: string) {
+    return await ItemRepo.findOneBy({ key, storyId });
+  }
+
+  async getAchievement(key: string, userId: number) {
+    if (this.achievements) {
+      return this.achievements.find(a => a.key == key);
+    } else {
+      return await AchievementRepo.findOneBy({ key, user: userId });
+    }
+  }
+
+  async getTarget(key: string, storyId: string) {
+    return await TargetRepo.findOneBy({ key, storyId });
   }
 
   async getStory(id: string) {
     return await this.storyRepo.findOneBy({ id });
   }
 
-  async updateOptions(story: Scene, state: Profile, timezone: number, records?: Record[]) {
+  async updateOptions(story: Scene, state: Profile, timezone: number, records?: Record[], achievements?: Achievement[]) {
     for (const option of story.options) {
       let record;
       if (!records) {
@@ -178,13 +191,13 @@ export default class GameController {
       }
       option.disabled = option.loop !== undefined && record && (option.loop < 0 || Date.now() - record.time < option.loop * 1000);
       if (option.disabled) continue;
-      option.disabled = !(await this.checkConditions(option.conditions?.filter(c => c.isHide) || [], state, option, '', timezone).catch(() => false));
+      option.disabled = !(await this.checkConditions(option.conditions?.filter(c => c.isHide) || [], state, option, '', timezone, undefined, achievements).catch(() => false));
     }
 
     return story.options;
   }
 
-  async checkConditions(conditions: Condition[], profile: Profile, option: any, valueText: string, timezone: number, itemTake?: Inventory) {
+  async checkConditions(conditions: Condition[], profile: Profile, option: any, valueText: string, timezone: number, itemTake?: Inventory, achievements?: Achievement[]) {
     function conditionOperator(left: number, right: number, operator: string) {
       switch (operator) {
         case '=':
@@ -221,8 +234,18 @@ export default class GameController {
             throw new Error(typeof result != 'string' ? `你还没准备好` : result);
           }
         }
+        if (condition.type === 'Target') {
+          const item = await this.getTarget(condition.name, profile.storyId);
+          if (!item) {
+            throw new Error(`成就${condition.name}不存在`);
+          }
+          const achievement = await this.getAchievement(item.key, profile.userId);
+          if (!achievement) {
+            throw new Error(`你还没准备好。`);
+          }
+        }
         if (condition.type === 'Item') {
-          const item = await this.getItem(condition.name);
+          const item = await this.getItem(condition.name, profile.storyId);
           if (!item) {
             throw new Error(`物品${condition.name}未找到`);
           }
@@ -360,27 +383,58 @@ export default class GameController {
   }
 
 
-  async runEffects(profile: Profile, effects: Effect[], value: string, itemTake?: Inventory) {
+  async runEffects(profile: Profile, effects: Effect[], option: any, valueText: string, timezone: number, itemTake?: Inventory, achievements?: any[], virtual = false) {
     try {
       let message = '', next = null;
       for (const effect of effects) {
+        if (effect.conditions?.length &&
+          (!await this.checkConditions(effect.conditions, profile, option, valueText, timezone, itemTake)
+            .catch(() => false))) {
+          continue;
+        }
         let msg = '', oldVal = '', newVal = '';
         effect.operator = effect.operator || '=';
         if (isString(effect.content)) {
-          effect.content = effect.content.replace(/\$value/g, value);
+          effect.content = effect.content.replace(/\$value/g, valueText);
           effect.content = effect.content.replaceAll('\\n', '\n');
+        }
+        if (effect.type === 'Target') {
+          let target: Target | null | undefined;
+          target = await this.getTarget(effect.name, profile.storyId);
+          if (!target) throw new Error(`成就 ${effect.name} 不存在.`);
+          let achievement = {
+            user: profile.userId,
+            fromProfile: profile.id,
+            targetId: target.id,
+            storyId: profile.storyId,
+            key: target.key,
+            name: target.name,
+            description: target.description,
+            from: profile.scene,
+            time: Date.now(),
+          } as Achievement;
+          if (virtual) {
+            if (!achievements?.some((a: Achievement) => a.key === achievement?.key)) {
+              achievements?.push(achievement);
+              msg += `获得成就 ${target.name}.\n`;
+            }
+          } else if (!(await AchievementRepo.findOneBy({ key: target.key, user: profile.userId }))) {
+            const newAchievement = AchievementRepo.create(achievement);
+            await AchievementRepo.save(newAchievement);
+            msg += `获得成就 ${target.name}.\n`;
+          }
         }
         if (effect.type === 'Item') {
           let item: Item & { count?: number; } | null | undefined;
           if (effect.name !== '$item') {
-            item = await this.getItem(effect.name);
+            item = await this.getItem(effect.name, profile.storyId);
             item && (item.count = 1);
           }
           else item = itemTake;
           if (!item) throw new Error(`物品 ${effect.name} 未找到.`)
           const inventory = profile.inventory.find((i) => i.key === item.key);
           if (effect.content.replace) effect.content = effect.content.replace(/\$count/g, (itemTake?.count || 1) + '');
-          let count = formatContent(effect.content || '1', profile.attr, value, itemTake?.attributes);
+          let count = formatContent(effect.content || '1', profile.attr, valueText, itemTake?.attributes);
           if (!isNumber(count)) throw new Error(`Item ${effect.name} 效果获取数量失败！`)
           if (inventory) {
             inventory.count += count;
@@ -397,12 +451,12 @@ export default class GameController {
         if (effect.type === 'Attr') {
           const oldValue = profile.attr[effect.name] || '';
           if (profile.attr[effect.name] === undefined) {
-            const content = formatContent(effect.content || '1', profile.attr, value, itemTake?.attributes);
+            const content = formatContent(effect.content || '1', profile.attr, valueText, itemTake?.attributes);
             profile.attr[effect.name] = content;
           }
           else if (typeof profile.attr[effect.name] === 'number') {
             effect.content = effect.content.replace(/\$count/g, itemTake?.count + '');
-            let count = formatContent(effect.content || '1', profile.attr, value, itemTake?.attributes);
+            let count = formatContent(effect.content || '1', profile.attr, valueText, itemTake?.attributes);
             if (!isNumber(count)) throw new Error(`Attr ${effect.name} 效果获取数量失败！`)
             profile.attr[effect.name] = operatorData(profile.attr[effect.name], count, effect.operator);
           }
@@ -426,7 +480,7 @@ export default class GameController {
             if (!inventorys.length) {
               throw new Error(`你没有包含${attr}的物品.`);
             }
-            let count = formatContent(effect.content || '1', profile.attr, value);
+            let count = formatContent(effect.content || '1', profile.attr, valueText);
             if (!isNumber(count)) throw new Error(`ItemAttr ${effect.name} 效果获取数量失败！`)
             let total = 0;
             for (const inventory of inventorys) {
@@ -446,7 +500,7 @@ export default class GameController {
             if (itemTake.attributes[effect.name] === undefined) {
               throw new Error(`物品 ${itemTake.name} 不包含属性 ${effect.name}.`);
             }
-            let count = formatContent(effect.content || '1', profile.attr, value, itemTake.attributes);
+            let count = formatContent(effect.content || '1', profile.attr, valueText, itemTake.attributes);
             if (!isNumber(count)) throw new Error(`ItemAttr ${effect.name} 效果获取数量失败！`)
             const itemCount = Math.ceil(count / itemTake.attributes[effect.name]);
             if (itemCount > itemTake.count) {
@@ -464,7 +518,7 @@ export default class GameController {
         if (effect.type === 'Fn') {
           const call = createFn('profile', 'addItem', 'setAttr', 'inputText', 'itemSelect', 'let message = "", next = null;\n' + effect.content + '\nreturn { message, next };');
           const items: any[] = []
-          const result = callFn(call, clone(profile), value, clone(itemTake), (name: string, count: number) => {
+          const result = callFn(call, clone(profile), valueText, clone(itemTake), (name: string, count: number) => {
             items.push({ name, count })
           }, (attr: { key: string; name?: string; value: string }) => {
             profile.attr[attr.key] = attr.value;
@@ -477,7 +531,7 @@ export default class GameController {
             const myItem = profile.inventory.find(i => i.key == item.name);
             if (myItem) myItem.count += item.count;
             else {
-              const itemInstance = await this.getItem(item.name);
+              const itemInstance = await this.getItem(item.name, profile.storyId);
               if (!itemInstance) throw new Error(`物品 ${item.name} 未找到.`)
               profile.inventory.push({ ...itemInstance, count: item.count || 1 })
             }
@@ -489,11 +543,12 @@ export default class GameController {
         if (effect.tip) {
           msg = effect.tip.replace(/\$item/g, itemTake?.name || '')
             .replace(/\$count/g, (itemTake?.count || '') + '')
-            .replace(/\$value/g, value || '')
+            .replace(/\$value/g, valueText || '')
             .replace(/\$old/g, oldVal || '')
             .replace(/\$new/g, newVal || '');
           msg = fillVar(msg, '\\$', itemTake?.attributes);
           msg = fillVar(msg, '#', profile.attr);
+          msg += '\n'
         }
         message += msg;
       }
@@ -561,6 +616,21 @@ export default class GameController {
     }
   }
 
+  async resetAchievement(user: User, req: Request, res: Response, next: () => void) {
+    try {
+      const userId = user.id;
+      const storyId = req.params.storyId;
+
+      if (this.type != 'draft') return next();
+
+      await AchievementRepo.delete({ user: userId, storyId });
+
+      json(res, { message: '游戏成就已重置' })
+    } catch (err: any) {
+      error(res, err.message)
+    }
+  }
+
   async record(user: User, req: Request, res: Response, next: () => void) {
     try {
       const storyId = req.params.storyId;
@@ -588,17 +658,23 @@ export default class GameController {
         end = (profile?.endId ?? '') + '';
       }
 
+      const achievements = await AchievementRepo.find({
+        where: { user: user.id, storyId },
+        order: { time: 'DESC' },
+      });
+
       if (!end) return render(res, 'record', req).title('游戏记录').logo(story.name).render({
-          list: [],
-          total: 0,
-          page,
-          size,
-          story,
-          endId: Number(end),
-          ends,
-          profile: {},
-          type: this.type.slice(0, 1),
-        });
+        list: [],
+        total: 0,
+        page,
+        size,
+        story,
+        endId: Number(end),
+        ends,
+        profile: {},
+        type: this.type.slice(0, 1),
+        achievements,
+      });
 
       const list = await RecordRepo.find({
         where: { storyId, endId: Number(end), user: user.id },
@@ -624,6 +700,7 @@ export default class GameController {
         ends,
         profile: profile || {},
         type: this.type.slice(0, 1),
+        achievements,
       })
     } catch (err: any) {
       error(res, err.message)
@@ -642,7 +719,7 @@ export default class GameController {
 
       const list = await RankRepo.find({
         where: { storyId, username: Not(story.author) },
-        order: { endCount: 'DESC', totalCost: 'ASC' },
+        order: { endCount: 'DESC', achievementCount: 'DESC', totalCost: 'ASC' },
         take: size,
         skip: (page - 1) * size,
       }).then((data) => {
@@ -660,7 +737,7 @@ export default class GameController {
       const totalPlayer = await ProfileRepo.createQueryBuilder('profile')
         .select('COUNT(DISTINCT profile.userId)', 'total')
         .where('profile.storyId = :storyId', { storyId })
-        .getRawOne().then((data) => data.total);
+        .getRawOne().then((data) => data.total);       
 
       render(res, 'rank', req).title('排行榜').logo(story.name).render({
         list,
@@ -713,13 +790,14 @@ export default class GameController {
     return content;
   }
 
-  async gameExcute(profile: Profile, scene: Scene, { option: optionText, value: valueText, timezone }: any, virtual = false) {
+  async gameExcute(profile: Profile, scene: Scene, { option: optionText, value: valueText, timezone, achievements }: any, virtual = false) {
     try {
       const storyId = profile.storyId;
       const userId = profile.userId;
       const option = scene?.options.find((option) => option.text === optionText);
       timezone = timezone ?? new Date().getTimezoneOffset() / -60;
       const oldProfile = clone(profile);
+      this.achievements = achievements;
 
       let message = '';
 
@@ -749,11 +827,10 @@ export default class GameController {
       }
 
       let next = option.next;
-      let result = await this.runEffects(profile, option.effects || [], valueText, itemTake);
+      let result = await this.runEffects(profile, option.effects || [], option, valueText, timezone, itemTake, achievements, virtual);
       if (result.next) next = result.next;
       if (result.message) message += result.message;
       if (result.profile) profile = result.profile;
-
       if (next === '<back>') {
         next = profile.from;
       }
@@ -781,18 +858,48 @@ export default class GameController {
       profile.scene = nextScene.name;
 
       if (!virtual) {
-        nextScene!.options = await this.updateOptions(nextScene!, profile, timezone);
-
-        if (nextScene.isEnd) {
-          await this.addEnd(nextScene, profile);
-        }
-
         const currentState = await ProfileRepo.findOneBy({ userId, storyId, isEnd: false });
         if (currentState) {
           Object.assign(currentState, profile);
           await ProfileRepo.save(currentState);
         } else {
-          await ProfileRepo.save(profile);
+          profile = await ProfileRepo.save(profile);
+        }
+      }
+
+      const targets = await TargetRepo.findBy({ storyId });
+
+      await Promise.all(targets.filter(t => t.conditions?.length).map(async (t) => {
+        if (await this.checkConditions(t.conditions, profile, option, valueText, timezone).catch(() => false)) {
+          let achievement = {
+            user: userId,
+            fromProfile: profile.id,
+            targetId: t.id,
+            storyId: storyId,
+            key: t.key,
+            name: t.name,
+            description: t.description,
+            from: profile.from,
+            time: Date.now(),
+          } as Achievement;
+          if (virtual) {
+            if (!achievements?.some((a: Achievement) => a.key === achievement?.key)) {
+              achievements?.push(achievement);
+              message += `获得成就 ${achievement.name}.\n`;
+            }
+          } else if (!(await AchievementRepo.findOneBy({ key: achievement.key, user: profile.userId }))) {
+            const newAchievement = AchievementRepo.create(achievement);
+            await AchievementRepo.save(newAchievement);
+            message += `获得成就 ${achievement.name}.\n`;
+          }
+        };
+      }));
+
+      if (!virtual) {
+        nextScene!.options = await this.updateOptions(nextScene!, profile, timezone);
+
+        if (nextScene.isEnd) {
+          await this.addEnd(nextScene, profile);
         }
       }
 
@@ -802,6 +909,7 @@ export default class GameController {
         next,
         message,
         content: await this.getContent(profile, nextScene),
+        achievements,
       }
     } catch (err: any) {
       throw err;
@@ -810,13 +918,14 @@ export default class GameController {
 
   async optionFilter(req: Request, res: Response) {
     try {
-      const { scene, profile, timezone, records } = req.body;
+      const { scene, profile, timezone, records, achievements } = req.body;
       if (!scene) {
         throw new Error(`缺少运行场景！`);
       }
       if (!profile) {
         throw new Error(`缺少游戏资料！`);
       }
+      this.achievements = achievements;
       scene.options = await this.updateOptions(scene, profile, timezone ?? new Date().getTimezoneOffset() / -60, records || []);
       const content = await this.getContent(profile, scene);
       json(res, {
@@ -880,33 +989,53 @@ export default class GameController {
         order: { createTime: 'DESC' },
       });
       const storyIds = stories.map((s) => s.id);
-      const endScenes = await SceneRepo.createQueryBuilder("scene")
-        .select("scene.storyId", "storyId")
-        .addSelect("COUNT(*)", "count")
-        .where("scene.storyId IN (:...storyIds)", { storyIds })
-        .andWhere("scene.isEnd = :isEnd", { isEnd: true })
-        .groupBy("scene.storyId")
-        .getRawMany();
-      let finish = [];
-      if (req.session.user) {
-        finish = await EndRepo.createQueryBuilder("end")
-        .select("end.storyId", "storyId")
-        .addSelect("COUNT(*)", "count")
-        .where("end.storyId IN (:...storyIds)", { storyIds })
-        .andWhere("end.user = :userId", { userId: req.session.user.id })
-        .groupBy("end.storyId")
-        .getRawMany();
+      let finish = [], achievements = [], endScenes = [], targetCounts = [];
+      if (storyIds.length) {
+        endScenes = storyIds.length ? await SceneRepo.createQueryBuilder("scene")
+          .select("scene.storyId", "storyId")
+          .addSelect("COUNT(*)", "count")
+          .where("scene.storyId IN (:...storyIds)", { storyIds })
+          .andWhere("scene.isEnd = :isEnd", { isEnd: true })
+          .groupBy("scene.storyId")
+          .getRawMany() : [];
+        targetCounts = storyIds.length ? await TargetRepo.createQueryBuilder("target")
+          .select("target.storyId", "storyId")
+          .addSelect("COUNT(*)", "count")
+          .where("target.storyId IN (:...storyIds)", { storyIds })
+          .groupBy("target.storyId")
+          .getRawMany() : [];
+        if (req.session.user) {
+          finish = await EndRepo.createQueryBuilder("end")
+            .select("end.storyId", "storyId")
+            .addSelect("COUNT(*)", "count")
+            .where("end.storyId IN (:...storyIds)", { storyIds })
+            .andWhere("end.user = :userId", { userId: req.session.user.id })
+            .groupBy("end.storyId")
+            .getRawMany();
+          achievements = await AchievementRepo.createQueryBuilder("achievement")
+            .select("achievement.storyId", "storyId")
+            .addSelect("COUNT(*)", "count")
+            .where("achievement.storyId IN (:...storyIds)", { storyIds })
+            .andWhere("achievement.user = :userId", { userId: req.session.user.id })
+            .groupBy("achievement.storyId")
+            .getRawMany();
+        }
       }
       render(res, 'stories', req).render({
         stories: stories.map((story) => {
           const end = endScenes.find((e) => e.storyId == story.id);
           const findEndItem = finish.find((e) => e.storyId == story.id);
+          const targetCount = targetCounts.find((e) => e.storyId == story.id);
+          const achievementCount = achievements.find((e) => e.storyId == story.id);
           return {
             ...story,
             end: end ? parseInt(end.count) : 0,
             finish: findEndItem ? parseInt(findEndItem.count) : 0,
+            target: targetCount ? parseInt(targetCount.count) : 0,
+            achievement: achievementCount ? parseInt(achievementCount.count) : 0,
           }
         }),
+        isLogin: !!req.session.user,
       })
     } catch (error: any) {
       render(res, 'index', req).error(error.message).render()
@@ -925,8 +1054,8 @@ export default class GameController {
       const { state, scene } = await this.gameState(userId, req.params.storyId);
 
       const options = await this.updateOptions(
-        scene!, 
-        state, 
+        scene!,
+        state,
         req.body?.timezone ?? new Date().getTimezoneOffset() / -60
       ).then((options) => options.filter(o => !o.disabled));
 

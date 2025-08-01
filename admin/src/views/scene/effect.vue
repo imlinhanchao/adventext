@@ -1,87 +1,118 @@
 <script setup lang="ts">
-import { Effect, EffectType } from '@/api/scene';
-import { clone } from '@/utils';
-import { FormInstance } from 'element-plus';
-import { ItemsContext, StoryContext } from './index';
-import ItemSelector from '@/views/item/selector.vue';
-import { Item } from '@/api/item';
+  import { Effect, EffectType, ConditionType, Condition } from '@/api/scene';
+  import { clone } from '@/utils';
+  import { FormInstance } from 'element-plus';
+  import { ItemsContext, StoryContext, TargetsContext, contentFormat } from './index';
+  import ItemSelector from '@/views/item/selector.vue';
+  import { Item } from '@/api/item';
+  import ConditionForm from './condition.vue';
 
-defineProps<{
-  type: string;
-}>();
+  defineProps<{
+    type: string;
+  }>();
 
-const visible = ref(false);
-const data = ref<Effect>(new Effect());
-const formData = computed(() => ({ ...data.value }));
+  const visible = ref(false);
+  const data = ref<Effect>(new Effect());
+  const formData = computed(() => ({ ...data.value }));
 
-let saveResolve: (condition: Effect) => void;
-function open (effect?: Effect) {
-  visible.value = true;
-  data.value = clone(effect || new Effect());
+  let saveResolve: (condition: Effect) => void;
+  function open(effect?: Effect) {
+    visible.value = true;
+    data.value = clone(effect || new Effect());
 
-  return new Promise((resolve) => {
-    saveResolve = resolve;
+    return new Promise((resolve) => {
+      saveResolve = resolve;
+    });
+  }
+
+  defineExpose({
+    open,
   });
-}
 
-defineExpose({
-  open,
-});
+  const formRef = ref<FormInstance>();
+  const rules = computed(() => ({
+    type: [{ required: true, message: '请选择效果类型', trigger: 'blur' }],
+    name: [{ required: true, message: '请输入', trigger: 'blur' }],
+    content: [{ required: true, message: '请输入', trigger: 'blur' }],
+  }));
 
-const formRef = ref<FormInstance>();
-const rules = computed(() => ({
-  type: [{ required: true, message: '请选择效果类型', trigger: 'blur' }],
-  name: [{ required: true, message: '请输入', trigger: 'blur' }],
-  content: [{ required: true, message: '请输入', trigger: 'blur' }],
-}));
+  async function save() {
+    if (!(await formRef.value?.validate())) {
+      return;
+    }
 
-async function save () {
-  if (!(await formRef.value?.validate())) {
-    return;
+    saveResolve(data.value);
+    visible.value = false;
   }
 
-  saveResolve(data.value);
-  visible.value = false;
-}
+  const targets = inject(TargetsContext);
+  const items = inject(ItemsContext);
+  const story = inject(StoryContext);
+  const itemSelectorRef = ref<InstanceType<typeof ItemSelector>>();
 
-const items = inject(ItemsContext);
-const story = inject(StoryContext);
-const itemSelectorRef = ref<InstanceType<typeof ItemSelector>>();
-
-const itemAttrs = computed(() =>
-  items?.value.map(
-    (item) => Object.keys(item.attributes).map(
-      a => ({ 
-        value: a, label: item.attrName[a]
-      })
-    )
-  ).flat().filter(
-    (item, index, self) => index === self.findIndex((t) => t.value === item.value)
-  ) || []
-);
-const defaultAttrs = computed(() =>
-  Array.from(
-    new Set(
-      Object.keys(story?.value?.attr || {}).map(
-        a => ({ 
-          value: a, label: story?.value?.attrName[a]
-        })
-      )
-    )
-  )
-);
-function searchItem (query: string, cb) {
-  const list = items?.value.filter((item) => item.key.includes(query) || item.name.includes(query) || !query) || [];
-  cb([
-    { value: '$item', label: '选择的物品' },
-  ].concat(list.map(item => ({ value: item.key, label: item.name }))));
-}
-function searchAttr (type: string) {
-  return (query: string, cb) => {
-    const items = (type == 'Attr' ? defaultAttrs : itemAttrs).value.filter((item) => item.value.includes(query) || item.label?.includes(query) || !query);
-    cb(items);
+  const itemAttrs = computed(
+    () =>
+      items?.value
+        .map((item) =>
+          Object.keys(item.attributes).map((a) => ({
+            value: a,
+            label: item.attrName[a],
+          })),
+        )
+        .flat()
+        .filter((item, index, self) => index === self.findIndex((t) => t.value === item.value)) ||
+      [],
+  );
+  const defaultAttrs = computed(() =>
+    Array.from(
+      new Set(
+        Object.keys(story?.value?.attr || {}).map((a) => ({
+          value: a,
+          label: story?.value?.attrName[a],
+        })),
+      ),
+    ),
+  );
+  function searchTarget(query: string, cb) {
+    const list =
+      targets?.value.filter(
+        (item) => item.key.includes(query) || item.name.includes(query) || !query,
+      ) || [];
+    cb(list.map((item) => ({ value: item.key, label: item.name })));
   }
-}
+
+  function searchItem(query: string, cb) {
+    const list =
+      items?.value.filter(
+        (item) => item.key.includes(query) || item.name.includes(query) || !query,
+      ) || [];
+    cb(
+      [{ value: '$item', label: '选择的物品' }].concat(
+        list.map((item) => ({ value: item.key, label: item.name })),
+      ),
+    );
+  }
+  function searchAttr(type: string) {
+    return (query: string, cb) => {
+      const items = (type == 'Attr' ? defaultAttrs : itemAttrs).value.filter(
+        (item) => item.value.includes(query) || item.label?.includes(query) || !query,
+      );
+      cb(items);
+    };
+  }
+
+  const conditionRef = ref<InstanceType<typeof ConditionForm>>();
+  function addCon() {
+    conditionRef.value?.open().then((condition: Condition) => {
+      if (!data.value.conditions) data.value.conditions = []
+      data.value.conditions.push(condition);
+    });
+  }
+  function editCon(condition: Condition) {
+    conditionRef.value?.open(condition).then((data: Condition) => {
+      Object.assign(condition, data);
+    });
+  }
 
 </script>
 
@@ -90,11 +121,15 @@ function searchAttr (type: string) {
     <el-form ref="formRef" :model="formData" label-width="auto" :rules="rules">
       <el-alert v-if="data.type" :closable="false" class="!mb-2">
         <span v-if="data.type == 'Attr'">
-          对玩家的指定属性进行修改，可以通过输入 <code>\n</code> 来表示换行字符串。若前面操作符选择了
+          对玩家的指定属性进行修改，可以通过输入
+          <code>\n</code> 来表示换行字符串。若前面操作符选择了
           <code>-</code>、<code>/</code>、<code>*</code>，则需要保证值的运算结果为数字。
         </span>
         <span v-else-if="data.type == 'ItemAttr'">
           值只能是正数，会从背包<b>扣除</b>指定属性名的值之和等于设定值的物品，若<b>弹窗提示</b>设置了选择物品，则会将扣除范围限定在选择的物品上。
+        </span>
+        <span v-else-if="data.type == 'Target'">
+          会给玩家发放指定成就，成就不可重复发放。已发放成就再次触发不会产生发放提醒。
         </span>
         <span v-else-if="data.type == 'Item'">
           会从背包修改指定物品的数量，设置正值则新增，负值则扣除，若<b>弹窗提示</b>设置了选择物品，可以通过
@@ -115,11 +150,13 @@ function searchAttr (type: string) {
               函数的参数为属性对象，属性对象的 key 为属性名，name 为属性名称，value 为属性值。
             </li>
             <li>
-              <code>inventory</code>：当前玩家的背包物品列表，包含属性<code>key</code>（物品标识符）、<code>name</code>（物品名称）、<code>count</code>（物品数量）、<code>attr</code>（物品属性对象
+              <code>inventory</code
+              >：当前玩家的背包物品列表，包含属性<code>key</code>（物品标识符）、<code>name</code>（物品名称）、<code>count</code>（物品数量）、<code>attr</code>（物品属性对象
               Map）。
             </li>
             <li>
-              <code>scene</code>：当前场景对象，包含属性<code>name</code>（场景名称）、<code>content</code>（场景内容）、<code>options</code>（场景选项数组）。
+              <code>scene</code
+              >：当前场景对象，包含属性<code>name</code>（场景名称）、<code>content</code>（场景内容）、<code>options</code>（场景选项数组）。
             </li>
             <li>
               返回值：<code>next</code> 为下一个场景的名称，<code>message</code> 为提示信息，<code>next</code>
@@ -130,12 +167,21 @@ function searchAttr (type: string) {
       </el-alert>
       <el-form-item label="效果类型" prop="type">
         <el-select v-model="data.type">
-          <el-option v-for="item in Object.entries(EffectType)" :key="item[0]" :label="item[1]" :value="item[0]" />
+          <el-option
+            v-for="item in Object.entries(EffectType)"
+            :key="item[0]"
+            :label="item[1]"
+            :value="item[0]"
+          />
         </el-select>
       </el-form-item>
       <template v-if="data.type === 'Attr'">
         <el-form-item label="属性名" prop="name">
-          <el-autocomplete :fetch-suggestions="searchAttr(data.type)" v-model.trim="data.name" clearable>
+          <el-autocomplete
+            :fetch-suggestions="searchAttr(data.type)"
+            v-model.trim="data.name"
+            clearable
+          >
             <template #default="{ item }">
               <div class="flex items-center">
                 <span class="font-bold">{{ item.label || item.value }}</span>
@@ -149,7 +195,8 @@ function searchAttr (type: string) {
             <span>
               <el-tooltip
                 effect="dark"
-                content="可以使用 $value 表示弹窗输入，rand(x,y) 表示 x~y 的随机数，percent(x,y) 表示 x% 的概率增加 y，y 省略则表示 1，，两个函数可嵌套使用，还可以通过 $物品属性名$ 获取玩家选择物品的属性的值，#玩家属性名# 获取玩家的属性的值。">
+                content="可以使用 $value 表示弹窗输入，rand(x,y) 表示 x~y 的随机数，percent(x,y) 表示 x% 的概率增加 y，y 省略则表示 1，，两个函数可嵌套使用，还可以通过 $物品属性名$ 获取玩家选择物品的属性的值，#玩家属性名# 获取玩家的属性的值。"
+              >
                 <Icon icon="i-ep:info-filled" :size="14" />
               </el-tooltip>
               属性值
@@ -170,7 +217,11 @@ function searchAttr (type: string) {
       </template>
       <template v-if="data.type === 'ItemAttr'">
         <el-form-item label="物品属性名" prop="name">
-          <el-autocomplete :fetch-suggestions="searchAttr(data.type)" v-model.trim="data.name" clearable>
+          <el-autocomplete
+            :fetch-suggestions="searchAttr(data.type)"
+            v-model.trim="data.name"
+            clearable
+          >
             <template #default="{ item }">
               <div class="flex items-center">
                 <span class="font-bold">{{ item.label || item.value }}</span>
@@ -184,7 +235,8 @@ function searchAttr (type: string) {
             <span>
               <el-tooltip
                 effect="dark"
-                content="此处设置表示消耗对应属性名的属性值之和的物品，可以设置选项物品弹窗来精确控制对应物品。可以使用 $value 表示弹窗输入，rand(x,y) 表示 x~y 的随机数，percent(x,y) 表示 x% 的概率为 y，y 省略则表示 1，两个函数可嵌套使用，还可以通过 $物品属性名$ 获取玩家选择物品的属性的值，#玩家属性名# 获取玩家的属性的值。此字段最后运算非数字将会报错！">
+                content="此处设置表示消耗对应属性名的属性值之和的物品，可以设置选项物品弹窗来精确控制对应物品。可以使用 $value 表示弹窗输入，rand(x,y) 表示 x~y 的随机数，percent(x,y) 表示 x% 的概率为 y，y 省略则表示 1，两个函数可嵌套使用，还可以通过 $物品属性名$ 获取玩家选择物品的属性的值，#玩家属性名# 获取玩家的属性的值。此字段最后运算非数字将会报错！"
+              >
                 <Icon icon="i-ep:info-filled" :size="14" />
               </el-tooltip>
               物品属性值
@@ -193,11 +245,9 @@ function searchAttr (type: string) {
           <el-input v-model="data.content" />
         </el-form-item>
       </template>
-      <template v-if="data.type === 'Item'">
-        <el-form-item label="物品" prop="name">
-          <el-autocomplete
-            :fetch-suggestions="searchItem" v-model="data.name" clearable
-            placeholder="可使用 $item 表示选择的物品。">
+      <template v-if="data.type === 'Target'">
+        <el-form-item label="成就" prop="name">
+          <el-autocomplete :fetch-suggestions="searchTarget" v-model="data.name" clearable>
             <template #default="{ item }">
               <div class="flex items-center">
                 <span class="font-bold">{{ item.label }}</span>
@@ -205,7 +255,35 @@ function searchAttr (type: string) {
               </div>
             </template>
             <template #suffix>
-              <el-button type="text" @click="itemSelectorRef?.open().then((item: Item) => (data.name = item.key))">
+              <el-button
+                type="text"
+                @click="itemSelectorRef?.open().then((item: Item) => (data.name = item.key))"
+              >
+                <Icon icon="i-ep:search" />
+              </el-button>
+            </template>
+          </el-autocomplete>
+        </el-form-item>
+      </template>
+      <template v-if="data.type === 'Item'">
+        <el-form-item label="物品" prop="name">
+          <el-autocomplete
+            :fetch-suggestions="searchItem"
+            v-model="data.name"
+            clearable
+            placeholder="可使用 $item 表示选择的物品。"
+          >
+            <template #default="{ item }">
+              <div class="flex items-center">
+                <span class="font-bold">{{ item.label }}</span>
+                <span class="text-xs text-gray-500 ml-2">{{ item.value }}</span>
+              </div>
+            </template>
+            <template #suffix>
+              <el-button
+                type="text"
+                @click="itemSelectorRef?.open().then((item: Item) => (data.name = item.key))"
+              >
                 <Icon icon="i-ep:search" />
               </el-button>
             </template>
@@ -216,7 +294,8 @@ function searchAttr (type: string) {
             <span>
               <el-tooltip
                 effect="dark"
-                content="可以输入数字，或 rand(x,y) 表示 x~y 的随机数，percent(x,y) 表示 x% 的概率获得 y 个，y 省略则表示 1 个，两个函数可嵌套使用，还可以通过 $物品属性名$ 获取玩家选择物品的属性的值，#玩家属性名# 获取玩家的属性的值。此字段最后运算非数字将会报错！">
+                content="可以输入数字，或 rand(x,y) 表示 x~y 的随机数，percent(x,y) 表示 x% 的概率获得 y 个，y 省略则表示 1 个，两个函数可嵌套使用，还可以通过 $物品属性名$ 获取玩家选择物品的属性的值，#玩家属性名# 获取玩家的属性的值。此字段最后运算非数字将会报错！"
+              >
                 <Icon icon="i-ep:info-filled" />
               </el-tooltip>
               数量
@@ -229,23 +308,31 @@ function searchAttr (type: string) {
         <el-form-item label="函数" prop="content">
           <section class="flex flex-col w-full">
             <span
-              class="bg-gray-100 dark:bg-gray-900 flex flex-col px-2 rounded-tl rounded-tr border border-b-0 border-[var(--el-border-color)]">
+              class="bg-gray-100 dark:bg-gray-900 flex flex-col px-2 rounded-tl rounded-tr border border-b-0 border-[var(--el-border-color)]"
+            >
               <code>function check(</code>
               <code>　　profile: Profile, </code>
               <code>　　inputText: string, </code>
               <code>　　itemSelect: Inventory, </code>
               <code>　　addItem: (name: string, count: number) => void, </code>
-              <code>　　setAttr: (attr: { key: string; name?: string; value: string }) => void</code>
+              <code
+              >　　setAttr: (attr: { key: string; name?: string; value: string }) => void</code
+              >
               <code>): boolean {</code>
               <code>　　let message = "", next = null;</code>
             </span>
             <el-input
-              v-model="data.content" clearable type="textarea" :autosize="{ minRows: 3 }"
+              v-model="data.content"
+              clearable
+              type="textarea"
+              :autosize="{ minRows: 3 }"
               placeholder="可对玩家的 Profile 直接修改，比如属性值与背包物品(通过 getItem 获取 Item 对象)等，也可以根据运算重新设置下一场景(next)，返回提示信息(message)等"
               class="border-l border-r border-[var(--el-border-color)]"
-              style="--el-input-border-radius: 0; --el-input-border-color: transparent" />
+              style="--el-input-border-radius: 0; --el-input-border-color: transparent"
+            />
             <span
-              class="bg-gray-100 dark:bg-gray-900 flex flex-col px-2 rounded-bl rounded-br border border-t-0 border-[var(--el-border-color)]">
+              class="bg-gray-100 dark:bg-gray-900 flex flex-col px-2 rounded-bl rounded-br border border-t-0 border-[var(--el-border-color)]"
+            >
               <code>　　return { message, next };</code>
               <code>}</code>
             </span>
@@ -256,8 +343,7 @@ function searchAttr (type: string) {
         <el-form-item label="提示语" prop="tip">
           <template #label>
             <span>
-              <el-tooltip
-                placement="top">
+              <el-tooltip placement="top">
                 <template #content>
                   <div class="text-sm text-gray-500">
                     <p>效果生效提示，若不设置将使用游戏引擎默认提示，可以使用</p>
@@ -278,13 +364,51 @@ function searchAttr (type: string) {
           </template>
           <el-input v-model="data.tip" clearable type="textarea" />
         </el-form-item>
-        <p>
+        <p v-if="data.type !== 'Target'">
           <el-button @click="data.content = 'rand(1,100)'">随机数</el-button>
           <el-button @click="data.content = 'percent(10,2)'">概率数</el-button>
           <el-button @click="data.content = '$value'">弹窗输入</el-button>
         </p>
+        <el-divider>
+          获得的条件
+          <el-tooltip placement="top">
+            <template #content>
+              <p>
+                用于触发效果的前置判断，确认玩家是否满足触发效果的条件。不设置则只要触发选项就触发效果。
+              </p>
+            </template>
+            <Icon icon="i-ep:info-filled" :size="14" />
+          </el-tooltip>
+        </el-divider>
+        <el-table :data="data.conditions" border stripe>
+          <el-table-column prop="type" label="类型" :formatter="({type}) => ConditionType[type]" />
+          <el-table-column prop="name" label="条件对象" />
+          <el-table-column prop="content" label="内容" show-overflow-tooltip :formatter="contentFormat" />
+          <el-table-column label="操作" width="100px" align="center">
+            <template #header>
+              <el-button type="primary" link size="small" @click="addCon">
+                <Icon icon="i-ep:circle-plus" />
+              </el-button>
+            </template>
+            <template #default="{ row, $index }">
+              <el-button type="primary" link size="small" @click="editCon(row)">
+                <Icon icon="i-ep:edit" />
+              </el-button>
+              <el-button type="danger" link size="small" @click="data.conditions?.splice($index, 1)">
+                <Icon icon="i-ep:remove" />
+              </el-button>
+            </template>
+          </el-table-column>
+        </el-table>
       </template>
-      <ItemSelector v-if="story" ref="itemSelectorRef" :story="story.id!" :type="type" @confirm="items = $event" />
+      <ItemSelector
+        v-if="story"
+        ref="itemSelectorRef"
+        :story="story.id!"
+        :type="type"
+        @confirm="items = $event"
+      />
+      <ConditionForm ref="conditionRef" :type="type" check-only />
     </el-form>
     <template #footer>
       <el-button @click="visible = false">取消</el-button>

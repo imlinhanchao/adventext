@@ -52,8 +52,13 @@ export function createRouter(type: string) {
   if (type === 'draft') {
     router.post("/:storyId/reset", userSession((user: User, req: Request, res: Response, next) => {
       const game = new GameController(type);
-      game.resetGame(user, req, res, next)
+      if (req.body.achievement) {
+        game.resetAchievement(user, req, res, next)
+      } else {
+        game.resetGame(user, req, res, next)
+      }
     }));
+    
   } else {
     router.get("/:storyId/rank", userSession((user: User, req: Request, res: Response, next) => {
       const game = new GameController(type);
