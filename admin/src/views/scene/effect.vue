@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { Effect, EffectType, ConditionType, Condition } from '@/api/scene';
+  import { Effect, EffectType, ConditionType, Condition, Scene } from '@/api/scene';
   import { clone } from '@/utils';
   import { FormInstance } from 'element-plus';
   import { ItemsContext, StoryContext, TargetsContext, contentFormat } from './index';
@@ -7,7 +7,8 @@
   import { Item } from '@/api/item';
   import ConditionForm from './condition.vue';
 
-  defineProps<{
+  const props = defineProps<{
+    scenes: Scene[];
     type: string;
   }>();
 
@@ -99,6 +100,16 @@
       );
       cb(items);
     };
+  }
+  function searchScene(query: string, cb) {
+    const scenes = props.scenes.filter(
+      (item) => item.name.includes(query) || item.content.includes(query),
+    );
+    scenes.unshift({
+      name: '<back>',
+      content: '返回上一个场景',
+    } as Scene);
+    cb(scenes)
   }
 
   const conditionRef = ref<InstanceType<typeof ConditionForm>>();
@@ -261,6 +272,18 @@
               >
                 <Icon icon="i-ep:search" />
               </el-button>
+            </template>
+          </el-autocomplete>
+        </el-form-item>
+      </template>
+      <template v-if="data.type === 'Scene'">
+        <el-form-item label="场景" prop="name">
+          <el-autocomplete v-model="data.name" :fetch-suggestions="searchScene" @select="data.name = $event.name">
+            <template #default="{ item }">
+              <div class="flex items-center">
+                <span class="font-bold">{{ item.name }}</span>
+                <span class="text-xs text-gray-500 ml-2">{{ item.content }}</span>
+              </div>
             </template>
           </el-autocomplete>
         </el-form-item>

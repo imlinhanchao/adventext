@@ -240,7 +240,7 @@
           </template>
         </el-table-column>
       </el-table>
-      <EffectForm ref="effectRef" :type="type" />
+      <EffectForm ref="effectRef" :type="type" :scenes="scenes" />
       <ItemForm ref="itemRef" :storyId="story" :type="type" />
     </el-form>
     <template #footer>

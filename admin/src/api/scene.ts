@@ -96,6 +96,7 @@ export const EffectType = {
   ItemAttr: '物品属性（消耗）',
   Attr: '属性变化',
   Fn: '函数调用',
+  Scene: '场景变化',
 }
 
 export class Effect {

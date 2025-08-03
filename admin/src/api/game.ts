@@ -98,10 +98,10 @@ export function gameRun(data: { scene: Scene, profile: Profile, option: string, 
   });
 }
 
-export function updateOptions(scene: Scene, profile: Profile, records: SceneRecord[], achievements: any[]) {
+export function updateOptions(scene: Scene, profile: Profile, records: SceneRecord[], achievements: any[], circle?: number) {
   return defHttp.post({
     url: `/story/filter`,
-    data: { scene, profile, records, timezone: new Date().getTimezoneOffset() / -60, achievements } 
+    data: { scene, profile, records, timezone: new Date().getTimezoneOffset() / -60, achievements, circle } 
   }, {
     errorMessageMode: 'none',
   });
