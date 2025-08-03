@@ -146,6 +146,9 @@
           会从背包修改指定物品的数量，设置正值则新增，负值则扣除，若<b>弹窗提示</b>设置了选择物品，可以通过
           <code>$item</code> 指代选择的物品。
         </span>
+        <span v-else-if="data.type == 'Scene'">
+          配置触发效果后跳转的下一个场景，可以覆盖选项配置的下一个场景。
+        </span>
         <div v-else-if="data.type == 'Fn'">
           <p>
             直接执行函数，函数参数为 <code>profile</code>：当前玩家的 Profile
@@ -393,7 +396,7 @@
           <el-button @click="data.content = '$value'">弹窗输入</el-button>
         </p>
         <el-divider>
-          获得的条件
+          触发条件
           <el-tooltip placement="top">
             <template #content>
               <p>

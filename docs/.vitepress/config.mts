@@ -54,9 +54,10 @@ export default defineConfig({
         ],
       },
       {
-        text: '物品',
+        text: '物品与成就',
         items: [
           { text: '维护物品列表', link: '/guide/item/maintain.md' },
+          { text: '成就配置', link: '/guide/item/achievement.md' },
         ],
       },
       {
