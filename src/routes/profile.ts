@@ -79,7 +79,7 @@ router.get("/:username", userSession(async (user: User, req: Request, res: Respo
 
   const stories = await getStoryWithEnd(account, req, res);
 
-  render(res, "profile", req).title(user.username).render({
+  render(res, "profile", req).title(account.nickname || account.username).render({
     account,
     stories,
   });
@@ -104,7 +104,7 @@ router.get("/:username/:type", userSession(async (user: User, req: Request, res:
 
   const stories = await getStories(user, req, res);
 
-  render(res, "dashboard", req).title(user.username).render({
+  render(res, "dashboard", req).title(account.nickname || account.username).render({
     stories,
     account,
   })
@@ -139,7 +139,7 @@ router.post('/:username', userSession(async (user: User, req: Request, res: Resp
     res.redirect('/u/' + username);
   } else {
     const stories = await getStories(user, req, res);
-    render(res, "profile", req).title(user.username).error('权限不足').render({
+    render(res, "profile", req).title(account.nickname || account.username).error('权限不足').render({
       stories,
       account,
     })
