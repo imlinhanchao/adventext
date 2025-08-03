@@ -43,6 +43,7 @@
   const message = ref('');
   const records = ref<SceneRecord[]>([]);
   const achievements = ref<Achievement[]>([]);
+  const circle = ref(1);
 
   onMounted(async () => {
     const { options, content: text } = await updateOptions(
@@ -50,10 +51,29 @@
       profile.value,
       records.value,
       achievements.value,
+      circle.value,
     );
     currentScene.value.options = options;
     content.value = text;
   });
+
+  function restart() {
+    profile.value = {
+      storyId: story.value.id!,
+      userId: 0,
+      scene: story.value.start,
+      from: '',
+      inventory: story.value.inventory || [],
+      attr: story.value.attr || {},
+      attrName: story.value.attrName || {},
+    };
+    currentScene.value = sceneMap.value[profile.value.scene];
+    records.value = [];
+    achievements.value = [];
+    circle.value++;
+    message.value = '';
+    emit('next', currentScene.value.name);
+  }
 
   async function getValue(option: Option) {
     let value: string | false = '';
@@ -94,6 +114,7 @@
       timezone: new Date().getTimezoneOffset() / -60,
       achievements: achievements.value,
       value,
+      circle: circle.value,
     }).catch((err) => {
       msgType.value = 'error';
       message.value = err.message;
@@ -112,6 +133,7 @@
       profile.value,
       records.value,
       achievements.value,
+      circle.value,
     ).finally(() => {
       loading.value = false;
     });
@@ -237,6 +259,10 @@
       </section>
     </el-header>
     <el-main class="!h-full space-y-2">
+      <section class="flex items-center space-x-2">
+        <label class="bg-black text-white p-1 mr-1 rounded">周目数：</label>
+        <el-input-number v-model="circle" :min="1" size="small" controls-position="right" class="!w-20" />
+      </section>
       <section class="space-x-2">
         <label class="bg-black text-white p-1 mr-1 rounded">
           <ButtonEx
@@ -321,6 +347,9 @@
             {{ o.text }}
           </el-button>
         </template>
+        <el-button v-if="currentScene.isEnd" plain type="success" @click="restart">
+          重新游玩
+        </el-button>
       </section>
       <ItemSelector ref="itemRef" :story="story.id!" multiple inventory :type="type" />
       <TargetSelector ref="targetSelectorRef" :story="story.id!" :type="type" multiple />

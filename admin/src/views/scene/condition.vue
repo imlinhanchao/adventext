@@ -215,14 +215,14 @@
   <el-dialog title="条件" v-model="visible" width="600px">
     <el-form ref="formRef" :model="formData" label-width="auto" :rules="rules">
       <el-alert v-if="data.type" :closable="false" class="!mb-2">
-        <span v-if="data.type == 'Time'"
-        >当前时间是否为设定的时间，比如设定 12 时，则需要当前时间在 12:00 ~ 12:59
-          时才会判定成功。</span
-        >
-        <span v-else-if="data.type == 'Attr'"
-        >当前角色是否拥有设定的属性，比如设定 100 体力，则需要当前角色的体力大于等于 100
-          才会判定成功。如果不设定值，则只要具备属性就判定为成功。</span
-        >
+        <span v-if="data.type == 'Time'">
+          当前时间是否为设定的时间，比如设定 12 时，则需要当前时间在 12:00 ~ 12:59
+          时才会判定成功。
+        </span>
+        <span v-else-if="data.type == 'Attr'">
+          当前角色是否拥有设定的属性，比如设定 100 体力，则需要当前角色的体力大于等于 100
+          才会判定成功。如果不设定值，则只要具备属性就判定为成功。
+        </span>
         <div v-else-if="data.type == 'ItemAttr'">
           <p>
             当前角色是否拥有包含指定属性的物品，比如设定 100 能量，则需要当前角色的物品中有包含 100
@@ -232,39 +232,43 @@
             若在选项有设定<b>弹窗提示</b>弹出选择物品，此处将会限制仅检查所选物品。如果不设定值，则只要有具备该属性的物品就判定为成功。
           </p>
         </div>
-        <span v-else-if="data.type == 'Item'"
-        >当前角色是否拥有设定的物品，比如设定物品为树枝，数量为20，则需要当前角色的物品中有树枝，且数量大于等于
-          20 才会判定成功。</span
-        >
-        <span v-else-if="data.type == 'Target'"
-        >当前角色是否拥有设定的成就，比如设定成就为打败怪物，则需要当前角色的成就中有打败怪物，
-          才会判定成功。</span
-        >
-        <span v-else-if="data.type == 'ItemType'"
-        >当前角色是否拥有设定的物品类型，比如设定物品类型为燃料，则需要当前角色中有类型为燃料的物品，且数量大于等于
-          1 才会判定成功。</span
-        >
-        <span v-else-if="data.type == 'Value'"
-        >选择此类型，必须在选项设定<b>弹窗提示</b>，当玩家弹窗输入等于设定值时才会判定成功。</span
-        >
+        <span v-else-if="data.type == 'Item'">
+          当前角色是否拥有设定的物品，比如设定物品为树枝，数量为20，则需要当前角色的物品中有树枝，且数量大于等于
+          20 才会判定成功。
+        </span>
+        <span v-else-if="data.type == 'Target'">
+          当前角色是否拥有设定的成就，比如设定成就为打败怪物，则需要当前角色的成就中有打败怪物，
+          才会判定成功。
+        </span>
+        <span v-else-if="data.type == 'ItemType'">
+          当前角色是否拥有设定的物品类型，比如设定物品类型为燃料，则需要当前角色中有类型为燃料的物品，且数量大于等于
+          1 才会判定成功。
+        </span>
+        <span v-else-if="data.type == 'Value'">
+          选择此类型，必须在选项设定<b>弹窗提示</b>，当玩家弹窗输入等于设定值时才会判定成功。
+        </span>
+        <span v-else-if="data.type == 'Circle'">
+          当前玩家已经进行第几轮游戏。
+        </span>
         <div v-else-if="data.type == 'Fn'">
-          <p
-          >选择此类型，将会执行设定的函数内容，通过给<code>result</code>赋值或直接 return
+          <p>
+            选择此类型，将会执行设定的函数内容，通过给<code>result</code>赋值或直接 return
             返回判定结果。函数参数为 <code>profile</code>：当前玩家的 Profile
-            对象，<code>value</code>：玩家选择选项时填写的值，<code>itemSelect</code>：玩家选择选项时选择的物品。</p
-          >
-          <p
-          ><code>profile</code>： 对象的属性包括 <code>attr</code>（属性对象
-            Map）、<code>inventory</code>（背包物品数组）、<code>scene</code>（当前场景对象）。</p
+            对象，<code>value</code>：玩家选择选项时填写的值，<code>itemSelect</code>：玩家选择选项时选择的物品。
+          </p
           >
           <p>
-            <code>inventory</code
-            >：当前玩家的背包物品列表，包含属性<code>key</code>（物品标识符）、<code>name</code>（物品名称）、<code>count</code>（物品数量）、<code>attr</code>（物品属性对象
+            <code>profile</code>： 
+            对象的属性包括 <code>attr</code>（属性对象 Map）、<code>inventory</code>（背包物品数组）、<code>scene</code>（当前场景对象）。
+          </p>
+          <p>
+            <code>inventory</code>：
+            当前玩家的背包物品列表，包含属性<code>key</code>（物品标识符）、<code>name</code>（物品名称）、<code>count</code>（物品数量）、<code>attr</code>（物品属性对象
             Map）。
           </p>
           <p>
-            <code>scene</code
-            >：当前场景对象，包含属性<code>name</code>（场景名称）、<code>content</code>（场景内容）、<code>options</code>（场景选项数组）。
+            <code>scene</code>：
+            当前场景对象，包含属性<code>name</code>（场景名称）、<code>content</code>（场景内容）、<code>options</code>（场景选项数组）。
           </p>
         </div>
       </el-alert>
@@ -442,6 +446,22 @@
       <template v-if="data.type === 'Value'">
         <el-form-item label="值" prop="content">
           <el-input v-model="data.content" clearable>
+            <template #prepend>
+              <el-select v-model="data.operator" class="!w-60px" placeholder="=">
+                <el-option label="=" value="=" />
+                <el-option label="!=" value="!=" />
+                <el-option label="<" value="<" />
+                <el-option label=">" value=">" />
+                <el-option label="≤" value="≤" />
+                <el-option label="≥" value="≥" />
+              </el-select>
+            </template>
+          </el-input>
+        </el-form-item>
+      </template>
+      <template v-if="data.type === 'Circle'">
+        <el-form-item label="值" prop="content">
+          <el-input v-model="data.content" clearable type="number" :min="1">
             <template #prepend>
               <el-select v-model="data.operator" class="!w-60px" placeholder="=">
                 <el-option label="=" value="=" />

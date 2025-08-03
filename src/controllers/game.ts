@@ -400,7 +400,6 @@ export default class GameController {
     return true;
   }
 
-
   async runEffects(profile: Profile, effects: Effect[], option: any, valueText: string, timezone: number, itemTake?: Inventory, achievements?: any[], virtual = false) {
     try {
       let message = '', next = null;
@@ -465,6 +464,10 @@ export default class GameController {
           profile.inventory = profile.inventory.filter(i => i.count > 0);
 
           if (count) msg += `${count > 0 ? '获得' : '扣除'} ${item.name}×${Math.abs(count)}.\n`;
+        }
+        if (effect.type === 'Scene') {
+          const scene = effect.name;
+          next = scene;
         }
         if (effect.type === 'Attr') {
           const oldValue = profile.attr[effect.name] || '';
@@ -937,7 +940,7 @@ export default class GameController {
 
   async optionFilter(req: Request, res: Response) {
     try {
-      const { scene, profile, timezone, records, achievements } = req.body;
+      const { scene, profile, timezone, records, achievements, circle } = req.body;
       if (!scene) {
         throw new Error(`缺少运行场景！`);
       }
@@ -945,6 +948,7 @@ export default class GameController {
         throw new Error(`缺少游戏资料！`);
       }
       this.achievements = achievements;
+      this.circle = circle;
       scene.options = await this.updateOptions(scene, profile, timezone ?? new Date().getTimezoneOffset() / -60, records || []);
       const content = await this.getContent(profile, scene);
       json(res, {
