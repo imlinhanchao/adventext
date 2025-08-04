@@ -148,7 +148,14 @@ export default class GameController {
       state.inventory = story.inventory;
     }
 
-    const scene = await this.getSence(state.scene, storyId);
+    let scene = await this.getSence(state.scene, storyId);
+    if (!scene) {
+      const story = await this.storyRepo.findOneBy({ id: storyId });
+      if (!story) {
+        throw new Error('故事不存在');
+      }
+      scene = await this.getSence(story.start, storyId);
+    }
 
     return { state, scene };
   }
@@ -918,7 +925,7 @@ export default class GameController {
       }));
 
       if (!virtual) {
-        nextScene!.options = await this.updateOptions(nextScene!, profile, timezone);
+        nextScene?.options && (nextScene.options = await this.updateOptions(nextScene, profile, timezone));
 
         if (nextScene.isEnd) {
           await this.addEnd(nextScene, profile);
