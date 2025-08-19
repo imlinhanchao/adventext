@@ -13,6 +13,7 @@
   }>();
 
   const visible = ref(false);
+  const codeVisible = ref(false);
   const data = ref<Condition>(new Condition());
   const formData = computed(() => ({ ...data.value, attr: attr.value }));
 
@@ -487,14 +488,17 @@
               >
               <code>　　let result = true;</code>
             </span>
-            <el-input
-              v-model="data.content"
-              clearable
-              type="textarea"
-              :autosize="{ minRows: 3 }"
-              class="border-l border-r border-[var(--el-border-color)]"
-              style="--el-input-border-radius: 0; --el-input-border-color: transparent"
-            />
+            <section class="relative group">
+              <el-input
+                v-model="data.content"
+                clearable
+                type="textarea"
+                :autosize="{ minRows: 3 }"
+                class="border-l border-r border-[var(--el-border-color)]"
+                style="--el-input-border-radius: 0; --el-input-border-color: transparent"
+              />
+              <ButtonEx icon="i-lets-icons:full-alt" link class="group-hover:opacity-60 absolute right-1 bottom-1 z-100 opacity-0" @click="codeVisible = true" />
+            </section>
             <span
               class="bg-gray-100 dark:bg-gray-900 flex flex-col px-2 rounded-bl rounded-br border border-t-0 border-[var(--el-border-color)]"
             >
@@ -530,6 +534,30 @@
         <el-switch v-model="data.isHide" />
       </el-form-item>
       <ItemSelector v-if="story" ref="itemSelectorRef" :story="story.id!" :type="type" />
+      
+      <el-dialog v-if="'Fn' == data.type" v-model="codeVisible" fullscreen>
+        <section class="flex flex-col w-full h-full">
+          <span
+            class="bg-gray-100 dark:bg-gray-900 flex flex-col px-2 rounded-tl rounded-tr border border-b-0 border-[var(--el-border-color)]"
+          >
+            <code
+            >function check(profile: Profile, inputText: string, itemSelect: Inventory): boolean
+              {</code
+            >
+            <code>　　let result = true;</code>
+          </span>
+          <section class="relative group h-full bg-gray-100 dark:bg-gray-900 border-l border-r border-[var(--el-border-color)] overflow-auto">
+            <CodeEditor v-model:value="data.content" class="h-full" />
+            <ButtonEx icon="i-gridicons:fullscreen-exit" link class="group-hover:opacity-60 absolute right-1 bottom-1 z-100 opacity-0" @click="codeVisible = false" />
+          </section>
+          <span
+            class="bg-gray-100 dark:bg-gray-900 flex flex-col px-2 rounded-bl rounded-br border border-t-0 border-[var(--el-border-color)]"
+          >
+            <code>　　return result;</code>
+            <code>}</code>
+          </span>
+        </section>
+      </el-dialog>
     </el-form>
     <template #footer>
       <el-button @click="visible = false">取消</el-button>

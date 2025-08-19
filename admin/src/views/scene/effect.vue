@@ -455,8 +455,8 @@
           <code>): boolean {</code>
           <code>　　let message = "", next = null;</code>
         </span>
-        <section class="relative group h-full bg-gray-100 dark:bg-gray-900 border-l border-r border-[var(--el-border-color)]">
-          <CodeEditor v-model:value="data.content" class="h-full"/>
+        <section class="relative group h-full bg-gray-100 dark:bg-gray-900 border-l border-r border-[var(--el-border-color)] overflow-auto">
+          <CodeEditor v-model:value="data.content" class="h-full" />
           <ButtonEx icon="i-gridicons:fullscreen-exit" link class="group-hover:opacity-60 absolute right-1 bottom-1 z-100 opacity-0" @click="codeVisible = false" />
         </section>
         <span
