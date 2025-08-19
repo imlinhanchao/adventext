@@ -13,6 +13,7 @@
   }>();
 
   const visible = ref(false);
+  const codeVisible = ref(false);
   const data = ref<Effect>(new Effect());
   const formData = computed(() => ({ ...data.value }));
 
@@ -347,15 +348,17 @@
               <code>): boolean {</code>
               <code>　　let message = "", next = null;</code>
             </span>
-            <el-input
-              v-model="data.content"
-              clearable
-              type="textarea"
-              :autosize="{ minRows: 3 }"
-              placeholder="可对玩家的 Profile 直接修改，比如属性值与背包物品(通过 getItem 获取 Item 对象)等，也可以根据运算重新设置下一场景(next)，返回提示信息(message)等"
-              class="border-l border-r border-[var(--el-border-color)]"
-              style="--el-input-border-radius: 0; --el-input-border-color: transparent"
-            />
+            <section class="relative group">
+              <el-input
+                v-model="data.content"
+                type="textarea"
+                :autosize="{ minRows: 3 }"
+                placeholder="可对玩家的 Profile 直接修改，比如属性值与背包物品(通过 getItem 获取 Item 对象)等，也可以根据运算重新设置下一场景(next)，返回提示信息(message)等"
+                class="border-l border-r border-[var(--el-border-color)] z-10"
+                style="--el-input-border-radius: 0; --el-input-border-color: transparent"
+              />
+              <ButtonEx icon="i-lets-icons:full-alt" link class="group-hover:opacity-60 absolute right-1 bottom-1 z-100 opacity-0" @click="codeVisible = true" />
+            </section>
             <span
               class="bg-gray-100 dark:bg-gray-900 flex flex-col px-2 rounded-bl rounded-br border border-t-0 border-[var(--el-border-color)]"
             >
@@ -436,6 +439,34 @@
       />
       <ConditionForm ref="conditionRef" :type="type" check-only />
     </el-form>
+    <el-dialog v-if="'Fn' == data.type" v-model="codeVisible" fullscreen>
+      <section class="flex flex-col w-full h-full">
+        <span
+          class="bg-gray-100 dark:bg-gray-900 flex flex-col px-2 rounded-tl rounded-tr border border-b-0 border-[var(--el-border-color)]"
+        >
+          <code>function check(</code>
+          <code>　　profile: Profile, </code>
+          <code>　　inputText: string, </code>
+          <code>　　itemSelect: Inventory, </code>
+          <code>　　addItem: (name: string, count: number) => void, </code>
+          <code
+          >　　setAttr: (attr: { key: string; name?: string; value: string }) => void</code
+          >
+          <code>): boolean {</code>
+          <code>　　let message = "", next = null;</code>
+        </span>
+        <section class="relative group h-full bg-gray-100 dark:bg-gray-900 border-l border-r border-[var(--el-border-color)]">
+          <CodeEditor v-model:value="data.content" class="h-full"/>
+          <ButtonEx icon="i-gridicons:fullscreen-exit" link class="group-hover:opacity-60 absolute right-1 bottom-1 z-100 opacity-0" @click="codeVisible = false" />
+        </section>
+        <span
+          class="bg-gray-100 dark:bg-gray-900 flex flex-col px-2 rounded-bl rounded-br border border-t-0 border-[var(--el-border-color)]"
+        >
+          <code>　　return { message, next };</code>
+          <code>}</code>
+        </span>
+      </section>
+    </el-dialog>
     <template #footer>
       <el-button @click="visible = false">取消</el-button>
       <el-button type="primary" @click="save">确定</el-button>

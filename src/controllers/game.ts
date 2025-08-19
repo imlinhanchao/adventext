@@ -544,7 +544,7 @@ export default class GameController {
           }
         }
         if (effect.type === 'Fn') {
-          const call = createFn('profile', 'addItem', 'setAttr', 'inputText', 'itemSelect', 'let message = "", next = null;\n' + effect.content + '\nreturn { message, next };');
+          const call = createFn('profile', 'inputText', 'itemSelect', 'addItem', 'setAttr', 'let message = "", next = null;\n' + effect.content + '\nreturn { message, next };');
           const items: any[] = []
           const result = callFn(call, clone(profile), valueText, clone(itemTake), (name: string, count: number) => {
             items.push({ name, count })

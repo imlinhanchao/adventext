@@ -17,7 +17,7 @@
     "@unocss/reset": "^0.58.5",
     "@vueuse/core": "^10.11.0",
     "axios": "^1.6.8",
-    "codemirror": "^5.65.16",
+    "codemirror": "^5.65.19",
     "crypto-js": "^4.2.0",
     "dompurify": "^3.2.6",
     "echarts": "^5.5.1",

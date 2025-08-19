@@ -530,7 +530,6 @@
         <el-switch v-model="data.isHide" />
       </el-form-item>
       <ItemSelector v-if="story" ref="itemSelectorRef" :story="story.id!" :type="type" />
-      <TargetSelector v-if="story" ref="targetSelectorRef" :story="story.id!" :type="type" />
     </el-form>
     <template #footer>
       <el-button @click="visible = false">取消</el-button>

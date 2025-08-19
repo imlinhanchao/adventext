@@ -9,6 +9,12 @@ declare module 'vue' {
   export interface GlobalComponents {
     ButtonEx: typeof import('@/components/ButtonEx/index.ts')['default']
     ButtonExSrcButtonEx: typeof import('@/ButtonEx.vue')['default']
+    CodeEditor: typeof import('@/components/CodeEditor/index.ts')['default']
+    CodeEditorSrcCodeEditor: typeof import('@/CodeEditor.vue')['default']
+    CodeEditorSrcCodemirrorCodeMirror: typeof import('@/codemirror/codeMirror.ts')['default']
+    CodeEditorSrcCodemirrorCodeMirrorEditor: typeof import('@/codemirror/CodeMirrorEditor.vue')['default']
+    CodeEditorSrcJsonPreviewJsonPreview: typeof import('@/json-preview/JsonPreview.vue')['default']
+    CodeEditorSrcTyping: typeof import('@/typing.ts')['default']
     ElAlert: typeof import('element-plus/es')['ElAlert']
     ElAside: typeof import('element-plus/es')['ElAside']
     ElAutocomplete: typeof import('element-plus/es')['ElAutocomplete']

@@ -1,11 +1,12 @@
 <script setup lang="tsx">
+  import { JsonPreview } from '@/components/CodeEditor';
   import TargetSelector from '@/views/targets/selector.vue';
   import ItemSelector from '@/views/item/selector.vue';
   import { gameRun, Profile, SceneRecord, updateOptions } from '@/api/game';
   import { ScenesContext, StoryContext } from './index';
   import { Option, Scene } from '@/api/scene';
   import { Item } from '@/api/item';
-  import { clone, isNumber } from '@/utils';
+  import { clone, isNumber, isString } from '@/utils';
   import { formatDate } from '@vueuse/core';
   import { Achievement } from '@/api/target';
   import { Inventory } from '@/api/draft';
@@ -228,6 +229,11 @@
     message.value = '';
     emit('next', currentScene.value.name);
   }
+
+  const jsonRef = ref();
+  function viewObject(data) {
+    jsonRef.value?.open(data);
+  }
 </script>
 
 <template>
@@ -284,12 +290,13 @@
             class="!w-20"
           />
           <el-input
-            v-else
+            v-else-if="isString(profile.attr[key])"
             v-model="profile.attr[key]"
             size="small"
             class="!w-20"
             :type="profile.attr[key].includes('\n') ? 'textarea' : 'text'"
           />
+          <ButtonEx v-else icon="i-material-symbols:search" link @click="viewObject(profile.attr[key])" />
         </span>
       </section>
       <section class="space-x-2">
@@ -377,6 +384,7 @@
           </el-tag>
         </p>
       </el-dialog>
+      <JsonPreview ref="jsonRef" />
     </el-main>
     <el-footer height="auto" class="max-h-[40%] overflow-auto">
       <section v-for="(record, i) in records" class="text-sm space-y-1 rounded hover:dark:bg-gray-900 hover:bg-gray-50 bg-opacity-50 p-2" :key="record.time">
