@@ -126,6 +126,8 @@ export default class GameController {
   private achievements?: Achievement[];
   private circle?: number;
 
+  private callLogs: { type: string, data: any }[] = [];
+
   constructor(type: string) {
     this.type = type;
   }
@@ -248,7 +250,7 @@ export default class GameController {
         }
         if (condition.type === 'Fn') {
           const fn = createFn('profile', 'inputText', 'itemSelect', 'let result = true;\n' + condition.content + '\nreturn result;');
-          const result = callFn(fn, clone(profile), valueText, clone(itemTake));
+          const result = callFn(fn, clone(profile), valueText, clone(itemTake), this.callLogs);
           if (result !== true) {
             throw new Error(typeof result != 'string' ? `你还没准备好` : result);
           }
@@ -553,7 +555,7 @@ export default class GameController {
             if (attr.name) {
               profile.attrName[attr.key] = attr.name;
             }
-          });
+          }, this.callLogs);
 
           for (const item of items) {
             const myItem = profile.inventory.find(i => i.key == item.name);
@@ -958,9 +960,11 @@ export default class GameController {
       this.circle = circle;
       scene.options = await this.updateOptions(scene, profile, timezone ?? new Date().getTimezoneOffset() / -60, records || []);
       const content = await this.getContent(profile, scene);
+      const logs = records ? this.callLogs : undefined;
       json(res, {
         options: scene.options,
         content,
+        logs,
       })
     } catch (err: any) {
       error(res, err.message)
@@ -981,7 +985,7 @@ export default class GameController {
 
       const result = await this.gameExcute(profile, scene, req.body, true)
 
-      json(res, result)
+      json(res, { ...result, logs: this.callLogs })
     } catch (err: any) {
       error(res, err.message)
     }

@@ -482,10 +482,8 @@
             <span
               class="bg-gray-100 dark:bg-gray-900 flex flex-col px-2 rounded-tl rounded-tr border border-b-0 border-[var(--el-border-color)]"
             >
-              <code
-              >function check(profile: Profile, inputText: string, itemSelect: Inventory): boolean
-                {</code
-              >
+              <code>function check(profile: Profile, inputText: string, itemSelect: Inventory): boolean
+                {</code>
               <code>　　let result = true;</code>
             </span>
             <section class="relative group">
@@ -494,7 +492,7 @@
                 clearable
                 type="textarea"
                 :autosize="{ minRows: 3 }"
-                class="border-l border-r border-[var(--el-border-color)]"
+                class="border-l border-r border-[var(--el-border-color)] font-mono"
                 style="--el-input-border-radius: 0; --el-input-border-color: transparent"
               />
               <ButtonEx icon="i-lets-icons:full-alt" link class="group-hover:opacity-60 absolute right-1 bottom-1 z-100 opacity-0" @click="codeVisible = true" />

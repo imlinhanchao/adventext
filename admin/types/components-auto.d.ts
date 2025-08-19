@@ -14,6 +14,7 @@ declare module 'vue' {
     CodeEditorSrcCodemirrorCodeMirror: typeof import('@/codemirror/codeMirror.ts')['default']
     CodeEditorSrcCodemirrorCodeMirrorEditor: typeof import('@/codemirror/CodeMirrorEditor.vue')['default']
     CodeEditorSrcJsonPreviewJsonPreview: typeof import('@/json-preview/JsonPreview.vue')['default']
+    CodeEditorSrcObjectTreeObjectTree: typeof import('@/objectTree/ObjectTree.vue')['default']
     CodeEditorSrcTyping: typeof import('@/typing.ts')['default']
     ElAlert: typeof import('element-plus/es')['ElAlert']
     ElAside: typeof import('element-plus/es')['ElAside']

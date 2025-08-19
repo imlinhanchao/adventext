@@ -1,4 +1,5 @@
 <script setup lang="tsx">
+  import { ObjectTree } from '@/components/CodeEditor';
   import { JsonPreview } from '@/components/CodeEditor';
   import TargetSelector from '@/views/targets/selector.vue';
   import ItemSelector from '@/views/item/selector.vue';
@@ -45,6 +46,8 @@
   const records = ref<SceneRecord[]>([]);
   const achievements = ref<Achievement[]>([]);
   const circle = ref(1);
+  const fnLogs = ref<any[]>([])
+  const logView = ref(false);
 
   onMounted(async () => {
     const { options, content: text } = await updateOptions(
@@ -102,12 +105,14 @@
     let value = await getValue(option);
     if (value === false) return;
     loading.value = true;
+    fnLogs.value = [];
     let {
       scene,
       state,
       next,
       message: msg,
       achievements: achies,
+      logs: callLogs
     } = await gameRun({
       option: option.text,
       profile: profile.value,
@@ -123,13 +128,14 @@
       return {};
     });
 
+    fnLogs.value.push(...callLogs);
     if (!scene) return;
 
     achievements.value = achies || [];
     profile.value = state;
     records.value.unshift(new SceneRecord(currentScene.value, option.text, profile.value.from, content.value));
 
-    const { options, content: updateContent } = await updateOptions(
+    const { options, content: updateContent, logs: optionLogs } = await updateOptions(
       sceneMap.value[next || scene.name],
       profile.value,
       records.value,
@@ -141,6 +147,7 @@
     sceneMap.value[next || scene.name].options = options;
     content.value = updateContent;
     currentScene.value = sceneMap.value[next || scene.name];
+    fnLogs.value.push(...optionLogs);
 
     message.value = msg;
     msgType.value = 'info';
@@ -344,6 +351,9 @@
         </span>
       </section>
       <el-alert v-if="message" :type="msgType" :closable="false">{{ message }}</el-alert>
+      <ButtonEx v-if="fnLogs.length" icon="i-material-symbols:search" @click="logView = true" size="small">
+        查看函数日志
+      </ButtonEx>
       <section>
         <!-- eslint-disable-next-line vue/no-v-html -->
         <span v-html="contentHTML"></span>
@@ -360,7 +370,15 @@
       </section>
       <ItemSelector ref="itemRef" :story="story.id!" multiple inventory :type="type" />
       <TargetSelector ref="targetSelectorRef" :story="story.id!" :type="type" multiple />
-      <el-dialog v-model="itemSelector" width="400px">
+      <el-dialog v-model="logView" width="400px" append-to-body>
+        <div class="code-logs">
+          <template v-for="(l, i) in fnLogs" :key="i">
+            <pre class="whitespace-pre-wrap" v-if="l.type != 'dir'"><code><span v-if="l.type != 'log'" :class="l.type + ' block'">{{ l.type.toUpperCase() }}</span><span>{{ l.data }}</span></code></pre>
+            <ObjectTree v-else :data="l.data" />
+          </template>
+        </div>
+      </el-dialog>
+      <el-dialog v-model="itemSelector" width="400px" append-to-body>
         <p class="mb-3">{{ dlgMessage }}</p>
         <p>
           <el-tag
@@ -400,3 +418,36 @@
     </el-footer>
   </el-container>
 </template>
+<style lang="less" scoped>
+.block {
+  display: inline-block;
+  width: 3.5em;
+  padding: 0 2px;
+  margin-right: 5px;
+  text-align: center;
+  font-size: 80%;
+  line-height: 1.2;
+  border: 1px solid currentColor;
+  border-radius: 3px;
+}
+
+.log {
+  color: var(--code-preview-border);
+}
+
+.info {
+  color:  #2196F3;
+}
+
+.error {
+  color: #F44336;
+}
+
+.warn {
+  color: #FF9800;
+}
+
+.debug {
+  color: #9E9E9E;
+}
+</style>

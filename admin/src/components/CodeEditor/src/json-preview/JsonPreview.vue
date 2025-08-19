@@ -1,12 +1,11 @@
 <template>
-  <el-dialog fullscreen v-model="visible" class="z-1000" appendToBody>
-    <vue-json-pretty :path="'res'" :deep="3" :showLength="true" :data="data" />
+  <el-dialog fullscreen v-model="visible" class="z-1000" appendToBody destroyOnClose>
+    <ObjectTree v-if="visible" :data="data" />
   </el-dialog>
 </template>
 
 <script lang="ts" setup>
-  import VueJsonPretty from 'vue-json-pretty';
-  import 'vue-json-pretty/lib/styles.css';
+  import { ObjectTree } from '@/components/CodeEditor';
 
   const data = ref<any>({});
   const visible = ref(false);
