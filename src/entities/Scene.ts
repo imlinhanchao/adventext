@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
 
 export class Option {
+  id?: string;
   text: string;
   append?: string;
   antiAppend?: string; 
@@ -68,6 +69,9 @@ export class Scene {
 
   @Column("json", { comment: '面板位置' })
   position: { x: number, y: number, w?: number, h?: number };
+
+  @Column("text", { nullable: true, comment: '自定义样式' })
+  customStyle: string;
 
   @Column('bigint', { comment: "创建时间" })
   createTime: number = 0;

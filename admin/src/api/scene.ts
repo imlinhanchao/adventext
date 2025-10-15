@@ -4,6 +4,7 @@ import { getStory as getDraft, updateStory as updateDraft } from './draft';
 
 
 export class Option {
+  id?: string;
   /**
    * 选项文本
    */
@@ -173,6 +174,11 @@ export class Scene {
    * 面板位置
    */
   position: { x: number, y: number, w?: number, h?: number } = { x: 10, y: 10 };
+
+  /**
+   * 自定义 CSS
+   */
+  customStyle?: string;
 
   constructor(name: string = '') {
     this.name = name;

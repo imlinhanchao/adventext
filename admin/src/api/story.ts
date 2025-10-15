@@ -7,10 +7,16 @@ export class Story extends Draft {
    * 来源故事ID
    */
   sourceId: number;
+
+  /**
+   * 是否可见
+   */
+  visible: boolean;
   
   constructor() {
-    super()
+    super();
     this.sourceId = 0;
+    this.visible = true;
   }
 }
 

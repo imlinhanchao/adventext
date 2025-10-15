@@ -98,6 +98,9 @@
       },
     });
   }
+
+  const codeVisible = ref(false);
+
 </script>
 
 <template>
@@ -132,7 +135,7 @@
       </el-form-item>
       <template v-else>
         <el-form-item label="场景选项" />
-        <el-table ref="optionTableRef" :key="optionsKey" :data="data.options" border stripe>
+        <el-table ref="optionTableRef" :key="optionsKey" :data="data.options" border stripe class="mb-5">
           <el-table-column label="#" width="50" align="center">
             <template #default>
               <el-button type="primary" link class="move cursor-move" icon="el-icon-d-caret" />
@@ -159,6 +162,28 @@
         </el-table>
         <OptionForm ref="optionRef" :scenes="scenes" :story="story" :type="type" />
       </template>
+      <el-form-item label="自定义样式" prop="customStyle">
+        <section class="relative group w-full">
+          <el-input
+            v-model="data.customStyle"
+            type="textarea"
+            placeholder="自定义样式将会在场景进入时载入"
+            :autosize="{
+              minRows: 3,
+              maxRows: 10,
+            }"
+          />
+          <ButtonEx icon="i-lets-icons:full-alt" link class="group-hover:opacity-60 absolute right-1 bottom-1 z-100 opacity-0" @click="codeVisible = true" />
+        </section>
+      </el-form-item>
+      <el-dialog title="自定义样式" v-model="codeVisible" fullscreen destroy-on-close>
+        <section class="flex flex-col w-full h-full">
+          <section class="relative group h-full bg-gray-100 dark:bg-gray-900 border-l border-r border-[var(--el-border-color)] overflow-auto">
+            <CodeEditor v-model:value="data.customStyle" class="h-full" default="css" />
+            <ButtonEx icon="i-gridicons:fullscreen-exit" link class="group-hover:opacity-60 absolute right-1 bottom-1 z-100 opacity-0" @click="codeVisible = false" />
+          </section>
+        </section>
+      </el-dialog>
     </el-form>
     <template #footer>
       <el-button @click="visible = false">取消</el-button>

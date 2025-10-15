@@ -96,7 +96,10 @@
 <template>
   <el-dialog title="场景选项" v-model="visible" width="600px">
     <el-form ref="formRef" :model="data" label-width="auto" :rules="rules">
-      <el-form-item label="选项" prop="text">
+      <el-form-item label="唯一标识" prop="id">
+        <el-input v-model="data.id" clearable placeholder="给选项按钮添加 id 属性，可在 CSS 中使用 option_xxx 添加样式" />
+      </el-form-item>
+      <el-form-item label="选项内容" prop="text">
         <el-input v-model="data.text" clearable />
       </el-form-item>
       <el-form-item label="追加内容" prop="append">

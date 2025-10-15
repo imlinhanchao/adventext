@@ -7,7 +7,11 @@ export class Story extends Draft {
   @Column('varchar', { length: 255, comment: '来源故事ID' })
   sourceId: string;
 
+  @Column('boolean', { default: true, comment: '是否可见' })
+  visible: boolean;
+
   constructor() {
-    super()
+    super();
+    this.visible = true;
   }
 }

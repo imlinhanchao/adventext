@@ -238,6 +238,7 @@ router.post("/:id/approve", async (req, res) => {
     story = omit(draft, ['id', 'status', 'comment']);
     story.status = 2;
     story.sourceId = draft.id;
+    story.visible = true;
 
     const newStory = StoryRepo.create(story);
     story = await StoryRepo.save(newStory);

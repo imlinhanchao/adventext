@@ -1,10 +1,12 @@
 function startGame(scene, state, content) {
   const storyDiv = document.getElementById('story');
   const optionsDiv = document.getElementById('options');
+  const customStyle = document.getElementById('custom-style');
   showMessage('', 'info')
 
   storyDiv.innerHTML = DOMPurify.sanitize(marked?.parse(content) || content);
   optionsDiv.innerHTML = '';
+  customStyle.innerHTML = scene.customStyle || '';
 
   let lock = false;
   if (scene.isEnd) {
@@ -35,6 +37,8 @@ function startGame(scene, state, content) {
     scene.options.forEach(option => {
       const button = document.createElement('button');
       button.textContent = option.text;
+      button.className = 'option_' + option.text;
+      if (option.id) button.id = 'option_' + option.id;
 
       button.onclick = async () => {
         if (lock) return;

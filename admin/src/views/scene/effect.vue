@@ -439,7 +439,7 @@
       />
       <ConditionForm ref="conditionRef" :type="type" check-only />
     </el-form>
-    <el-dialog v-if="'Fn' == data.type" v-model="codeVisible" fullscreen>
+    <el-dialog v-if="'Fn' == data.type" v-model="codeVisible" fullscreen destroy-on-close>
       <section class="flex flex-col w-full h-full">
         <span
           class="bg-gray-100 dark:bg-gray-900 flex flex-col px-2 rounded-tl rounded-tr border border-b-0 border-[var(--el-border-color)]"

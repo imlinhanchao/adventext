@@ -11,7 +11,7 @@
   import { formatDate } from '@vueuse/core';
   import { Achievement } from '@/api/target';
   import { Inventory } from '@/api/draft';
-  import DOMPurify from 'dompurify'; 
+  import DOMPurify from 'dompurify';
   import { marked } from 'marked';
 
   defineProps<{
@@ -46,7 +46,7 @@
   const records = ref<SceneRecord[]>([]);
   const achievements = ref<Achievement[]>([]);
   const circle = ref(1);
-  const fnLogs = ref<any[]>([])
+  const fnLogs = ref<any[]>([]);
   const logView = ref(false);
 
   onMounted(async () => {
@@ -112,7 +112,7 @@
       next,
       message: msg,
       achievements: achies,
-      logs: callLogs
+      logs: callLogs,
     } = await gameRun({
       option: option.text,
       profile: profile.value,
@@ -133,9 +133,15 @@
 
     achievements.value = achies || [];
     profile.value = state;
-    records.value.unshift(new SceneRecord(currentScene.value, option.text, profile.value.from, content.value));
+    records.value.unshift(
+      new SceneRecord(currentScene.value, option.text, profile.value.from, content.value),
+    );
 
-    const { options, content: updateContent, logs: optionLogs } = await updateOptions(
+    const {
+      options,
+      content: updateContent,
+      logs: optionLogs,
+    } = await updateOptions(
       sceneMap.value[next || scene.name],
       profile.value,
       records.value,
@@ -170,7 +176,11 @@
   const showCount = ref(false);
   const itemCount = ref<Recordable<number>>({});
   let selectItemResolve: (value: string) => void;
-  function selectItem(inventory: Inventory[], message: string, needCount = false): Promise<string | false> {
+  function selectItem(
+    inventory: Inventory[],
+    message: string,
+    needCount = false,
+  ): Promise<string | false> {
     dlgMessage.value = message;
     itemCount.value = {};
     inventory.forEach((item) => {
@@ -216,7 +226,7 @@
     if (!scene) return;
     const targetScene = sceneMap.value[scene];
     if (!targetScene) return;
-    
+
     const next = targetScene.name;
     const { options, content: updateContent } = await updateOptions(
       sceneMap.value[next],
@@ -274,7 +284,13 @@
     <el-main class="!h-full space-y-2">
       <section class="flex items-center space-x-2">
         <label class="bg-black text-white p-1 mr-1 rounded">周目数：</label>
-        <el-input-number v-model="circle" :min="1" size="small" controls-position="right" class="!w-20" />
+        <el-input-number
+          v-model="circle"
+          :min="1"
+          size="small"
+          controls-position="right"
+          class="!w-20"
+        />
       </section>
       <section class="space-x-2">
         <label class="bg-black text-white p-1 mr-1 rounded">
@@ -303,7 +319,12 @@
             class="!w-20"
             :type="profile.attr[key].includes('\n') ? 'textarea' : 'text'"
           />
-          <ButtonEx v-else icon="i-material-symbols:search" link @click="viewObject(profile.attr[key])" />
+          <ButtonEx
+            v-else
+            icon="i-material-symbols:search"
+            link
+            @click="viewObject(profile.attr[key])"
+          />
         </span>
       </section>
       <section class="space-x-2">
@@ -344,23 +365,34 @@
         </label>
         <span v-for="item in achievements" :key="item.key">
           <el-tooltip :content="item.description">
-            <span>
-              {{ item.name }}({{ item.key }})
-            </span>
+            <span> {{ item.name }}({{ item.key }}) </span>
           </el-tooltip>
         </span>
       </section>
       <el-alert v-if="message" :type="msgType" :closable="false">{{ message }}</el-alert>
-      <ButtonEx v-if="fnLogs.length" icon="i-material-symbols:search" @click="logView = true" size="small">
+      <ButtonEx
+        v-if="fnLogs.length"
+        icon="i-material-symbols:search"
+        @click="logView = true"
+        size="small"
+      >
         查看函数日志
       </ButtonEx>
       <section>
         <!-- eslint-disable-next-line vue/no-v-html -->
-        <span v-html="contentHTML"></span>
+        <div id="story" v-html="contentHTML" class="whitespace-pre-wrap"></div>
       </section>
-      <section>
+      <section id="options" class="space-x-2">
         <template v-for="o in currentScene.options" :key="o.text">
-          <el-button v-if="!o.disabled" plain type="primary" @click="run(o)" :loading="loading">
+          <el-button
+            v-if="!o.disabled"
+            plain
+            type="primary"
+            @click="run(o)"
+            :loading="loading"
+            :id="o.id && `option_${o.id}`"
+            :class="`option_${o.text}`"
+          >
             {{ o.text }}
           </el-button>
         </template>
@@ -368,12 +400,18 @@
           重新游玩
         </el-button>
       </section>
+      <component :is="'style'" id="custom-style">
+        {{ currentScene.customStyle }}
+      </component>
       <ItemSelector ref="itemRef" :story="story.id!" multiple inventory :type="type" />
       <TargetSelector ref="targetSelectorRef" :story="story.id!" :type="type" multiple />
       <el-dialog v-model="logView" width="400px" append-to-body>
         <div class="code-logs">
           <template v-for="(l, i) in fnLogs" :key="i">
-            <pre class="whitespace-pre-wrap" v-if="l.type != 'dir'"><code><span v-if="l.type != 'log'" :class="l.type + ' block'">{{ l.type.toUpperCase() }}</span><span>{{ l.data }}</span></code></pre>
+            <pre
+              class="whitespace-pre-wrap"
+              v-if="l.type != 'dir'"
+            ><code><span v-if="l.type != 'log'" :class="l.type + ' block'">{{ l.type.toUpperCase() }}</span><span>{{ l.data }}</span></code></pre>
             <ObjectTree v-else :data="l.data" />
           </template>
         </div>
@@ -385,7 +423,11 @@
             class="cursor-pointer m-1 !pr-0"
             v-for="item in itemToSelect"
             :key="item.id"
-            @click="selectItemResolve(showCount ? `item:${item.key}:${itemCount[item.key]}` : `item:${item.key}`)"
+            @click="
+              selectItemResolve(
+                showCount ? `item:${item.key}:${itemCount[item.key]}` : `item:${item.key}`,
+              )
+            "
           >
             <el-tooltip :content="`[${item.type}]${item.description}`">
               <span>{{ item.name }}</span>
@@ -396,7 +438,7 @@
               size="small"
               controls-position="right"
               class="!w-16 ml-2 !border-none"
-              style="--el-border: none;--el-border-color:transparent;"
+              style="--el-border: none; --el-border-color: transparent"
               @click.stop
             />
           </el-tag>
@@ -405,49 +447,63 @@
       <JsonPreview ref="jsonRef" />
     </el-main>
     <el-footer height="auto" class="max-h-[40%] overflow-auto">
-      <section v-for="(record, i) in records" class="text-sm space-y-1 rounded hover:dark:bg-gray-900 hover:bg-gray-50 bg-opacity-50 p-2" :key="record.time">
+      <section
+        v-for="(record, i) in records"
+        class="text-sm space-y-1 rounded hover:dark:bg-gray-900 hover:bg-gray-50 bg-opacity-50 p-2"
+        :key="record.time"
+      >
         <p>
-          <el-button size="small" link class="mr-2" icon="el-icon-delete" text type="danger" @click="records.splice(i, 1)" />
+          <el-button
+            size="small"
+            link
+            class="mr-2"
+            icon="el-icon-delete"
+            text
+            type="danger"
+            @click="records.splice(i, 1)"
+          />
           <span>{{ record.content }}</span>
         </p>
         <p class="flex justify-between items-center">
           <el-tag>{{ record.option }}</el-tag>
-          <span class="text-gray-500">{{ formatDate(new Date(Number(record.time)), 'YYYY-MM-DD HH:mm:ss') }}</span>
+          <span class="text-gray-500">{{
+            formatDate(new Date(Number(record.time)), 'YYYY-MM-DD HH:mm:ss')
+          }}</span>
         </p>
       </section>
     </el-footer>
   </el-container>
 </template>
 <style lang="less" scoped>
-.block {
-  display: inline-block;
-  width: 3.5em;
-  padding: 0 2px;
-  margin-right: 5px;
-  text-align: center;
-  font-size: 80%;
-  line-height: 1.2;
-  border: 1px solid currentColor;
-  border-radius: 3px;
-}
+  .block {
+    display: inline-block;
+    width: 3.5em;
+    padding: 0 2px;
+    margin-right: 5px;
+    text-align: center;
+    font-size: 80%;
+    line-height: 1.2;
+    border: 1px solid currentColor;
+    border-radius: 3px;
+  }
 
-.log {
-  color: var(--code-preview-border);
-}
+  .log {
+    color: var(--code-preview-border);
+  }
 
-.info {
-  color:  #2196F3;
-}
+  .info {
+    color: #2196f3;
+  }
 
-.error {
-  color: #F44336;
-}
+  .error {
+    color: #f44336;
+  }
 
-.warn {
-  color: #FF9800;
-}
+  .warn {
+    color: #ff9800;
+  }
 
-.debug {
-  color: #9E9E9E;
-}
+  .debug {
+    color: #9e9e9e;
+  }
 </style>

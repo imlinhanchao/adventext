@@ -88,6 +88,9 @@
       <el-form-item label="描述" prop="description">
         <el-input v-model="data.description" type="textarea" />
       </el-form-item>
+      <el-form-item label="是否可见" prop="visible">
+        <el-switch v-model="data.visible" />
+      </el-form-item>
       <el-form-item label="人物基础属性" class="no-error" />
       <el-table :data="baseAttr" class="no-error-padding w-full">
         <el-table-column prop="key" label="标识符" align="center">

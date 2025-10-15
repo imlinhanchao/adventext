@@ -1018,8 +1018,9 @@ export default class GameController {
 
   async storyList(req: Request, res: Response) {
     try {
+      const visible = this.type == 'draft' ? {} : { visible: true };
       const stories = await this.storyRepo.find({
-        where: { status: 2 },
+        where: { status: 2, ...visible },
         order: { createTime: 'DESC' },
       });
       const storyIds = stories.map((s) => s.id);
