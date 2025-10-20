@@ -499,7 +499,7 @@ export default class GameController {
             msg += `${profile.attrName[effect.name]} ${oldValue} → ${profile.attr[effect.name]}.\n`;
           }
           oldVal = oldValue;
-          newVal = effect.content;
+          newVal = profile.attr[effect.name];
         }
         if (effect.type === 'ItemAttr') {
           if (!itemTake) {
