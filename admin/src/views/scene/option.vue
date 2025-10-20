@@ -166,7 +166,7 @@
             重复触发间隔（秒）
           </span>
         </template>
-        <el-input type="number" v-if="(data.loop ?? 0) >= 0" v-model="data.loop" :min="0" />
+        <el-input type="number" v-if="(data.loop ?? 0) >= 0" v-model="data.loop" :min="0" @mousewheel.prevent />
         <span v-else>不可重复</span>
       </el-form-item>
       <ScenePrompt v-model="data.value" />

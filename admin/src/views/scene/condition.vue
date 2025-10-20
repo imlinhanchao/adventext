@@ -425,7 +425,7 @@
               数量
             </span>
           </template>
-          <el-input type="number" v-model="data.content" :min="0">
+          <el-input type="number" v-model="data.content" :min="0" @mousewheel.prevent>
             <template #prepend>
               <el-select v-model="data.operator" class="!w-60px" placeholder="≥">
                 <el-option label="=" value="=" />
