@@ -21,6 +21,11 @@ export class Draft {
   name: string;
 
   /**
+   * 别名
+   */
+  alias: string;
+
+  /**
    * 作者
    */
   author: string;
@@ -62,6 +67,7 @@ export class Draft {
 
   constructor() {
     this.name = '';
+    this.alias = '';
     this.author = '';
     this.description = '';
     this.start = '';

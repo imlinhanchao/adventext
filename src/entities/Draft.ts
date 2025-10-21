@@ -12,6 +12,9 @@ export class Draft {
   @Column('varchar', { length: 255, comment: '故事名称 ' })
   name: string;
 
+  @Column('varchar', { length: 128, default: '', comment: '别名' })
+  alias: string;
+
   @Column('varchar', { length: 255, comment: '起始场景' })
   start: string;
 

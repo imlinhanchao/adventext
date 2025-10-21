@@ -82,6 +82,9 @@
       <el-form-item label="名称" prop="name">
         <el-input v-model.trim="data.name" />
       </el-form-item>
+      <el-form-item label="别名" prop="alias">
+        <el-input v-model.trim="data.alias" />
+      </el-form-item>
       <el-form-item label="作者" prop="author">
         <el-input v-model="data.author" />
       </el-form-item>

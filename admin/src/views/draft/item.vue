@@ -81,6 +81,9 @@
       <el-form-item label="名称" prop="name">
         <el-input v-model.trim="data.name" />
       </el-form-item>
+      <el-form-item label="别名" prop="alias">
+        <el-input v-model.trim="data.alias" />
+      </el-form-item>
       <el-form-item label="描述" prop="description">
         <el-input v-model="data.description" type="textarea" />
       </el-form-item>

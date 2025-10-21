@@ -140,7 +140,7 @@ export default class GameController {
     const state = (await ProfileRepo.findOneBy({ userId, storyId, isEnd: false })) || new Profile(userId, storyId);
 
     if (!state.scene) {
-      const story = await this.storyRepo.findOneBy({ id: storyId });
+      const story = await this.getStory(storyId);
       if (!story) {
         throw new Error('故事不存在');
       }
@@ -152,7 +152,7 @@ export default class GameController {
 
     let scene = await this.getSence(state.scene, storyId);
     if (!scene) {
-      const story = await this.storyRepo.findOneBy({ id: storyId });
+      const story = await this.getStory(storyId);
       if (!story) {
         throw new Error('故事不存在');
       }
@@ -194,7 +194,7 @@ export default class GameController {
   }
 
   async getStory(id: string) {
-    return await this.storyRepo.findOneBy({ id });
+    return await this.storyRepo.findOne({ where: [{ id }, { alias: id }] });
   }
 
   async updateOptions(story: Scene, state: Profile, timezone: number, records?: Record[], achievements?: Achievement[]) {
@@ -664,7 +664,7 @@ export default class GameController {
   async record(user: User, req: Request, res: Response, next: () => void) {
     try {
       const storyId = req.params.storyId;
-      const story = await this.storyRepo.findOneBy({ id: storyId });
+      const story = await this.getStory(storyId);
       let { p, count, end } = req.query;
       const page = Number(p || 1);
       const size = Math.min(Number(count || 50), 100);
@@ -740,7 +740,7 @@ export default class GameController {
   async rank(user: User, req: Request, res: Response, next: () => void) {
     try {
       const storyId = req.params.storyId;
-      const story = await this.storyRepo.findOneBy({ id: storyId });
+      const story = await this.getStory(storyId);
       let { p, count } = req.query;
       const page = Number(p || 1);
       const size = Math.min(Number(count || 50), 100);

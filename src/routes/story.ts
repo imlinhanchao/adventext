@@ -7,6 +7,7 @@ import SceneRoute from './scene';
 import ItemRoute from './item';
 import TargetRoute from './target';
 import { omit } from "../utils";
+import { Not } from "typeorm";
 
 const router = Router();
 router.post("/run", (req: Request, res: Response) => new GameController('story').gameVirtual(req, res));
@@ -32,13 +33,21 @@ router.get("/list", async (req, res) => {
 // 添加新故事
 router.post("/", async (req, res) => {
   req.body.author = req.user?.username;
-  const newStory = StoryRepo.create(req.body);
+  const newStory = StoryRepo.create(req.body as Story);
+  if (newStory.alias) {
+    const existing = await StoryRepo.findOneBy({ alias: newStory.alias });
+    if (existing) {
+      return error(res, "别名已被占用，请更换别名");
+    }
+  }
   const result = await StoryRepo.save(newStory);
   json(res, result);
 });
 
 router.use('/:id', async (req, res, next) => {
-  const story = await StoryRepo.findOneBy({ id: req.params.id });
+  const story = await StoryRepo.findOne({
+    where: [{ id: req.params.id }, { alias: req.params.id }]
+  });
   if (!story) {
     return next();
   }
@@ -55,6 +64,13 @@ router.get("/:id", async (req, res) => {
 // 更新故事
 router.put("/:id", async (req, res) => {
   const story = req.story! as Story;
+  if (req.body.alias) {
+    const existing = await StoryRepo.findOneBy({ alias: req.body.alias, id: Not(story.id) });
+    if (existing) {
+      return error(res, "别名已被占用，请更换别名");
+    }
+  }
+
   StoryRepo.merge(story!, req.body);
   const result = await StoryRepo.save(story);
   json(res, result);

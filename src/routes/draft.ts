@@ -7,7 +7,7 @@ import SceneRoute from './scene';
 import ItemRoute from './item';
 import TargetRoute from './target';
 import { omit, pick } from "../utils";
-import { In } from "typeorm";
+import { In, Not } from "typeorm";
 
 const router = Router();
 router.post("/run", (req: Request, res: Response) => new GameController('draft').gameVirtual(req, res));
@@ -44,6 +44,12 @@ router.get("/list", async (req, res) => {
 router.post("/", async (req, res) => {
   req.body.author = req.user?.username;
   const newStory = DraftRepo.create(omit(req.body, ['status', 'comment']));
+  if (newStory.alias) {
+    const existing = await DraftRepo.findOneBy({ alias: newStory.alias });
+    if (existing) {
+      return error(res, "别名已被占用，请更换别名");
+    }
+  }
   const result = await DraftRepo.save(newStory);
   json(res, result);
 });
@@ -71,7 +77,7 @@ router.post('/export', async (req, res) => {
     const scene = scenes.filter((scene) => scene.storyId === story.id);
     const item = items.filter((item) => item.storyId === story.id);
     const data = {
-      ...omit(story, ['id', 'status', 'comment', 'createTime', 'updateTime']),
+      ...omit(story, ['id', 'alias', 'status', 'comment', 'createTime', 'updateTime']),
       scene,
       item
     }
@@ -108,6 +114,7 @@ router.post('/import', async (req, res) => {
     newStory.author = req.user?.username;
     newStory.status = 0; // 默认状态为草稿
     newStory.comment = '';
+    newStory.alias = ''; // 重置别名
     const result = await DraftRepo.save(newStory);
     stories.push(result);
 
@@ -166,6 +173,13 @@ router.get("/:id", async (req, res) => {
 // 更新故事
 router.put("/:id", async (req, res) => {
   const story = req.story!;
+
+  if (req.body.alias) {
+    const existing = await StoryRepo.findOneBy({ alias: req.body.alias, id: Not(story.id) });
+    if (existing) {
+      return error(res, "别名已被占用，请更换别名");
+    }
+  }
 
   DraftRepo.merge(story!, omit(req.body, ['status', 'comment']));
   story.status = 0;
