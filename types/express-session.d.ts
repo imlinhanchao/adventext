@@ -7,6 +7,7 @@ import { Story, Draft } from '../src/entities';
 declare module 'express-session' {
   interface SessionData {
     user?: User;
+    lastUrl?: string;
     state?: GameState | null;
     captcha?: string;
   }

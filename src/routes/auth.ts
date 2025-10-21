@@ -15,7 +15,7 @@ router.post("/login", async (req, res) => {
     const { user } = await login(req.body);
     req.session.user = user;
     req.session.save();
-    res.redirect("/");
+    res.redirect(req.session.lastUrl || "/");
   } catch (error: any) {
     const thirds = await ThirdPartyInstance.getAll();
     render(res, 'login', req).title('登录').error(error.message).render({ thirds });
