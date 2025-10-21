@@ -388,6 +388,14 @@ export default class GameController {
           if (Number(valueText).toString() == valueText && isNumber(Number(valueText))) {
             if (!conditionOperator(Number(valueText), Number(condition.content), condition.operator || '='))
               throw new Error(`数值错误`);
+          } else if (condition.content.startsWith('/') && condition.content.replace(/[igm]+$/g, '').endsWith('/')) {
+            if (!new RegExp(
+              condition.content.replace(/[igm]+$/g, '')
+              .slice(1, -1), 
+              condition.content.match(/[igm]+$/g)?.[0]).test(valueText)
+            ) {
+              throw new Error(`数值错误`);
+            }
           } else if ((!condition.operator || condition.operator == '=')) {
             if (valueText != condition.content) {
               throw new Error(`数值错误`);
