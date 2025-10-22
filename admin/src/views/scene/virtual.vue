@@ -306,7 +306,7 @@
         <span v-for="(value, key) in profile.attr" :key="key" class="inline-block my-1">
           {{ (profile.attrName[key] || key) + (profile.attrName[key] ? `(${key})` : '') }}:
           <el-input-number
-            v-if="isNumber(value)"
+            v-if="isNumber(value) || null === value"
             v-model="profile.attr[key]"
             size="small"
             controls-position="right"
