@@ -10,7 +10,7 @@ export function setPrimaryColor(color: string) {
     for (let i = 1; i <= 9; i++) {
       docStyle.setProperty(
         `--el-color-primary-light-${i}`,
-        isDark ? darken2(color, i / 10) : lighten2(color, i / 10),
+        isDark.value ? darken2(color, i / 10) : lighten2(color, i / 10),
       );
     }
   }

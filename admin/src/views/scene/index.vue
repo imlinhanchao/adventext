@@ -312,7 +312,7 @@ function gotoPlay () {
                 <ButtonEx
                   icon="i-lets-icons:flag-fill" content="跳转到起始场景" type="primary"
                   @click="highlightScene(story.start)" plain
-                  style="--el-button-divide-border-color: var(--el-color-primary)" />
+                />
                 <ButtonEx icon="i-mdi:movie-open-plus-outline" type="primary" @click="addScene" plain>
                   <span class="btn-text">添加场景</span>
                 </ButtonEx>

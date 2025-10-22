@@ -1,8 +1,14 @@
 <script setup lang="ts">
+import { setPrimaryColor } from '@/hooks/setting/useThemeSetting';
 import { useDark } from '@vueuse/core';
 
-
 const isDark = useDark();
+watch(isDark, (val) => {
+  setPrimaryColor(
+    getComputedStyle(document.documentElement).
+      getPropertyValue(val ? '--color-dark-primary' : '--color-light-primary').trim()
+  );
+});
 </script>
 
 <template>

@@ -10,7 +10,8 @@ html {
   --sider-dark-lighten-bg-color: #273352;
 }
 
-@primary-color: #efa02b;
+@primary-color: darken(#efa02b, 10%);
+@primary-dark-color: #efa02b;
 
 @text-color: #c9d1d9;
 
@@ -149,6 +150,12 @@ html {
 
 :root {
   --color-primary: @primary-color;
+  --color-dark-primary: @primary-dark-color;
+  --color-light-primary: @primary-color;
+}
+
+.dark {
+  --color-primary: @primary-dark-color;
 }
 
 // 导出变量
