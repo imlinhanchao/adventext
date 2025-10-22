@@ -73,9 +73,13 @@ export class Scene {
   @Column("text", { nullable: true, comment: '自定义样式' })
   customStyle: string;
 
+  @Column({ comment: '场景渲染模式', default: 0 })
+  renderMode: number = 0;
+
   @Column('bigint', { comment: "创建时间" })
   createTime: number = 0;
   
   @Column('bigint', { comment: "更新时间" })
   updateTime: number = 0;
+
 }

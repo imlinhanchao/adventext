@@ -121,6 +121,9 @@
 
   const isAdmin = route.meta.isAdmin || false;
   const isApprove = !!route.meta.query;
+  function gotoPlay(row: Draft) {
+    window.open(`/d/${row.id}`, '_blank');
+  }
 </script>
 
 <template>
@@ -128,7 +131,7 @@
     <el-main>
       <el-table ref="tableRef" :data="storyList" style="width: 100%">
         <el-table-column type="selection" width="55" align="center" />
-        <el-table-column label="" align="center" width="120">
+        <el-table-column label="" align="center" width="150">
           <template #header>
             <ButtonEx content="新增" type="primary" link @click="add" icon="el-icon-circle-plus" />
             <ButtonEx
@@ -148,6 +151,7 @@
               @click="approve(row)"
               v-if="row.status == 1 && isApprove"
             />
+            <ButtonEx content="游玩" link type="success" icon="i-codicon:game" @click="gotoPlay(row)" />
             <ButtonEx
               content="推荐"
               link

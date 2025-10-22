@@ -48,16 +48,20 @@ import { copyTextToClipboard } from '@/hooks/web/useCopyToClipboard';
     copyTextToClipboard(data);
     ElMessage.success('复制成功');
   }
+  function gotoPlay(row: Story) {
+    window.open(`/s/${row.id}`, '_blank');
+  }
 </script>
 
 <template>
   <el-container>
     <el-main>
       <el-table :data="storyList" style="width: 100%">
-        <el-table-column label="" align="center" width="120">
+        <el-table-column label="" align="center" width="150">
           <template #default="{ row }">
             <ButtonEx content="删除" link type="danger" icon="el-icon-remove" @click="remove(row)" />
             <ButtonEx content="导出" link type="primary" icon="el-icon-download" @click="exportJson(row)" />
+            <ButtonEx content="游玩" link type="success" icon="i-codicon:game" @click="gotoPlay(row)" />
             <ButtonEx
               content="复制"
               link

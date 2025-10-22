@@ -240,6 +240,27 @@ useEventListener({
   wait: 0,
 });
 
+
+const zoom = ref(1);
+useEventListener({
+  el: sceneViewRef,
+  name: 'wheel',
+  listener: (e: WheelEvent) => {
+    if (e.ctrlKey) {
+      e.preventDefault();
+      if (e.deltaY < 0) {
+        zoom.value += 0.01;
+      } else {
+        zoom.value -= 0.01;
+      }
+      if (zoom.value < 0.1) zoom.value = 0.1;
+      if (zoom.value > 3) zoom.value = 3;
+    }
+  },
+  options: { passive: false },
+  wait: 0,
+});
+
 const sceneMap = computed<Recordable<Scene>>(() =>
   scenes.value.reduce((acc, scene) => {
     acc[scene.name] = scene;
@@ -264,6 +285,12 @@ function viewTargetList () {
 const isVirtual = ref(false);
 function virtualRun () {
   isVirtual.value = !isVirtual.value;
+}
+function gotoPlay () {
+  const url = type === 'draft'
+    ? `/d/${storyId}`
+    : `/s/${storyId}`;
+  window.open(url, '_blank');
 }
 
 </script>
@@ -295,6 +322,9 @@ function virtualRun () {
                 <ButtonEx icon="i-mingcute:bling-line" type="danger" @click="viewTargetList" plain>
                   <span class="btn-text">成就维护</span>
                 </ButtonEx>
+                <ButtonEx icon="i-codicon:game" type="primary" @click="gotoPlay" plain>
+                  <span class="btn-text">实机运行</span>
+                </ButtonEx>
                 <ButtonEx
                   :icon="!isVirtual ? 'i-solar:play-bold' : 'i-solar:stop-bold'" type="success"
                   @click="virtualRun" :plain="!isVirtual">
@@ -308,10 +338,11 @@ function virtualRun () {
             </el-form>
           </el-header>
           <el-main class="!h-full">
-            <section class="overflow-hidden w-full h-full " :class="{ 'cursor-move': isMove }" ref="sceneViewRef">
+            <section class="overflow-hidden w-full h-full relative" :class="{ 'cursor-move': isMove }" ref="sceneViewRef">
               <section
                 id="scenePanel" ref="scenePanelRef" class="absolute"
-                :class="{ 'transition-all duration-200': !isMove }" :style="{ top: pos.y + 'px', left: pos.x + 'px' }">
+                :class="{ 'transition-all duration-200': !isMove }"
+                :style="{ top: pos.y + 'px', left: pos.x + 'px', transform: `scale(${zoom}, ${zoom})` }">
                 <SceneItem
                   v-for="(scene, index) in scenes" :ref="(el) => (sceneRef[scene.name] = el)" :key="index"
                   :story="storyId" :scene="scene" :sceneMap="sceneMap" @next="highlightScene" @edit="editScene"
@@ -320,7 +351,6 @@ function virtualRun () {
                   }" :start="story.start === scene.name" />
               </section>
             </section>
-
           </el-main>
           <span @mousedown.stop>
             <ItemSelector ref="itemListRef" :story="storyId" :type="type" readonly @close="loadItem" />
@@ -331,7 +361,6 @@ function virtualRun () {
             <StoryForm ref="storyFormRef" v-if="type == 'story'" @confirm="loadStory" />
             <DraftForm ref="draftFormRef" v-if="type == 'draft'" @confirm="loadStory" />
           </span>
-
         </el-container>
         <el-aside
           v-if="isVirtual" :width="isMobile ? '100%' : '500px'"
