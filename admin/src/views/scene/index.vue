@@ -243,7 +243,7 @@ useEventListener({
 
 const zoom = ref(1);
 useEventListener({
-  el: sceneViewRef,
+  el: document.body,
   name: 'wheel',
   listener: (e: WheelEvent) => {
     if (e.ctrlKey) {
@@ -301,6 +301,7 @@ function gotoPlay () {
       <el-container
         @mousedown="beginMove" @touchstart="beginMove" :direction="isMobile ? 'vertical' : 'horizontal'"
         class="story-panel absolute z-1 top-0 bottom-0 right-0 left-0 overflow-hidden"
+        :class="{ 'cursor-move': isMove }"
         :style="`--panel-offset-x: ${pos.x}px; --panel-offset-y: ${pos.y}px;`" v-loading="loading">
         <el-container class="pt-60px">
           <el-header class="flex !p-3 justify-between z-2" height="auto">
@@ -338,7 +339,7 @@ function gotoPlay () {
             </el-form>
           </el-header>
           <el-main class="!h-full">
-            <section class="overflow-hidden w-full h-full relative" :class="{ 'cursor-move': isMove }" ref="sceneViewRef">
+            <section class="overflow-hidden w-full h-full relative" ref="sceneViewRef">
               <section
                 id="scenePanel" ref="scenePanelRef" class="absolute"
                 :class="{ 'transition-all duration-200': !isMove }"
@@ -348,8 +349,9 @@ function gotoPlay () {
                   :story="storyId" :scene="scene" :sceneMap="sceneMap" @next="highlightScene" @edit="editScene"
                   @remove="removeScene" @start="setStart" @mousedown.stop class="transition-all duration-200" :class="{
                     'border-2 border-blue-500': highlight === scene.name,
-                  }" :start="story.start === scene.name" />
+                  }" :start="story.start === scene.name" :zoom="zoom" />
               </section>
+              <section class="px-5 py-2 rounded-[4em] bg-[var(--el-bg-color-overlay)] border border-gray-700 dark:shadow-gray-800 shadow-lg absolute bottom-5 left-5">场景 x {{ scenes.length }}</section>
             </section>
           </el-main>
           <span @mousedown.stop>

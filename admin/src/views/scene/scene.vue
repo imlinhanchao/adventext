@@ -7,6 +7,7 @@
     scene: Scene;
     sceneMap: Recordable<Scene>;
     start?: boolean;
+    zoom: number;
   }>();
 
   const emit = defineEmits(['next', 'edit', 'remove', 'start']);
@@ -24,8 +25,8 @@
       x: (e as MouseEvent).clientX || (e as TouchEvent).touches[0].clientX,
       y: (e as MouseEvent).clientY || (e as TouchEvent).touches[0].clientY,
     }
-    beginPos.value.x = client.x - data.value.position.x;
-    beginPos.value.y = client.y - data.value.position.y;
+    beginPos.value.x = client.x * props.zoom - data.value.position.x;
+    beginPos.value.y = client.y * props.zoom - data.value.position.y;
   }
 
   useEventListener({
@@ -33,8 +34,8 @@
     name: 'mousemove',
     listener: (e: MouseEvent) => {
       if (isMove.value) {
-        data.value.position.x = e.clientX - beginPos.value.x;
-        data.value.position.y = e.clientY - beginPos.value.y;
+        data.value.position.x = e.clientX * props.zoom - beginPos.value.x;
+        data.value.position.y = e.clientY * props.zoom - beginPos.value.y;
       }
     },
     wait: 0,
