@@ -1,7 +1,8 @@
 <script setup lang="ts">
+  import Sortable from 'sortablejs';
   import { Option, Scene, ConditionType, EffectType, Condition, Effect } from '@/api/scene';
   import { clone } from '@/utils';
-  import { FormInstance } from 'element-plus';
+  import { ElTable, FormInstance } from 'element-plus';
   import ConditionForm from './condition.vue';
   import EffectForm from './effect.vue';
   import ScenePrompt from './prompt.vue';
@@ -25,10 +26,70 @@
     next: [{ required: true, message: '请选择下个场景', trigger: 'blur' }],
   }));
 
+
+  const tableKey = ref<Recordable<number>>({});
+  const effectTableRef = ref<InstanceType<typeof ElTable>>();
+  const conditionTableRef = ref<InstanceType<typeof ElTable>>();
+  const effectRowDrop = getRowDrop(effectTableRef, 'effects');
+  const conditionRowDrop = getRowDrop(conditionTableRef, 'conditions');
+  function getRowDrop(tableRef, key) {
+    tableKey.value[key] = tableKey.value[key] || 0;
+    function rowDrop() {
+      if (!tableRef.value) return;
+      const tbody = tableRef.value.$el.querySelector('.el-table__body-wrapper tbody');
+      Sortable.create(tbody, {
+        handle: '.move',
+        animation: 300,
+        ghostClass: 'ghost',
+        onEnd: ({ newIndex, oldIndex }) => {
+          const tableData = data.value[key] || [];
+          const currRow = tableData.splice(oldIndex, 1)[0];
+          tableData.splice(newIndex, 0, currRow);
+          tableKey.value[key]++;
+          nextTick(() => rowDrop());
+        },
+      });
+    }
+
+    return rowDrop;
+  }
+
+  const conditionRef = ref<InstanceType<typeof ConditionForm>>();
+  function addCon() {
+    conditionRef.value?.open().then((condition: Condition) => {
+      if (!data.value.conditions) data.value.conditions = []
+      data.value.conditions.push(condition);
+      nextTick(() => conditionRowDrop());
+    });
+  }
+  function editCon(condition: Condition) {
+    conditionRef.value?.open(condition).then((data: Condition) => {
+      Object.assign(condition, data);
+    });
+  }
+
+  const effectRef = ref<InstanceType<typeof EffectForm>>();
+  function addEffect() {
+    effectRef.value?.open().then((effect: Effect) => {
+      if (!data.value.effects) data.value.effects = []
+      data.value.effects.push(effect);
+      nextTick(() => effectRowDrop());
+    });
+  }
+  function editEffect(effect: Effect) {
+    effectRef.value?.open(effect).then((data: Effect) => {
+      Object.assign(effect, data);
+    });
+  }
+  
   let saveResolve: (option: Option) => void;
   function open(option?: Option) {
     visible.value = true;
     data.value = clone(option || new Option('', ''));
+    nextTick(() => {
+      effectRowDrop();
+      conditionRowDrop();
+    });
 
     return new Promise((resolve) => {
       saveResolve = resolve;
@@ -57,32 +118,6 @@
       content: '返回上一个场景',
     } as Scene);
     cb(scenes)
-  }
-
-  const conditionRef = ref<InstanceType<typeof ConditionForm>>();
-  function addCon() {
-    conditionRef.value?.open().then((condition: Condition) => {
-      if (!data.value.conditions) data.value.conditions = []
-      data.value.conditions.push(condition);
-    });
-  }
-  function editCon(condition: Condition) {
-    conditionRef.value?.open(condition).then((data: Condition) => {
-      Object.assign(condition, data);
-    });
-  }
-
-  const effectRef = ref<InstanceType<typeof EffectForm>>();
-  function addEffect() {
-    effectRef.value?.open().then((effect: Effect) => {
-      if (!data.value.effects) data.value.effects = []
-      data.value.effects.push(effect);
-    });
-  }
-  function editEffect(effect: Effect) {
-    effectRef.value?.open(effect).then((data: Effect) => {
-      Object.assign(effect, data);
-    });
   }
 
   const itemRef = ref<InstanceType<typeof ItemForm>>();
@@ -181,7 +216,12 @@
           <Icon icon="i-ep:info-filled" :size="14" />
         </el-tooltip>
       </el-divider>
-      <el-table :data="data.conditions" border stripe>
+      <el-table ref="conditionTableRef" :data="data.conditions" border stripe :key="tableKey.conditions || 0">
+        <el-table-column label="#" width="50" align="center">
+          <template #default>
+            <el-button type="primary" link class="move cursor-move" icon="el-icon-d-caret" />
+          </template>
+        </el-table-column>
         <el-table-column prop="type" label="类型" :formatter="({type}) => ConditionType[type]" />
         <el-table-column prop="name" label="条件对象" />
         <el-table-column prop="content" label="内容" show-overflow-tooltip :formatter="contentFormat" />
@@ -214,7 +254,12 @@
           <Icon icon="i-ep:info-filled" :size="14" />
         </el-tooltip>
       </el-divider>
-      <el-table :data="data.effects" border stripe>
+      <el-table ref="effectTableRef" :data="data.effects" border stripe :key="tableKey.effects || 0">
+        <el-table-column label="#" width="50" align="center">
+          <template #default>
+            <el-button type="primary" link class="move cursor-move" icon="el-icon-d-caret" />
+          </template>
+        </el-table-column>
         <el-table-column prop="type" label="类型" :formatter="({type}) => EffectType[type]" />
         <el-table-column prop="name" label="效果对象">
           <template #default="{ row }">
