@@ -1,5 +1,6 @@
 import { defHttp } from '@/utils/http';
 import { Item } from './item';
+import { Effect, IAttribute, Option } from './scene';
 
 
 export class Inventory extends Item {
@@ -8,7 +9,6 @@ export class Inventory extends Item {
    */
   count?: number = 0;
 }
-
 export class Draft {
   /**
    * 故事Id
@@ -43,7 +43,7 @@ export class Draft {
   /**
    * 人物初始化属性
    */
-  attr: Recordable<string|number>;
+  attr: Recordable<string|number> | IAttribute[];
 
   /**
    * 属性名称
@@ -54,6 +54,21 @@ export class Draft {
    * 初始化物品
    */
   inventory: Inventory[];
+
+  /**
+   * 全局效果
+   */
+  effects: Effect[];
+
+  /**
+   * 全局选项
+   */
+  options: Option[];
+
+  /**
+   * 自定义样式
+   */
+  customStyle: string;
   
   /**
    * 故事状态
@@ -71,9 +86,12 @@ export class Draft {
     this.author = '';
     this.description = '';
     this.start = '';
-    this.attr = {};
+    this.attr = [];
     this.attrName = {};
     this.inventory = [];
+    this.effects = [];
+    this.options = [];
+    this.customStyle = '';
     this.status = 0;
     this.comment = '';
   }

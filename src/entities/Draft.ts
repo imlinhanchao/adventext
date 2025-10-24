@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 import { Inventory } from './Profile';
+import { Effect, IAttribute, Option } from './Scene';
 
 @Entity({ comment: '故事草稿'})
 export class Draft {
@@ -22,14 +23,23 @@ export class Draft {
   description: string;
 
   @Column('json', { comment: '人物初始化属性' })
-  attr: any;
+  attr: Record<string, any> | IAttribute[];
 
   @Column('json', { comment: '属性名称' })
   attrName: { [key: string]: [string, string] | string };
 
   @Column('json', { comment: '初始化物品' })
   inventory: Inventory[];
-    
+
+  @Column("json", { comment: '全局选项', default: [] })
+  options: Option[];
+
+  @Column("json", { comment: '全局效果，达成条件后触发', default: [] })
+  effects: Effect[];
+  
+  @Column("text", { nullable: true, comment: '全局自定义样式' })
+  customStyle: string;
+  
   @Column('int', { default: 0, comment: '故事状态: 0 - 草稿，1 - 推送，2 - 发布，3 - 下架' })
   status: number;
 
