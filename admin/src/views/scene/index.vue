@@ -360,8 +360,8 @@ function gotoPlay () {
               </ButtonEx>
             </el-form>
           </el-header>
-          <el-main class="!h-full">
-            <section class="overflow-hidden w-full h-full relative" ref="sceneViewRef">
+          <el-main class="!h-full overflow-unset">
+            <section class="w-full h-full relative" ref="sceneViewRef">
               <section
                 id="scenePanel" ref="scenePanelRef" class="absolute"
                 :class="{ 'transition-all duration-200': !isMove }"

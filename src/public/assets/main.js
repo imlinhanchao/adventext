@@ -45,8 +45,9 @@ function startGame(scene, state, content) {
         let value;
         if (option.value?.startsWith('item:') || option.value?.startsWith('items:')) {
           const [_, message, type] = option.value.split(':');
+          const types = type ? type.split(',') : [];
           let inventory = state.inventory.filter(item => item.count > 0);
-          if (type) inventory = inventory.filter(item => item.type === type);
+          if (type) inventory = inventory.filter(item => types.includes(item.type));
           if (inventory.length === 0) {
             showMessage(type ? `你没有${type}` : '先去别处转转吧', 'error')
             return;
@@ -96,6 +97,8 @@ function selectItem(inventory, message, needCount=false) {
     const confirmBtn = document.getElementById('dialog-confirm');
     const content = document.getElementById('dialog-content');
     const dialog = document.getElementById('dialog');
+    const itemDescription = document.createElement('div');
+    itemDescription.className = 'py-2 italic text-sm text-gray-500';
     cancel.onclick = () => {
       dialog.style.visibility = 'hidden';
       reject();
@@ -110,7 +113,6 @@ function selectItem(inventory, message, needCount=false) {
       const itemDiv = document.createElement('div');
       itemDiv.className = 'item cursor-pointer';
       itemDiv.innerHTML = `<span>${item.name}</span>`;
-      itemDiv.setAttribute('aria-label', item.description);
       if (needCount) {
         itemDiv.innerHTML += ' x'
         const countInput = document.createElement('input');
@@ -132,12 +134,14 @@ function selectItem(inventory, message, needCount=false) {
         if (itemChoose.includes(item)) {
           itemChoose.splice(itemChoose.indexOf(item), 1);
           itemDiv.classList.remove('selected');
+          itemDescription.textContent = '';
         } else {
           itemDivs = itemList.querySelectorAll('.item');
           itemDivs.forEach(div => div.classList.remove('selected'));
           itemChoose.splice(0, itemChoose.length);
           itemChoose.push(item);
           itemDiv.classList.add('selected');
+          itemDescription.textContent = item.description;
         }
         confirmBtn.disabled = itemChoose.length <= 0;
       };
@@ -154,6 +158,7 @@ function selectItem(inventory, message, needCount=false) {
 
     content.innerHTML = `<p>${message}</p>`
     content.appendChild(itemList);
+    content.appendChild(itemDescription);
   });
 }
 

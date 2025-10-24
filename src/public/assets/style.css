@@ -410,7 +410,3 @@ input {
   background-color: var(--disabled-color);
   cursor: not-allowed;
 }
-
-.item-list {
-  margin-bottom: 1.5em;
-}

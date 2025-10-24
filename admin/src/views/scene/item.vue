@@ -69,8 +69,10 @@ import { useEventListener } from '@/hooks/event/useEventListener';
     }
   }
 
+  const excludeOptions = ref<Option[]>([]);
   const optionRef = ref<InstanceType<typeof OptionForm>>();
   function addOption() {
+    excludeOptions.value = data.value.options;
     optionRef.value?.open().then((option: Option) => {
       data.value.options.push(option);
       nextTick(() => rowDrop());
@@ -78,6 +80,7 @@ import { useEventListener } from '@/hooks/event/useEventListener';
   }
 
   function editOption(option: Option) {
+    excludeOptions.value = data.value.options.filter((o) => o !== option);
     optionRef.value?.open(option).then((data: Option) => {
       Object.assign(option, data);
     });
@@ -216,7 +219,7 @@ import { useEventListener } from '@/hooks/event/useEventListener';
             </template>
           </el-table-column>
         </el-table>
-        <OptionForm ref="optionRef" :scenes="scenes" :story="story" :type="type" :options="data.options" />
+        <OptionForm ref="optionRef" :scenes="scenes" :story="story" :type="type" :options="excludeOptions" />
       </template>
       <el-form-item label="自定义样式" prop="customStyle">
         <section class="relative group w-full">

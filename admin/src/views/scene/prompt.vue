@@ -11,13 +11,13 @@
   const data = ref({
     type: '',
     tip: '',
-    category: '',
+    category: [] as string[],
   })
 
   watch(data, (val) => {
     let value = val.type ? `${val.type}:${val.tip}` : val.tip;
     if (val.type && val.category) {
-      value += `:${val.category}`;
+      value += `:${val.category.join(',')}`;
     }
     emit('update:modelValue', value);
   }, { deep: true });
@@ -27,13 +27,13 @@
       data.value = {
         type: '',
         tip: '',
-        category: '',
+        category: [],
       };
       return;
     }
     const [type, tip, category] = value.split(':');
     data.value.tip = tip ?? type;
-    data.value.category = category ?? '';
+    data.value.category = category ? category.split(',') : [];
     data.value.type = tip != undefined ? type : '';
   }
 
@@ -47,10 +47,6 @@
     Array.from(new Set(items?.value.map((item) => item.type) || [])),
   );
 
-  function searchItemType (query: string, cb) {
-    const items = itemTypes.value.filter((item) => item.includes(query) || !query);
-    cb(items.map(item => ({ value: item })));
-  }
 </script>
 
 <template>
@@ -78,7 +74,14 @@
       <el-input v-model="data.tip" type="textarea" />
     </el-form-item>
     <el-form-item label="物品类型" prop="content" v-if="['item', 'items'].includes(data.type)">
-      <el-autocomplete :fetch-suggestions="searchItemType" v-model="data.category" clearable />
+      <el-select filter multiple allow-create v-model="data.category" clearable>
+        <el-option
+          v-for="type in itemTypes"
+          :key="type"
+          :label="type"
+          :value="type"
+        />
+      </el-select>
     </el-form-item>
   </fieldset>
 </template>
