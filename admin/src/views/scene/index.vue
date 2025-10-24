@@ -98,9 +98,21 @@ async function save () {
 }
 
 const sceneFormRef = ref<InstanceType<typeof SceneForm>>();
-function addScene () {
-  sceneFormRef.value?.open().then((scene: Scene) => {
+function addScene (scene?: Scene) {
+  const position = {
+    x: sceneViewRef.value!.clientWidth / 2 - 200,
+    y: sceneViewRef.value!.clientHeight / 2 - 100,
+  };
+  scenes.value.forEach((s) => {
+    if (s.position.x >= position.x && s.position.x < position.x + 40 &&
+      s.position.y >= position.y && s.position.y < position.y + 40) {
+      position.x += 40;
+      position.y += 40;
+    }
+  });
+  return sceneFormRef.value?.open(scene, position).then((scene: Scene) => {
     scenes.value.push(scene);
+    return scene;
   });
 }
 function editScene (scene: Scene) {
@@ -146,8 +158,7 @@ const highlight = ref('');
 function highlightScene (next: string) {
   const nextScene = scenes.value.find((item) => item.name === next);
   if (!nextScene) {
-    sceneFormRef.value?.open(new Scene(next)).then((scene: Scene) => {
-      scenes.value.push(scene);
+    addScene(new Scene(next))?.then((scene: Scene) => {
       highlightScene(scene.name);
     });
     return;
@@ -314,7 +325,7 @@ function gotoPlay () {
                   icon="i-lets-icons:flag-fill" content="跳转到起始场景" type="primary"
                   @click="highlightScene(story.start)" plain
                 />
-                <ButtonEx icon="i-mdi:movie-open-plus-outline" type="primary" @click="addScene" plain>
+                <ButtonEx icon="i-mdi:movie-open-plus-outline" type="primary" @click="addScene()" plain>
                   <span class="btn-text">添加场景</span>
                 </ButtonEx>
                 <ButtonEx icon="i-ph:sword" type="warning" @click="viewItemList" plain>

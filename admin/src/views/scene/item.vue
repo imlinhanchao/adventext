@@ -18,10 +18,11 @@
 
   const oldName = ref('');
   let saveResolve: (scene: Scene) => void;
-  function open(scene?: Scene) {
+  function open(scene?: Scene, position?: { x: number, y: number }) {
     visible.value = true;
     data.value = clone(scene || new Scene());
     oldName.value = data.value.name;
+    if (position) data.value.position = position;
     nextTick(() => rowDrop());
 
     return new Promise((resolve) => {
