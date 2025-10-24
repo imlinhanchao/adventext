@@ -144,7 +144,7 @@ export default class GameController {
       if (!story) {
         throw new Error('故事不存在');
       }
-      state.attr = story.attr;
+      state.attr = story.attr.reduce((acc: any, cur: any) => { acc[cur.key] = cur.value, acc }, {});
       state.attrName = story.attrName;
       state.scene = story.start;
       state.inventory = story.inventory;

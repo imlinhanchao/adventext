@@ -3,7 +3,8 @@
   import { ElMessage, FormInstance } from 'element-plus';
   import ItemSelector from '@/views/item/selector.vue';
   import { Item } from '@/api/item';
-  import { clone } from '@/utils';
+  import { clone, isArray } from '@/utils';
+import { IAttribute } from '@/api/scene';
 
   const emit = defineEmits(['confirm']);
   const visible = ref(false);
@@ -12,13 +13,11 @@
   function open(story?: Draft) {
     data.value = clone(story || new Draft());
     visible.value = true;
-    baseAttr.value = Object.entries(data.value.attr).map(([key, value]) => {
-      return {
-        key,
-        value: value.toString(),
-        name: data.value.attrName[key],
-      };
-    });
+    if (!isArray(data.value.attr)) {
+      data.value.attr = Object.entries(data.value.attr).map(([key, value]) => {
+        return new IAttribute(key, data.value.attrName[key], '', value);
+      });
+    }
   }
 
   defineExpose({
@@ -32,7 +31,7 @@
     value: [{ required: true, message: '请输入值', trigger: 'blur' }],
   };
 
-  const formData = computed(() => ({ ...data.value, baseAttr: baseAttr.value }));
+  const formData = computed(() => ({ ...data.value }));
   const formRef = ref<FormInstance>();
   const loading = ref(false);
   async function submit() {
@@ -40,15 +39,9 @@
       return;
     }
 
-    data.value.attr = {};
     data.value.attrName = {};
-    baseAttr.value.forEach((item) => {
-      if (item.key) {
-        data.value.attr[item.key] = isNaN(parseFloat(item.value))
-          ? item.value
-          : parseFloat(item.value);
-        if (item.name) data.value.attrName[item.key] = item.name;
-      }
+    (data.value.attr as IAttribute[]).forEach((item) => {
+      if (item.key && item.name) data.value.attrName[item.key] = item.name;
     });
 
     loading.value = true;
@@ -60,12 +53,14 @@
     emit('confirm', data.value);
   }
 
-  const baseAttr = ref<{ key: string; value: string; name: string }[]>([]);
   const itemRef = ref<InstanceType<typeof ItemSelector>>();
   function addInventory() {
     itemRef.value?.open(data.value.inventory).then((items: Item[]) => {
       data.value.inventory = items;
     });
+  }
+  function addAttribute() {
+    (data.value.attr as IAttribute[]).push(new IAttribute());
   }
 </script>
 
@@ -88,10 +83,10 @@
         <el-input v-model="data.description" type="textarea" />
       </el-form-item>
       <el-form-item label="人物基础属性" class="no-error" />
-      <el-table :data="baseAttr" class="no-error-padding w-full">
+      <el-table :data="data.attr as IAttribute[]" class="no-error-padding w-full" max-height="50vh">
         <el-table-column prop="key" label="标识符" align="center">
           <template #default="{ row, $index: i }">
-            <el-form-item :prop="`baseAttr.${i}.key`" :rules="rules.key">
+            <el-form-item :prop="`attr.${i}.key`" :rules="rules.key">
               <el-input v-model.trim="row.key" />
             </el-form-item>
           </template>
@@ -101,9 +96,14 @@
             <el-input v-model.trim="row.name" placeholder="内置属性则留空" />
           </template>
         </el-table-column>
+        <el-table-column prop="type" label="分类" align="center">
+          <template #default="{ row }">
+            <el-input v-model.trim="row.type" />
+          </template>
+        </el-table-column>
         <el-table-column prop="value" label="值" align="center">
           <template #default="{ row, $index: i }">
-            <el-form-item :prop="`baseAttr.${i}.value`" :rules="rules.value">
+            <el-form-item :prop="`attr.${i}.value`" :rules="rules.value">
               <el-input v-model.trim="row.value" />
             </el-form-item>
           </template>
@@ -114,13 +114,13 @@
               type="primary"
               link
               size="small"
-              @click="baseAttr.push({ key: '', value: '', name: '' })"
+              @click="addAttribute"
             >
               <Icon icon="i-ep:circle-plus" />
             </el-button>
           </template>
           <template #default="{ $index }">
-            <el-button type="danger" link size="small" @click="baseAttr.splice($index, 1)">
+            <el-button type="danger" link size="small" @click="(data.attr as IAttribute[]).splice($index, 1)">
               <Icon icon="i-ep:remove" />
             </el-button>
           </template>
