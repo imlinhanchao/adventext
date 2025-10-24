@@ -10,7 +10,7 @@
     zoom: number;
   }>();
 
-  const emit = defineEmits(['next', 'edit', 'remove', 'start']);
+  const emit = defineEmits(['next', 'edit', 'copy', 'remove', 'start']);
   const data = ref<Scene>(props.scene);
 
   const isMove = ref(false);
@@ -118,6 +118,7 @@
         </span>
         <span>
           <ButtonEx class="!group-hover:inline !hidden" icon="i-lets-icons:flag-duotone" v-if="!start && !scene.isEnd" link @click="$emit('start', scene)" content="设置为起始场景" />
+          <ButtonEx type="primary" link icon="el-icon-document" @click="$emit('copy', scene)" :loading="loading" content="复制" />
           <ButtonEx type="danger" link icon="el-icon-delete" @click="remove" :loading="loading" content="删除" />
           <ButtonEx type="primary" link icon="el-icon-edit" @click="$emit('edit', scene)" content="编辑" />
         </span>

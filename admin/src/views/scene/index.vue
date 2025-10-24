@@ -130,6 +130,17 @@ function removeScene (scene: Scene, cb) {
     scenes.value = scenes.value.filter((item) => item !== scene);
   }).catch(cb);
 }
+function copyScene (scene: Scene) {
+  const newScene = new Scene();
+  Object.assign(newScene, JSON.parse(JSON.stringify(scene)));
+  newScene.name = `${scene.name}_副本`;
+  newScene.id = undefined;
+  newScene.position.x += 40;
+  newScene.position.y += 40;
+  sceneFormRef.value?.open(newScene).then((data: Scene) => {
+    scenes.value.push(data);
+  });
+}
 function setStart (scene: Scene) {
   ElMessageBox.confirm('确定设置为起始场景吗？', '提示', {
     type: 'warning',
@@ -358,7 +369,7 @@ function gotoPlay () {
                 <SceneItem
                   v-for="(scene, index) in scenes" :ref="(el) => (sceneRef[scene.name] = el)" :key="index"
                   :story="storyId" :scene="scene" :sceneMap="sceneMap" @next="highlightScene" @edit="editScene"
-                  @remove="removeScene" @start="setStart" @mousedown.stop class="transition-all duration-200" :class="{
+                  @remove="removeScene" @start="setStart" @copy="copyScene" @mousedown.stop class="transition-all duration-200" :class="{
                     'border-2 border-blue-500': highlight === scene.name,
                   }" :start="story.start === scene.name" :zoom="zoom" />
               </section>
