@@ -93,6 +93,7 @@ function startGame(scene, state, content) {
 function selectItem(inventory, message, needCount=false) {
   return new Promise((resolve, reject) => {
     const cancel = document.getElementById('dialog-cancel');
+    const confirmBtn = document.getElementById('dialog-confirm');
     const content = document.getElementById('dialog-content');
     const dialog = document.getElementById('dialog');
     cancel.onclick = () => {
@@ -100,6 +101,7 @@ function selectItem(inventory, message, needCount=false) {
       reject();
     };
     dialog.style.visibility = 'visible';
+    confirmBtn.disabled = true;
 
     const itemChoose = [];
     const itemList = document.createElement('div');
@@ -108,6 +110,7 @@ function selectItem(inventory, message, needCount=false) {
       const itemDiv = document.createElement('div');
       itemDiv.className = 'item cursor-pointer';
       itemDiv.innerHTML = `<span>${item.name}</span>`;
+      itemDiv.setAttribute('aria-label', item.description);
       if (needCount) {
         itemDiv.innerHTML += ' x'
         const countInput = document.createElement('input');
@@ -130,16 +133,23 @@ function selectItem(inventory, message, needCount=false) {
           itemChoose.splice(itemChoose.indexOf(item), 1);
           itemDiv.classList.remove('selected');
         } else {
+          itemDivs = itemList.querySelectorAll('.item');
+          itemDivs.forEach(div => div.classList.remove('selected'));
+          itemChoose.splice(0, itemChoose.length);
           itemChoose.push(item);
           itemDiv.classList.add('selected');
         }
+        confirmBtn.disabled = itemChoose.length <= 0;
+      };
+      itemList.appendChild(itemDiv);
+
+      confirmBtn.onclick = () => {
         if (needCount) {
           const countInput = itemDiv.querySelector('input[type="number"]');
           resolve(`item:${item.key}:${countInput.value}`);
         } else resolve(`item:${item.key}`);
         dialog.style.visibility = 'hidden';
       };
-      itemList.appendChild(itemDiv);
     });
 
     content.innerHTML = `<p>${message}</p>`

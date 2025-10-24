@@ -274,8 +274,8 @@ h3 {
   flex: 1;
   padding: 20px;
   border-radius: 8px;
-  width: 80%;
   max-width: 500px;
+  max-height: 80vh;
   overflow: auto;
 }
 
@@ -365,13 +365,14 @@ input {
   transform: translateX(-50%);
   margin: auto;
   z-index: 10;
-  display: inline-block;
+  display: none;
   opacity: 0;
   pointer-events: none;
 }
 
 *[aria-label]:hover::after,*[aria-label]:hover::before,*[aria-label]:active::after,*[aria-label]:active::before {
   opacity: 1;
+  display: inline-block;
 }
 
 *[aria-label]::before {
@@ -385,7 +386,7 @@ input {
   border-style: solid;
   border-color:  transparent transparent var(--disabled-color) transparent;
   z-index: 3;
-  display: inline-block;
+  display: none;
   opacity: 0;
   pointer-events: none;
 }
@@ -400,4 +401,16 @@ input {
   bottom: auto;
   border-width: 5px 5px 0 5px;
   border-color: var(--disabled-color) transparent transparent transparent;
+}
+#dialog-cancel {
+  background-color: var(--profile-label-bg-color);
+}
+
+.btn[disabled] {
+  background-color: var(--disabled-color);
+  cursor: not-allowed;
+}
+
+.item-list {
+  margin-bottom: 1.5em;
 }
