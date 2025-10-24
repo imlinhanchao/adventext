@@ -170,7 +170,7 @@
           <template #default="{ item }">
             <div class="flex items-center">
               <span class="font-bold">{{ item.name }}</span>
-              <span class="text-xs text-gray-500 ml-2">{{ item.content }}</span>
+              <span class="text-xs text-gray-500 ml-2 truncate max-w-[200px]">{{ item.content }}</span>
             </div>
           </template>
         </el-autocomplete>
