@@ -15,12 +15,12 @@
                     <% if (locals.isLogin) { %>
                     <span class="space-x-1">
                       <span aria-label="结局" class="border-current border-dashed border p-1 rounded">📍<%= story.finish %>/<%= story.end %></span> 
-                      <% if (story.target) { %><span aria-label="成就" class="border-current border p-1 rounded">🏆<%= story.achievement %>/<%= story.target %></span><% } %>
+                      <% if (story.target) { %><span aria-label="成就" class="border-current border-dashed border p-1 rounded">🏆<%= story.achievement %>/<%= story.target %></span><% } %>
                     </span>
                     <% } else { %>
                     <span class="space-x-1">
                       <span aria-label="结局" class="border-current border-dashed p-1 border rounded">📍<%= story.end %> </span> 
-                      <% if (story.target) { %><span aria-label="成就" class="border-current p-1 border rounded">🏆<%= story.target %></span> <% } %>
+                      <% if (story.target) { %><span aria-label="成就" class="border-current border-dashed p-1 border rounded">🏆<%= story.target %></span> <% } %>
                     </span>
                     <% } %>
                   </span>
