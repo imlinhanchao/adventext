@@ -271,6 +271,11 @@ export default class GameController {
             throw new Error(`你还没准备好。`);
           }
         }
+        if (condition.type === 'From') {
+          if (profile.from !== condition.content) {
+            throw new Error(`你还没准备好。`);
+          }
+        }
         if (condition.type === 'Item') {
           const item = await this.getItem(condition.name, profile.storyId);
           if (!item) {

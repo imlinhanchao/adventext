@@ -105,7 +105,7 @@
 </script>
 <template>
   <section
-    class="absolute transition-none group w-[400px]"
+    class="scene-item absolute transition-none group w-[400px]"
     :style="{ left: scene.position.x + 'px', top: scene.position.y + 'px' }"
   >
     <el-card class="scene w-full" :header="scene.name" header-class="!flex justify-between">
@@ -162,3 +162,8 @@
     </el-card>
   </section>
 </template>
+<style lang="less" scoped>
+.scene-item {
+  content-visibility: auto;
+}
+</style>

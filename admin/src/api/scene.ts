@@ -62,6 +62,7 @@ export const ConditionType = {
   Value: '弹窗输入',
   Fn: '函数判定',
   Circle: '周目数',
+  From: '来源场景',
 };
 
 export class Condition {

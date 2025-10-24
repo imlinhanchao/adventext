@@ -3,7 +3,7 @@
   import { clone, isNumber } from '@/utils';
   import { FormInstance } from 'element-plus';
   import { pick } from 'lodash-es';
-  import { ItemsContext, StoryContext, TargetsContext } from './index';
+  import { ItemsContext, ScenesContext, StoryContext, TargetsContext } from './index';
   import ItemSelector from '@/views/item/selector.vue';
   import { Item } from '@/api/item';
 
@@ -210,6 +210,14 @@
       cb(items);
     };
   }
+
+  const scenes = inject(ScenesContext)!;
+  function searchScene(query: string, cb) {
+    const list = scenes.value.filter(
+      (item) => item.name.includes(query) || item.content.includes(query),
+    );
+    cb(list)
+  }
 </script>
 
 <template>
@@ -217,8 +225,7 @@
     <el-form ref="formRef" :model="formData" label-width="auto" :rules="rules">
       <el-alert v-if="data.type" :closable="false" class="!mb-2">
         <span v-if="data.type == 'Time'">
-          当前时间是否为设定的时间，比如设定 12 时，则需要当前时间在 12:00 ~ 12:59
-          时才会判定成功。
+          当前时间是否为设定的时间，比如设定 12 时，则需要当前时间在 12:00 ~ 12:59 时才会判定成功。
         </span>
         <span v-else-if="data.type == 'Attr'">
           当前角色是否拥有设定的属性，比如设定 100 体力，则需要当前角色的体力大于等于 100
@@ -248,19 +255,17 @@
         <span v-else-if="data.type == 'Value'">
           选择此类型，必须在选项设定<b>弹窗提示</b>，当玩家弹窗输入等于设定值时才会判定成功。
         </span>
-        <span v-else-if="data.type == 'Circle'">
-          当前玩家已经进行第几轮游戏。
-        </span>
+        <span v-else-if="data.type == 'Circle'"> 当前玩家已经进行第几轮游戏。 </span>
+        <span v-else-if="data.type == 'From'"> 当前场景是否从指定场景进入。 </span>
         <div v-else-if="data.type == 'Fn'">
           <p>
             选择此类型，将会执行设定的函数内容，通过给<code>result</code>赋值或直接 return
             返回判定结果。函数参数为 <code>profile</code>：当前玩家的 Profile
             对象，<code>value</code>：玩家选择选项时填写的值，<code>itemSelect</code>：玩家选择选项时选择的物品。
-          </p
-          >
+          </p>
           <p>
-            <code>profile</code>： 
-            对象的属性包括 <code>attr</code>（属性对象 Map）、<code>inventory</code>（背包物品数组）、<code>scene</code>（当前场景对象）。
+            <code>profile</code>： 对象的属性包括 <code>attr</code>（属性对象
+            Map）、<code>inventory</code>（背包物品数组）、<code>scene</code>（当前场景对象）。
           </p>
           <p>
             <code>inventory</code>：
@@ -462,7 +467,7 @@
       </template>
       <template v-if="data.type === 'Circle'">
         <el-form-item label="值" prop="content">
-          <el-input v-model="data.content" clearable type="number" :min="1">
+          <el-input v-model="data.content" clearable type="number" :min="1" @mousewheel.prevent>
             <template #prepend>
               <el-select v-model="data.operator" class="!w-60px" placeholder="=">
                 <el-option label="=" value="=" />
@@ -476,14 +481,34 @@
           </el-input>
         </el-form-item>
       </template>
+      <template v-if="data.type === 'From'">
+        <el-form-item label="场景" prop="next">
+          <el-autocomplete
+            v-model="data.content"
+            :fetch-suggestions="searchScene"
+            @select="data.content = $event.name"
+          >
+            <template #default="{ item }">
+              <div class="flex items-center">
+                <span class="font-bold">{{ item.name }}</span>
+                <span class="text-xs text-gray-500 ml-2 truncate max-w-[200px]">{{
+                  item.content
+                }}</span>
+              </div>
+            </template>
+          </el-autocomplete>
+        </el-form-item>
+      </template>
       <template v-if="data.type === 'Fn'">
         <el-form-item label="函数" prop="content">
           <section class="flex flex-col w-full">
             <span
               class="bg-gray-100 dark:bg-gray-900 flex flex-col px-2 rounded-tl rounded-tr border border-b-0 border-[var(--el-border-color)]"
             >
-              <code>function check(profile: Profile, inputText: string, itemSelect: Inventory): boolean
-                {</code>
+              <code
+                >function check(profile: Profile, inputText: string, itemSelect: Inventory): boolean
+                {</code
+              >
               <code>　　let result = true;</code>
             </span>
             <section class="relative group">
@@ -495,7 +520,12 @@
                 class="border-l border-r border-[var(--el-border-color)] font-mono"
                 style="--el-input-border-radius: 0; --el-input-border-color: transparent"
               />
-              <ButtonEx icon="i-lets-icons:full-alt" link class="group-hover:opacity-60 absolute right-1 bottom-1 z-100 opacity-0" @click="codeVisible = true" />
+              <ButtonEx
+                icon="i-lets-icons:full-alt"
+                link
+                class="group-hover:opacity-60 absolute right-1 bottom-1 z-100 opacity-0"
+                @click="codeVisible = true"
+              />
             </section>
             <span
               class="bg-gray-100 dark:bg-gray-900 flex flex-col px-2 rounded-bl rounded-br border border-t-0 border-[var(--el-border-color)]"
@@ -532,21 +562,28 @@
         <el-switch v-model="data.isHide" />
       </el-form-item>
       <ItemSelector v-if="story" ref="itemSelectorRef" :story="story.id!" :type="type" />
-      
+
       <el-dialog v-if="'Fn' == data.type" v-model="codeVisible" fullscreen>
         <section class="flex flex-col w-full h-full">
           <span
             class="bg-gray-100 dark:bg-gray-900 flex flex-col px-2 rounded-tl rounded-tr border border-b-0 border-[var(--el-border-color)]"
           >
             <code
-            >function check(profile: Profile, inputText: string, itemSelect: Inventory): boolean
+              >function check(profile: Profile, inputText: string, itemSelect: Inventory): boolean
               {</code
             >
             <code>　　let result = true;</code>
           </span>
-          <section class="relative group h-full bg-gray-100 dark:bg-gray-900 border-l border-r border-[var(--el-border-color)] overflow-auto">
+          <section
+            class="relative group h-full bg-gray-100 dark:bg-gray-900 border-l border-r border-[var(--el-border-color)] overflow-auto"
+          >
             <CodeEditor v-model:value="data.content" class="h-full" />
-            <ButtonEx icon="i-gridicons:fullscreen-exit" link class="group-hover:opacity-60 absolute right-1 bottom-1 z-100 opacity-0" @click="codeVisible = false" />
+            <ButtonEx
+              icon="i-gridicons:fullscreen-exit"
+              link
+              class="group-hover:opacity-60 absolute right-1 bottom-1 z-100 opacity-0"
+              @click="codeVisible = false"
+            />
           </section>
           <span
             class="bg-gray-100 dark:bg-gray-900 flex flex-col px-2 rounded-bl rounded-br border border-t-0 border-[var(--el-border-color)]"
