@@ -14,6 +14,7 @@
     scenes: Scene[];
     story: string;
     type: string;
+    options: Option[];
   }>();
 
   const visible = ref(false);
@@ -102,6 +103,16 @@
 
   async function save() {
     if (!(await formRef.value?.validate())) {
+      return;
+    }
+
+    if (props.options.some((opt) => opt !== data.value && opt.text === data.value.text)) {
+      ElMessage.error('选项内容重复！相同选项可以跳过给效果添加条件实现不同效果');
+      return;
+    }
+
+    if (props.options.some((opt) => opt.text !== data.value.text && opt.id && opt.id === data.value.id)) {
+      ElMessage.error('选项唯一标识重复！');
       return;
     }
 

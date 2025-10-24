@@ -216,7 +216,7 @@ import { useEventListener } from '@/hooks/event/useEventListener';
             </template>
           </el-table-column>
         </el-table>
-        <OptionForm ref="optionRef" :scenes="scenes" :story="story" :type="type" />
+        <OptionForm ref="optionRef" :scenes="scenes" :story="story" :type="type" :options="data.options" />
       </template>
       <el-form-item label="自定义样式" prop="customStyle">
         <section class="relative group w-full">
