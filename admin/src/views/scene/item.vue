@@ -4,6 +4,8 @@
   import { ElMessage, ElMessageBox, ElTable, FormInstance } from 'element-plus';
   import OptionForm from './option.vue';
   import { clone } from '@/utils';
+  import { copyTextToClipboard } from '@/hooks/web/useCopyToClipboard';
+import { useEventListener } from '@/hooks/event/useEventListener';
 
   const props = defineProps<{
     story: string;
@@ -101,7 +103,55 @@
   }
 
   const codeVisible = ref(false);
+  function copyOptions() {
+    const selection = optionTableRef.value?.getSelectionRows();
+    copyTextToClipboard(JSON.stringify(selection.length ? selection : data.value.options, null, 2));
+    ElMessage.success('已复制到剪贴板');
+  }
+  function deleteOptions() {
+    const selection = optionTableRef.value?.getSelectionRows();
+    if (selection && selection.length > 0) {
+      data.value.options = data.value.options.filter((o) => !selection.includes(o));
+    } else {
+      ElMessage.warning('请先选择要删除的选项');
+    }
+  }
 
+  useEventListener({
+    el: document.body,
+    name: 'paste',
+    listener: async (e: ClipboardEvent) => {
+      const text = e.clipboardData?.getData('text');
+      if (!text) return;
+      try {
+        const options = JSON.parse(text) as Option[];
+        if (Array.isArray(options) && options.every((o) => o.text)) {
+          const sameNameOptions = options.filter((o) =>
+            data.value.options.find((existO) => existO.text === o.text)
+          );
+          if (sameNameOptions.length > 0) {
+            await ElMessageBox.confirm(
+              `检测到有 ${sameNameOptions.length} 个选项名称与现有选项重复，是否继续粘贴？`,
+              '提示',
+              {
+                type: 'warning',
+                showCancelButton: true,
+                cancelButtonText: '取消',
+                confirmButtonText: '继续粘贴',
+              }
+            )
+            sameNameOptions.forEach((o) => {
+              o.text += ' (复制)';
+            });
+          }
+          data.value.options.push(...options);
+          nextTick(() => rowDrop());
+          ElMessage.success('选项粘贴成功');
+        }
+      } catch (err) {}
+    },
+    wait: 0,
+  })
 </script>
 
 <template>
@@ -136,12 +186,17 @@
       </el-form-item>
       <template v-else>
         <el-form-item label="场景选项" />
+        <p class="py-2">
+          <ButtonEx type="primary" link icon="el-icon-document" @click="copyOptions">复制选项</ButtonEx>
+          <ButtonEx type="danger" link icon="el-icon-remove" @click="deleteOptions">批量删除</ButtonEx>
+        </p>
         <el-table ref="optionTableRef" :key="optionsKey" :data="data.options" border stripe class="mb-5">
           <el-table-column label="#" width="50" align="center">
             <template #default>
               <el-button type="primary" link class="move cursor-move" icon="el-icon-d-caret" />
             </template>
           </el-table-column>
+          <el-table-column type="selection" width="50" align="center" />
           <el-table-column prop="text" label="选项" />
           <el-table-column prop="append" label="追加内容" show-overflow-tooltip />
           <el-table-column prop="next" label="下一个场景" />

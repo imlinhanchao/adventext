@@ -2,7 +2,7 @@
   import { deleteStory, exportStory, getStoryList, packageStory, Story } from '@/api/story';
   import { ElMessageBox } from 'element-plus';
   import Item from '@/views/story/item.vue';
-import { copyTextToClipboard } from '@/hooks/web/useCopyToClipboard';
+  import { copyTextToClipboard } from '@/hooks/web/useCopyToClipboard';
 
   const storyList = ref<Story[]>([]);
   onMounted(() => {
