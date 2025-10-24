@@ -31,6 +31,9 @@ export class Profile {
   @Column('json', { comment: '属性' })
   attr: any;
 
+  @Column('json', { comment: '场景属性' })
+  sceneAttr: any;
+
   @Column('json', { comment: '属性名称' })
   attrName: { [key: string]: [string, string] | string } = {}
 

@@ -3,6 +3,21 @@ import { getStory, updateStory } from './story';
 import { getStory as getDraft, updateStory as updateDraft } from './draft';
 
 
+
+export class IAttribute {
+  key: string;
+  name: string;
+  type: string;
+  value: any;
+
+  constructor(key: string = '', name: string = '', type: string = '', value: any = null) {
+    this.key = key;
+    this.name = name;
+    this.type = type;
+    this.value = value;
+  }
+}
+
 export class Option {
   id?: string;
   /**
