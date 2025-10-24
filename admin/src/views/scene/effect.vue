@@ -143,6 +143,9 @@
         <span v-else-if="data.type == 'Target'">
           会给玩家发放指定成就，成就不可重复发放。已发放成就再次触发不会产生发放提醒。
         </span>
+        <span v-else-if="data.type == 'Tip'">
+          仅给玩家发送提示信息。
+        </span>
         <span v-else-if="data.type == 'Item'">
           会从背包修改指定物品的数量，设置正值则新增，负值则扣除，若<b>弹窗提示</b>设置了选择物品，可以通过
           <code>$item</code> 指代选择的物品。
@@ -393,7 +396,7 @@
           </template>
           <el-input v-model="data.tip" clearable type="textarea" />
         </el-form-item>
-        <p v-if="data.type !== 'Target'">
+        <p v-if="data.type !== 'Target' && data.type !== 'Tip' && data.type !== 'Scene'" class="mb-2">
           <el-button @click="data.content = 'rand(1,100)'">随机数</el-button>
           <el-button @click="data.content = 'percent(10,2)'">概率数</el-button>
           <el-button @click="data.content = '$value'">弹窗输入</el-button>

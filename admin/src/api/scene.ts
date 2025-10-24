@@ -98,6 +98,7 @@ export const EffectType = {
   Attr: '属性变化',
   Fn: '函数调用',
   Scene: '场景变化',
+  Tip: '消息提醒',
 }
 
 export class Effect {
