@@ -42,14 +42,14 @@
         <a <%-locals.params.type !== 'draft' && `href="/u/${account.username}/draft"` || '' -%>>我的草稿</a>
       </h3>
       <span class="absolute right-2">
-        <a href="https://docs.adventext.fun/" title="创作帮助" target="_blank" class="!border-none">❓</a>
-        <a href="/admin/" title="创作故事" target="_blank" class="!border-none">✚</a>
+        <a href="https://docs.adventext.fun/" aria-label="创作帮助" target="_blank" class="!border-none">❓</a>
+        <a href="/admin/" aria-label="创作故事" target="_blank" class="!border-none">✚</a>
       </span>
     </header>
 <% } else { %>
     <section>
       <p>
-        <span class="user-info" title="昵称"><%=account.nickname%></span>
+        <span class="user-info" aria-label="昵称"><%=account.nickname%></span>
         <span class="user-info"><b>上次登录：</b> <script>document.write(new Date(<%=Number(user.lastLogin)-%>).toLocaleString())</script></span>
       </p>
     </section>
@@ -67,7 +67,7 @@
           <li class="w-full">
             <section class="inline-flex justify-between items-bottom w-full">
               <a class="truncate" href="<%=params.type === 'draft' ? '/d' : '/s'-%>/<%=story.id-%>"><%= story.name %></a>
-              <span class="text-gray-500 dark:text-light-900 text-sm truncate max-w-[60%]" title="<%= story.description %>">
+              <span class="text-gray-500 dark:text-light-900 text-sm truncate max-w-[60%]" aria-label="<%= story.description %>">
                 <%= story.description %>
               </span>
             </section>

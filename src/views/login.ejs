@@ -17,7 +17,7 @@
       </section>
       <section class="flex items-center justify-end space-x-2">
         <% thirds.forEach(function(third) { -%>
-          <a href="/auth/third/<%= third.id -%>" title="通过<%= third.name -%>登录" class="!border-none">
+          <a href="/auth/third/<%= third.id -%>" aria-label="通过<%= third.name -%>登录" class="!border-none">
             <img class="h-[25px]" src="<%= third.icon -%>" alt="<%= third.name -%>">
           </a>
         <% }) -%>

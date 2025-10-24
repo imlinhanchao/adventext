@@ -34,7 +34,7 @@
             <%= record.content %>
           </span>
           <span class="flex justify-between items-bottom w-full">
-            <span><span class="option-btn text-sm" title="你的选择"><%=record.option-%></span></span>
+            <span><span class="option-btn text-sm" aria-label="你的选择"><%=record.option-%></span></span>
             <span class="text-gray-500 text-sm"><script>document.write(new Date(<%=Number(record.time)-%>).toLocaleString())</script></span>
           </span>
         </section>
@@ -51,7 +51,7 @@
       <section>
         <% if (achievements.length) {%><b>已获得成就：</b><% }%>
         <% achievements.forEach(function(ach) { %>
-        <span class="text-gray-500 dark:text-light-900 border bg-current border-current rounded-md p-1" title="成就：<%= ach.description || ach.name %>">
+        <span class="text-gray-500 dark:text-light-900 border bg-current border-current rounded-md p-1" aria-label="成就：<%= ach.description || ach.name %>">
           <span class="text-white"><%= ach.name %></span>
         </span>
         <% }); %>

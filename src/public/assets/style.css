@@ -346,3 +346,58 @@ input {
 .text-primary {
   color: var(--primary-color);
 }
+
+*[aria-label]{
+  position: relative;
+}
+
+*[aria-label]::after{
+  transition: all 0.5s;
+  content: attr(aria-label);
+  color: var(--main-text-color);
+  position: absolute;
+  white-space: nowrap;
+  background-color: var(--disabled-color);
+  padding: 5px;
+  border-radius: 5px;
+  bottom: -2.6em;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: auto;
+  z-index: 10;
+  display: inline-block;
+  opacity: 0;
+  pointer-events: none;
+}
+
+*[aria-label]:hover::after,*[aria-label]:hover::before,*[aria-label]:active::after,*[aria-label]:active::before {
+  opacity: 1;
+}
+
+*[aria-label]::before {
+  transition: all 0.5s;
+  content: "";
+  position: absolute;
+  bottom: -0.5em;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 0 5px 5px 5px;
+  border-style: solid;
+  border-color:  transparent transparent var(--disabled-color) transparent;
+  z-index: 3;
+  display: inline-block;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.top-label::after {
+  top: -2.6em;
+  bottom: auto;
+}
+
+.top-label::before {
+  top: -0.5em;
+  bottom: auto;
+  border-width: 5px 5px 0 5px;
+  border-color: var(--disabled-color) transparent transparent transparent;
+}

@@ -166,7 +166,7 @@ function showState(state) {
     if (item.count <= 0) return;
     const itemHTML = `<span class="name">${item.name}</span>
         <span class="value">x ${item.count}</span>`
-    inventory.innerHTML += `<div class="item" title="${item.description}">${itemHTML}</div>`;
+    inventory.innerHTML += `<div class="item" aria-label="${item.description}">${itemHTML}</div>`;
   })
 
   document.getElementById('item').style.display = inventorys.length == 0 ? 'none' : 'block';

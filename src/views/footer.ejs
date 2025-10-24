@@ -6,12 +6,12 @@
     <p><a href="/auth/login" id="login">登录</a> | <a href="/auth/register" id="register">注册</a></p>
   <% }else{ -%>
     <p>
-      @<a title="个人资料" href="/u/<%= user.username %>"><%= user.nickname || user.username %></a>
+      @<a aria-label="个人资料" class="top-label" href="/u/<%= user.username %>"><%= user.nickname || user.username %></a>
       <% if (locals.name == 'index' && locals.story) { -%>
       / <a href="<%= locals.story.id %>/history">历史</a>
       / <a href="<%= locals.story.id %>/rank">排行榜</a>
       <% } -%>
-      / <a href="/admin" title="创作你的文字游戏">创作</a>
+      / <a href="/admin" aria-label="创作你的文字游戏">创作</a>
     </p>
   <% } -%>
   </div>
