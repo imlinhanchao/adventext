@@ -51,6 +51,7 @@ declare module 'vue' {
     ElTableColumn: typeof import('element-plus/es')['ElTableColumn']
     ElTag: typeof import('element-plus/es')['ElTag']
     ElTooltip: typeof import('element-plus/es')['ElTooltip']
+    ElUpload: typeof import('element-plus/es')['ElUpload']
     Icon: typeof import('@/components/Icon/index.ts')['default']
     'IconDataIcons.data': typeof import('@/components/Icon/data/icons.data.ts')['default']
     IconSrcIcon: typeof import('@/Icon.vue')['default']

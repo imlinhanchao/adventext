@@ -34,6 +34,34 @@ router.get("/items", async (req, res) => {
   json(res, items);
 });
 
+router.post("/items/bulk", async (req, res) => {
+  const story = req.story!;
+  const itemsData = req.body as any[];
+  const createdItems: any[] = [];
+  const updateItems: any[] = [];
+
+  for (const itemData of itemsData) {
+    const item = await ItemRepo.findOneBy({ key: itemData.key, storyId: story.id });
+    if (item) {
+      ItemRepo.merge(item, itemData);
+      updateItems.push(item);
+    } else createdItems.push(itemData);
+  }
+
+  const items = ItemRepo.create(createdItems.map(data => ({ ...data, storyId: story.id })));
+  await ItemRepo.save(items);
+
+  if (updateItems.length > 0) {
+    await ItemRepo.save(updateItems);
+  }
+
+  if (createdItems.length > 0) {
+    updateStoryStatus(req);
+  }
+
+  json(res, createdItems);
+});
+
 // 添加新物品
 router.post("/item", async (req, res) => {
   const story = req.story!;

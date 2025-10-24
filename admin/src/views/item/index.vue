@@ -2,6 +2,7 @@
   import { ItemApi, Item } from '@/api/item';
   import ItemForm from '@/views/item/item.vue';
   import { ElMessageBox } from 'element-plus';
+  import { dowloadTemplate, importItems } from './index'
 
   const query = reactive({
     name: '',
@@ -40,6 +41,20 @@
   onMounted(() => {
     search();
   });
+
+  function importData(file: File) {
+    importItems(file).then((importedItems) => {
+      itemApi.bulkCreate(importedItems).then(() => {
+        ElMessage.success('导入成功');
+        search();
+      });
+    });
+  }
+
+  function exportItems() {
+    dowloadTemplate(items.value);
+  }
+
 </script>
 
 <template>
@@ -47,6 +62,15 @@
     <el-header class="flex !py-2 justify-between" height="auto">
       <section class="flex space-x-2">
         <el-button type="primary" @click="add">添加</el-button>
+        <el-button type="info" @click="exportItems()">导出物品</el-button>
+        <el-button type="success" @click="dowloadTemplate()">下载模板</el-button>
+        <el-upload
+          :show-file-list="false"
+          :before-upload="importData"
+          accept=".xlsx"
+        >
+          <el-button type="warning">导入物品</el-button>
+        </el-upload>
       </section>
       <section class="flex space-x-2 justify-end items-center">
         <el-input v-model="query.type" clearable>

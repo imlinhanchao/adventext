@@ -75,6 +75,13 @@ export class ItemApi {
     }, { errorMessageMode: mode });
   }
 
+  bulkCreate(items: Item[]) {
+    return defHttp.post<void>({
+      url: `/${this.type}/${this.storyId}/items/bulk`,
+      data: items,
+    });
+  }
+
   create(item: Item) {
     return defHttp.post<Item>({
       url: `/${this.type}/${this.storyId}/item`,
