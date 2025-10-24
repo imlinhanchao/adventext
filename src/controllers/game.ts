@@ -139,6 +139,7 @@ export default class GameController {
   async gameState(userId: number, storyId: string) {
     const state = (await ProfileRepo.findOneBy({ userId, storyId, isEnd: false })) || new Profile(userId, storyId);
 
+    let isBegin = false;
     if (!state.scene) {
       const story = await this.getStory(storyId);
       if (!story) {
@@ -148,6 +149,7 @@ export default class GameController {
       state.attrName = story.attrName;
       state.scene = story.start;
       state.inventory = story.inventory;
+      isBegin = true;
     }
 
     let scene = await this.getSence(state.scene, storyId);
@@ -157,6 +159,10 @@ export default class GameController {
         throw new Error('故事不存在');
       }
       scene = await this.getSence(story.start, storyId);
+    }
+
+    if (isBegin && scene?.attributes.length) {
+      state.sceneAttr = scene.attributes.reduce((acc: any, cur: any) => { acc[cur.key] = cur.value, acc }, {});
     }
 
     return { state, scene };
@@ -885,6 +891,10 @@ export default class GameController {
 
       if (!nextScene) {
         throw new Error('Oops! 前方无路……');
+      }
+
+      if (next != scene.name && nextScene?.attributes.length) {
+        profile.sceneAttr = nextScene.attributes.reduce((acc: any, cur: any) => { acc[cur.key] = cur.value, acc }, {});
       }
 
       if (!virtual) {

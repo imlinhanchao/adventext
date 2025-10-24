@@ -44,6 +44,21 @@ export class Effect {
   }
 }
 
+export class IAttribute {
+  key: string;
+  name: string;
+  type: string;
+  value: any;
+
+  constructor(key: string, name: string, type: string, value: any) {
+    this.key = key;
+    this.name = name;
+    this.type = type;
+    this.value = value;
+  }
+}
+
+
 @Entity({ comment: '场景'})
 export class Scene {
   @PrimaryGeneratedColumn()
@@ -76,10 +91,15 @@ export class Scene {
   @Column({ comment: '场景渲染模式', default: 0 })
   renderMode: number = 0;
 
+  @Column("simple-array", { comment: '场景标签', default: '' })
+  tags: string[] = [];
+
+  @Column("json", { comment: '场景属性', default: [] })
+  attributes: IAttribute[];
+
   @Column('bigint', { comment: "创建时间" })
   createTime: number = 0;
   
   @Column('bigint', { comment: "更新时间" })
   updateTime: number = 0;
-
 }
