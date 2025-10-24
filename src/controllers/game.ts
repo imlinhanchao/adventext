@@ -420,6 +420,7 @@ export default class GameController {
   async runEffects(profile: Profile, effects: Effect[], option: any, valueText: string, timezone: number, itemTake?: Inventory, achievements?: any[], virtual = false) {
     try {
       let message = '', next = null;
+      let needTip = true;
       for (const effect of effects) {
         if (effect.conditions?.length &&
           (!await this.checkConditions(effect.conditions, profile, option, valueText, timezone, itemTake)
@@ -481,6 +482,7 @@ export default class GameController {
           profile.inventory = profile.inventory.filter(i => i.count > 0);
 
           if (count) msg += `${count > 0 ? '获得' : '扣除'} ${item.name}×${Math.abs(count)}.\n`;
+          else needTip = false;
         }
         if (effect.type === 'Scene') {
           const scene = effect.name;
@@ -578,7 +580,7 @@ export default class GameController {
           msg += result.message;
           next = result.next;
         }
-        if (effect.tip) {
+        if (effect.tip && needTip) {
           msg = effect.tip.replace(/\$item/g, itemTake?.name || '')
             .replace(/\$count/g, (itemTake?.count || '') + '')
             .replace(/\$value/g, valueText || '')
