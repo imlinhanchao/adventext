@@ -100,8 +100,8 @@ async function save () {
 const sceneFormRef = ref<InstanceType<typeof SceneForm>>();
 function addScene (scene?: Scene) {
   const position = {
-    x: sceneViewRef.value!.clientWidth / 2 - 200,
-    y: sceneViewRef.value!.clientHeight / 2 - 100,
+    x: (sceneViewRef.value!.clientWidth / 2 - pos.value.x) / zoom.value - 200,
+    y: (sceneViewRef.value!.clientHeight / 2 - pos.value.y) / zoom.value - 100,
   };
   scenes.value.forEach((s) => {
     if (s.position.x >= position.x && s.position.x < position.x + 40 &&
@@ -181,13 +181,13 @@ function highlightScene (next: string) {
   if (!sceneRef.value[next]) return;
 
   pos.value.x =
-    sceneViewRef.value.clientWidth / 2 -
-    nextScene.position.x -
-    sceneRef.value[next].$el.clientWidth / 2;
+    (sceneViewRef.value.clientWidth / 2 -
+    nextScene.position.x * zoom.value -
+    sceneRef.value[next].$el.clientWidth / 2 * zoom.value);
   pos.value.y =
-    sceneViewRef.value.clientHeight / 2 -
-    nextScene.position.y -
-    sceneRef.value[next].$el.clientHeight / 2;
+    (sceneViewRef.value.clientHeight / 2 -
+    nextScene.position.y * zoom.value -
+    sceneRef.value[next].$el.clientHeight / 2 * zoom.value);
 
   const timer = setInterval(() => {
     highlight.value = highlight.value ? '' : next;
