@@ -7,9 +7,22 @@ import { error, json, render } from "../utils/route";
 
 export function createRouter(type: string) {
   const router = Router();
-  router.get("/:storyId", userSession(async (user: User, req: Request, res: Response, next) => {
+  router.use("/:storyId", async (req: Request, res: Response, next) => {
     try {
       const game = new GameController(type);
+      const story = await game.getStory(req.params.storyId);
+      if (!story) {
+        return next();
+      }
+      req.story = story;
+      next();
+    } catch (err: any) {
+      error(res, err.message)
+    }
+  });
+  router.get("/:storyId", userSession(async (user: User, req: Request, res: Response, next) => {
+    try {
+      const game = new GameController(type, req.story);
       const story = await game.getStory(req.params.storyId);
       if (!story || type == 'draft' && story?.author !== user.username && !user.isAdmin) {
         return next();
@@ -24,34 +37,30 @@ export function createRouter(type: string) {
   }));
   router.post("/:storyId/init", userSession(async (user: User, req: Request, res: Response) => {
     try {
-      const game = new GameController(type);
-      const { state, content, scene } = await game.init(user, req, res);
-      json(res, {
-        scene,
-        state,
-        content,
-      })
+      const game = new GameController(type, req.story);
+      const data = await game.init(user, req, res);
+      json(res, data);
     } catch (err: any) {
       error(res, err.message)
     }
   }));
   router.post("/:storyId/choose", userSession((user: User, req: Request, res: Response) => {
-    const game = new GameController(type);
+    const game = new GameController(type, req.story);
     game.game(user, req, res)
   }));
   router.post("/:storyId/restart", userSession((user: User, req: Request, res: Response) => {
-    const game = new GameController(type);
+    const game = new GameController(type, req.story);
     game.restartGame(user, req, res)
   }));
   router.get("/:storyId/history", userSession((user: User, req: Request, res: Response, next) => {
-    const game = new GameController(type);
+    const game = new GameController(type, req.story);
     game.record(user, req, res, next)
   }));
 
 
   if (type === 'draft') {
     router.post("/:storyId/reset", userSession((user: User, req: Request, res: Response, next) => {
-      const game = new GameController(type);
+      const game = new GameController(type, req.story);
       if (req.body.achievement) {
         game.resetAchievement(user, req, res, next)
       } else {
@@ -61,7 +70,7 @@ export function createRouter(type: string) {
     
   } else {
     router.get("/:storyId/rank", userSession((user: User, req: Request, res: Response, next) => {
-      const game = new GameController(type);
+      const game = new GameController(type, req.story);
       game.rank(user, req, res, next)
     }));
   }

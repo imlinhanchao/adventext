@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
-import { Record, Profile, Scene, User, StoryRepo, DraftRepo, ProfileRepo, EndRepo, SceneRepo, ItemRepo, RecordRepo, RankRepo, Item, TargetRepo, AchievementRepo, Achievement, Target } from "../entities";
+import { Record, Profile, Scene, User, StoryRepo, DraftRepo, ProfileRepo, EndRepo, SceneRepo, ItemRepo, RecordRepo, RankRepo, Item, TargetRepo, AchievementRepo, Achievement, Target, Draft, Story } from "../entities";
 import { render, json, error } from "../utils/route";
 import { Condition, Effect } from '../entities/Scene';
 import { clone, omit, shortTime } from '../utils';
 import { Inventory } from '../entities/Profile';
-import { isNumber, isString } from '../utils/is';
+import { isArray, isNumber, isString } from '../utils/is';
 import { In, Not } from 'typeorm';
 import { callFn, createFn, tryEval } from '../utils/call';
 
@@ -125,27 +125,33 @@ export default class GameController {
   private type: string;
   private achievements?: Achievement[];
   private circle?: number;
+  private story?: Draft | Story;
 
   private callLogs: { type: string, data: any }[] = [];
 
-  constructor(type: string) {
+  constructor(type: string, story?: Draft | Story) {
     this.type = type;
+    this.story = story;
   }
 
   get storyRepo() {
     return this.type == 'draft' ? DraftRepo : StoryRepo;
   }
 
+  setStory(story?: Draft | Story) {
+    this.story = story;
+  }
+
   async gameState(userId: number, storyId: string) {
-    const state = (await ProfileRepo.findOneBy({ userId, storyId, isEnd: false })) || new Profile(userId, storyId);
+    let state = (await ProfileRepo.findOneBy({ userId, storyId, isEnd: false })) || new Profile(userId, storyId);
 
     let isBegin = false;
+    const story = this.story;
+    if (!story) {
+      throw new Error('故事不存在');
+    }
     if (!state.scene) {
-      const story = await this.getStory(storyId);
-      if (!story) {
-        throw new Error('故事不存在');
-      }
-      state.attr = story.attr.reduce((acc: any, cur: any) => { acc[cur.key] = cur.value, acc }, {});
+      state.attr = isArray(story.attr) ? story.attr.reduce((acc: any, cur: any) => (acc[cur.key] = cur.value, acc ), {}) : story.attr;
       state.attrName = story.attrName;
       state.scene = story.start;
       state.inventory = story.inventory;
@@ -154,18 +160,17 @@ export default class GameController {
 
     let scene = await this.getSence(state.scene, storyId);
     if (!scene) {
-      const story = await this.getStory(storyId);
       if (!story) {
         throw new Error('故事不存在');
       }
       scene = await this.getSence(story.start, storyId);
     }
 
-    if (isBegin && scene?.attributes.length) {
+    if (isBegin && scene?.attributes?.length) {
       state.sceneAttr = scene.attributes.reduce((acc: any, cur: any) => { acc[cur.key] = cur.value, acc }, {});
     }
 
-    return { state, scene };
+    return { state, scene, global: { options: story?.options } };
   }
 
   async getSence(scene: string, storyId: string) {
@@ -203,6 +208,10 @@ export default class GameController {
     return await this.storyRepo.findOne({ where: [{ id }, { alias: id }] });
   }
 
+  getProfileAttrName(profile: Profile, key: string) {
+    return Array.isArray(profile.attrName) ? profile.attrName.find(item => item.key === key)?.name : profile.attrName[key];
+  }
+
   async updateOptions(story: Scene, state: Profile, timezone: number, records?: Record[], achievements?: Achievement[]) {
     for (const option of story.options) {
       let record;
@@ -218,13 +227,13 @@ export default class GameController {
       }
       option.disabled = option.loop !== undefined && record && (option.loop < 0 || Date.now() - record.time < option.loop * 1000);
       if (option.disabled) continue;
-      option.disabled = !(await this.checkConditions(option.conditions?.filter(c => c.isHide) || [], state, option, '', timezone, undefined, achievements).catch(() => false));
+      option.disabled = !(await this.checkConditions(option.conditions?.filter(c => c.isHide) || [], state, option, '', timezone, undefined).catch(() => false));
     }
 
     return story.options;
   }
 
-  async checkConditions(conditions: Condition[], profile: Profile, option: any, valueText: string, timezone: number, itemTake?: Inventory, achievements?: Achievement[]) {
+  async checkConditions(conditions: Condition[], profile: Profile, option: any, valueText: string, timezone: number, itemTake?: Inventory) {
     function conditionOperator(left: number, right: number, operator: string) {
       switch (operator) {
         case '=':
@@ -516,8 +525,8 @@ export default class GameController {
             content = fillVar(content, '#', profile.attr);
             profile.attr[effect.name] = operatorData(profile.attr[effect.name], content, effect.operator);
           }
-          if (profile.attrName[effect.name]) {
-            msg += `${profile.attrName[effect.name]} ${oldValue} → ${profile.attr[effect.name]}.\n`;
+          if (this.getProfileAttrName(profile, effect.name)) {
+            msg += `${this.getProfileAttrName(profile, effect.name)} ${oldValue} → ${profile.attr[effect.name]}.\n`;
           }
           oldVal = oldValue;
           newVal = profile.attr[effect.name];
@@ -574,7 +583,13 @@ export default class GameController {
           }, (attr: { key: string; name?: string; value: string }) => {
             profile.attr[attr.key] = attr.value;
             if (attr.name) {
-              profile.attrName[attr.key] = attr.name;
+              if (Array.isArray(profile.attrName)) {
+                const attrItem = profile.attrName.find(item => item.key === attr.key);
+                if (attrItem) attrItem.name = attr.name;
+                else profile.attrName.push({ key: attr.key, name: attr.name });
+              } else {
+                profile.attrName[attr.key] = attr.name;
+              }
             }
           }, this.callLogs);
 
@@ -685,7 +700,8 @@ export default class GameController {
   async record(user: User, req: Request, res: Response, next: () => void) {
     try {
       const storyId = req.params.storyId;
-      const story = await this.getStory(storyId);
+      const story = this.story;
+
       let { p, count, end } = req.query;
       const page = Number(p || 1);
       const size = Math.min(Number(count || 50), 100);
@@ -761,7 +777,7 @@ export default class GameController {
   async rank(user: User, req: Request, res: Response, next: () => void) {
     try {
       const storyId = req.params.storyId;
-      const story = await this.getStory(storyId);
+      const story = this.story;
       let { p, count } = req.query;
       const page = Number(p || 1);
       const size = Math.min(Number(count || 50), 100);
@@ -841,11 +857,12 @@ export default class GameController {
     return content;
   }
 
-  async gameExcute(profile: Profile, scene: Scene, { option: optionText, value: valueText, timezone, achievements, circle }: any, virtual = false) {
+  async gameExcute(profile: Profile, scene: Scene, { option: optionText, value: valueText, timezone, achievements, circle, global }: any, virtual = false) {
     try {
       const storyId = profile.storyId;
+      const story = this.story;
       const userId = profile.userId;
-      const option = scene?.options.find((option) => option.text === optionText);
+      const option = !global ? scene?.options.find((option) => option.text === optionText) : story?.options?.find((option) => option.text === optionText);
       timezone = timezone ?? new Date().getTimezoneOffset() / -60;
       const oldProfile = clone(profile);
       this.achievements = achievements;
@@ -887,14 +904,16 @@ export default class GameController {
         next = profile.from;
       }
 
-      const nextScene = await this.getSence(next, storyId);
+      let nextScene = await this.getSence(next, storyId);
 
       if (!nextScene) {
         throw new Error('Oops! 前方无路……');
       }
 
-      if (next != scene.name && nextScene?.attributes.length) {
+      if (next != scene.name && nextScene?.attributes?.length) {
         profile.sceneAttr = nextScene.attributes.reduce((acc: any, cur: any) => { acc[cur.key] = cur.value, acc }, {});
+      } else if (next != scene.name || !profile.sceneAttr) {
+        profile.sceneAttr = {};
       }
 
       if (!virtual) {
@@ -912,16 +931,6 @@ export default class GameController {
 
       if (nextScene.name != scene!.name) profile.from = scene!.name;
       profile.scene = nextScene.name;
-
-      if (!virtual) {
-        const currentState = await ProfileRepo.findOneBy({ userId, storyId, isEnd: false });
-        if (currentState) {
-          Object.assign(currentState, profile);
-          await ProfileRepo.save(currentState);
-        } else {
-          profile = await ProfileRepo.save(profile);
-        }
-      }
 
       const targets = await TargetRepo.findBy({ storyId });
 
@@ -950,6 +959,27 @@ export default class GameController {
           }
         };
       }));
+
+      const globalEffects = this.story?.effects || [];
+      if (globalEffects.length) {
+        const { message: msg, next, profile: p } = await this.runEffects(profile, globalEffects, {}, '', timezone, undefined, this.achievements, virtual);
+        message = msg;
+        profile = p;
+        if (next != scene?.name) {
+          const scene = await this.getSence(next, storyId);
+          if (scene) nextScene = scene;
+        }
+      }
+
+      if (!virtual) {
+        const currentState = await ProfileRepo.findOneBy({ userId, storyId, isEnd: false });
+        if (currentState) {
+          Object.assign(currentState, profile);
+          await ProfileRepo.save(currentState);
+        } else {
+          profile = await ProfileRepo.save(profile);
+        }
+      }
 
       if (!virtual) {
         nextScene?.options && (nextScene.options = await this.updateOptions(nextScene, profile, timezone));
@@ -1020,10 +1050,14 @@ export default class GameController {
     try {
       const userId = user.id;
       const storyId = req.params.storyId;
-      let { state: profile, scene } = await this.gameState(userId, storyId);
+      let { state: profile, scene, global } = await this.gameState(userId, storyId);
 
       if (!scene) {
         throw new Error(`场景${profile.scene}丢失！`);
+      }
+
+      if (global.options?.length) {
+        global.options = await this.updateOptions({ name: '', options: global.options } as Scene, profile, req.body?.timezone ?? new Date().getTimezoneOffset() / -60);
       }
 
       const result = await this.gameExcute(profile, scene, req.body)
@@ -1034,7 +1068,8 @@ export default class GameController {
         scene: {
           ...scene,
           options: scene.options.filter(o => !o.disabled).map(o => omit(o, ['conditions', 'effects'])),
-        }
+        },
+        global
       })
     } catch (err: any) {
       error(res, err.message)
@@ -1105,13 +1140,13 @@ export default class GameController {
   async init(user: User, req: Request, res: Response) {
     try {
       const userId = user.id;
-      const story = await this.getStory(req.params.storyId);
+      const story = this.story;
 
       if (!story) {
         return {};
       }
 
-      const { state, scene } = await this.gameState(userId, req.params.storyId);
+      const { state, scene, global } = await this.gameState(userId, req.params.storyId);
 
       const options = await this.updateOptions(
         scene!,
@@ -1119,12 +1154,21 @@ export default class GameController {
         req.body?.timezone ?? new Date().getTimezoneOffset() / -60
       ).then((options) => options.filter(o => !o.disabled));
 
+      if (global.options?.length) {
+        global.options = await this.updateOptions(
+          { name: '', options: global.options } as Scene,
+          state,
+          req.body?.timezone ?? new Date().getTimezoneOffset() / -60
+        );
+      }
+
       return {
         state,
         scene: {
           ...scene,
           options: options.map(o => omit(o, ['conditions', 'effects'])),
         },
+        global,
         story,
         content: await this.getContent(state, scene!)
       }

@@ -91,10 +91,10 @@ export class Scene {
   @Column({ comment: '场景渲染模式', default: 0 })
   renderMode: number = 0;
 
-  @Column("simple-array", { comment: '场景标签', default: '' })
+  @Column("simple-array", { comment: '场景标签' })
   tags: string[] = [];
 
-  @Column("json", { comment: '场景属性', default: [] })
+  @Column("json", { comment: '场景属性' })
   attributes: IAttribute[];
 
   @Column('bigint', { comment: "创建时间" })

@@ -197,6 +197,16 @@ export class Scene {
    */
   customStyle?: string;
 
+  /**
+   * 标签
+   */
+  tags: string[] = [];
+
+  /**
+   * 场景属性
+   */
+  attributes?: IAttribute[];
+
   constructor(name: string = '') {
     this.name = name;
   }

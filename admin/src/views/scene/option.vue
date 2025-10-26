@@ -1,14 +1,10 @@
 <script setup lang="ts">
-  import Sortable from 'sortablejs';
-  import { Option, Scene, ConditionType, EffectType, Condition, Effect } from '@/api/scene';
+  import { Option, Scene } from '@/api/scene';
   import { clone } from '@/utils';
-  import { ElTable, FormInstance } from 'element-plus';
-  import ConditionForm from './condition.vue';
-  import EffectForm from './effect.vue';
+  import { FormInstance } from 'element-plus';
   import ScenePrompt from './prompt.vue';
-  import ItemForm from '@/views/item/item.vue';
-  import { ItemApi, Item } from '@/api/item';
-  import { contentFormat } from './index';
+  import Conditions from './conditions.vue';
+  import Effects from './effects.vue';
 
   const props = defineProps<{
     scenes: Scene[];
@@ -19,7 +15,6 @@
 
   const visible = ref(false);
   const data = ref<Option>(new Option('', ''));
-  const itemApi = computed(() => new ItemApi(props.story, props.type));
 
   const formRef = ref<FormInstance>();
   const rules = computed(() => ({
@@ -28,69 +23,10 @@
   }));
 
 
-  const tableKey = ref<Recordable<number>>({});
-  const effectTableRef = ref<InstanceType<typeof ElTable>>();
-  const conditionTableRef = ref<InstanceType<typeof ElTable>>();
-  const effectRowDrop = getRowDrop(effectTableRef, 'effects');
-  const conditionRowDrop = getRowDrop(conditionTableRef, 'conditions');
-  function getRowDrop(tableRef, key) {
-    tableKey.value[key] = tableKey.value[key] || 0;
-    function rowDrop() {
-      if (!tableRef.value) return;
-      const tbody = tableRef.value.$el.querySelector('.el-table__body-wrapper tbody');
-      Sortable.create(tbody, {
-        handle: '.move',
-        animation: 300,
-        ghostClass: 'ghost',
-        onEnd: ({ newIndex, oldIndex }) => {
-          const tableData = data.value[key] || [];
-          const currRow = tableData.splice(oldIndex, 1)[0];
-          tableData.splice(newIndex, 0, currRow);
-          tableKey.value[key]++;
-          nextTick(() => rowDrop());
-        },
-      });
-    }
-
-    return rowDrop;
-  }
-
-  const conditionRef = ref<InstanceType<typeof ConditionForm>>();
-  function addCon() {
-    conditionRef.value?.open().then((condition: Condition) => {
-      if (!data.value.conditions) data.value.conditions = []
-      data.value.conditions.push(condition);
-      nextTick(() => conditionRowDrop());
-    });
-  }
-  function editCon(condition: Condition) {
-    conditionRef.value?.open(condition).then((data: Condition) => {
-      Object.assign(condition, data);
-    });
-  }
-
-  const effectRef = ref<InstanceType<typeof EffectForm>>();
-  function addEffect() {
-    effectRef.value?.open().then((effect: Effect) => {
-      if (!data.value.effects) data.value.effects = []
-      data.value.effects.push(effect);
-      nextTick(() => effectRowDrop());
-    });
-  }
-  function editEffect(effect: Effect) {
-    effectRef.value?.open(effect).then((data: Effect) => {
-      Object.assign(effect, data);
-    });
-  }
-  
   let saveResolve: (option: Option) => void;
   function open(option?: Option) {
     visible.value = true;
     data.value = clone(option || new Option('', ''));
-    nextTick(() => {
-      effectRowDrop();
-      conditionRowDrop();
-    });
 
     return new Promise((resolve) => {
       saveResolve = resolve;
@@ -129,12 +65,6 @@
       content: '返回上一个场景',
     } as Scene);
     cb(scenes)
-  }
-
-  const itemRef = ref<InstanceType<typeof ItemForm>>();
-  async function editItem(name: string) {
-    const item = await itemApi.value.get(name, 'none').catch(() => new Item(name));
-    itemRef.value?.open(item);
   }
 
 </script>
@@ -216,91 +146,8 @@
         <span v-else>不可重复</span>
       </el-form-item>
       <ScenePrompt v-model="data.value" />
-      <el-divider>
-        条件列表
-        <el-tooltip placement="top">
-          <template #content>
-            <p>
-              用于对玩家选择选项的前置判断，确认玩家是否满足触发选项的条件。也可以通过勾选<b>用于隐藏选项</b>，在获取选项阶段用于过滤选项。
-            </p>
-          </template>
-          <Icon icon="i-ep:info-filled" :size="14" />
-        </el-tooltip>
-      </el-divider>
-      <el-table ref="conditionTableRef" :data="data.conditions" border stripe :key="tableKey.conditions || 0">
-        <el-table-column label="#" width="50" align="center">
-          <template #default>
-            <el-button type="primary" link class="move cursor-move" icon="el-icon-d-caret" />
-          </template>
-        </el-table-column>
-        <el-table-column prop="type" label="类型" :formatter="({type}) => ConditionType[type]" />
-        <el-table-column prop="name" label="条件对象" />
-        <el-table-column prop="content" label="内容" show-overflow-tooltip :formatter="contentFormat" />
-        <el-table-column prop="tip" label="提示" show-overflow-tooltip />
-        <el-table-column label="操作" width="100px" align="center">
-          <template #header>
-            <el-button type="primary" link size="small" @click="addCon">
-              <Icon icon="i-ep:circle-plus" />
-            </el-button>
-          </template>
-          <template #default="{ row, $index }">
-            <el-button type="primary" link size="small" @click="editCon(row)">
-              <Icon icon="i-ep:edit" />
-            </el-button>
-            <el-button type="danger" link size="small" @click="data.conditions?.splice($index, 1)">
-              <Icon icon="i-ep:remove" />
-            </el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-      <ConditionForm ref="conditionRef" :type="type" />
-      <el-divider>
-        效果列表
-        <el-tooltip placement="top">
-          <template #content>
-            <p>
-              用于设置玩家选择选项后属性或背包的修改。通过配置不同的类型，可以修改玩家的属性、物品和下一个场景等。
-            </p>
-          </template>
-          <Icon icon="i-ep:info-filled" :size="14" />
-        </el-tooltip>
-      </el-divider>
-      <el-table ref="effectTableRef" :data="data.effects" border stripe :key="tableKey.effects || 0">
-        <el-table-column label="#" width="50" align="center">
-          <template #default>
-            <el-button type="primary" link class="move cursor-move" icon="el-icon-d-caret" />
-          </template>
-        </el-table-column>
-        <el-table-column prop="type" label="类型" :formatter="({type}) => EffectType[type]" />
-        <el-table-column prop="name" label="效果对象">
-          <template #default="{ row }">
-            <span>{{ row.name }}</span>
-            <el-button v-if="row.type == 'Item'" link icon="el-icon-edit" size="small" @click="editItem(row.name)" />
-          </template>
-        </el-table-column>
-        <el-table-column prop="content" label="内容" show-overflow-tooltip>
-          <template #default="{ row }">
-            <span>{{ row.operator || '' }}{{ row.content }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" width="100px" align="center">
-          <template #header>
-            <el-button type="primary" link size="small" @click="addEffect">
-              <Icon icon="i-ep:circle-plus" />
-            </el-button>
-          </template>
-          <template #default="{ row, $index }">
-            <el-button type="primary" link size="small" @click="editEffect(row)">
-              <Icon icon="i-ep:edit" />
-            </el-button>
-            <el-button type="danger" link size="small" @click="data.effects?.splice($index, 1)">
-              <Icon icon="i-ep:remove" />
-            </el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-      <EffectForm ref="effectRef" :type="type" :scenes="scenes" />
-      <ItemForm ref="itemRef" :storyId="story" :type="type" />
+      <Conditions v-model:conditions="data.conditions" :type="type" />
+      <Effects v-model:effects="data.effects" :type="type" :story="story" :scenes="scenes" />
     </el-form>
     <template #footer>
       <el-button @click="visible = false">取消</el-button>

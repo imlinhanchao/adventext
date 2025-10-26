@@ -1,11 +1,11 @@
 <script setup lang="ts">
-  import { Effect, EffectType, ConditionType, Condition, Scene } from '@/api/scene';
+  import { Effect, EffectType, Scene } from '@/api/scene';
   import { clone } from '@/utils';
   import { FormInstance } from 'element-plus';
-  import { ItemsContext, StoryContext, TargetsContext, contentFormat } from './index';
+  import { ItemsContext, StoryContext, TargetsContext } from './index';
   import ItemSelector from '@/views/item/selector.vue';
   import { Item } from '@/api/item';
-  import ConditionForm from './condition.vue';
+  import Conditions from './conditions.vue';
 
   const props = defineProps<{
     scenes: Scene[];
@@ -111,19 +111,6 @@
       content: '返回上一个场景',
     } as Scene);
     cb(scenes)
-  }
-
-  const conditionRef = ref<InstanceType<typeof ConditionForm>>();
-  function addCon() {
-    conditionRef.value?.open().then((condition: Condition) => {
-      if (!data.value.conditions) data.value.conditions = []
-      data.value.conditions.push(condition);
-    });
-  }
-  function editCon(condition: Condition) {
-    conditionRef.value?.open(condition).then((data: Condition) => {
-      Object.assign(condition, data);
-    });
   }
 
 </script>
@@ -401,37 +388,7 @@
           <el-button @click="data.content = 'percent(10,2)'">概率数</el-button>
           <el-button @click="data.content = '$value'">弹窗输入</el-button>
         </p>
-        <el-divider>
-          触发条件
-          <el-tooltip placement="top">
-            <template #content>
-              <p>
-                用于触发效果的前置判断，确认玩家是否满足触发效果的条件。不设置则只要触发选项就触发效果。
-              </p>
-            </template>
-            <Icon icon="i-ep:info-filled" :size="14" />
-          </el-tooltip>
-        </el-divider>
-        <el-table :data="data.conditions" border stripe>
-          <el-table-column prop="type" label="类型" :formatter="({type}) => ConditionType[type]" />
-          <el-table-column prop="name" label="条件对象" />
-          <el-table-column prop="content" label="内容" show-overflow-tooltip :formatter="contentFormat" />
-          <el-table-column label="操作" width="100px" align="center">
-            <template #header>
-              <el-button type="primary" link size="small" @click="addCon">
-                <Icon icon="i-ep:circle-plus" />
-              </el-button>
-            </template>
-            <template #default="{ row, $index }">
-              <el-button type="primary" link size="small" @click="editCon(row)">
-                <Icon icon="i-ep:edit" />
-              </el-button>
-              <el-button type="danger" link size="small" @click="data.conditions?.splice($index, 1)">
-                <Icon icon="i-ep:remove" />
-              </el-button>
-            </template>
-          </el-table-column>
-        </el-table>
+        <Conditions :type="type" v-model:conditions="data.conditions" check-only />
       </template>
       <ItemSelector
         v-if="story"
@@ -440,7 +397,6 @@
         :type="type"
         @confirm="items = $event"
       />
-      <ConditionForm ref="conditionRef" :type="type" check-only />
     </el-form>
     <el-dialog v-if="'Fn' == data.type" v-model="codeVisible" fullscreen destroy-on-close>
       <section class="flex flex-col w-full h-full">

@@ -35,7 +35,7 @@ export class Profile {
   sceneAttr: any;
 
   @Column('json', { comment: '属性名称' })
-  attrName: { [key: string]: [string, string] | string } = {}
+  attrName: { [key: string]: [string, string] | string } | { key: string; name: string; }[] = [];
 
   @Column('int', { comment: '结局 ID' })
   endId: number;

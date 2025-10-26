@@ -9,13 +9,7 @@ export default defineConfig({
     },
   },
   content: {
-    pipeline: {
-      include: [
-        /\.(vue|[jt]sx|html)($|\?)/,
-        // https://unocss.dev/guide/extracting#extracting-from-build-tools-pipeline
-        'src/router/routes/**/*.{js,ts}',
-      ],
-    },
+    filesystem: ["./src/*.{html,js,ts,jsx,tsx,vue,svelte,astro}"],
   },
   shortcuts: [
     ['wh-full', 'w-full h-full'],

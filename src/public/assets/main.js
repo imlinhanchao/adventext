@@ -1,4 +1,51 @@
-function startGame(scene, state, content) {
+let lock = false;
+async function chooseOption(option, state, global=false) {
+  if (lock) return;
+  let value;
+  if (option.value?.startsWith('item:') || option.value?.startsWith('items:')) {
+    const [_, message, type] = option.value.split(':');
+    const types = type ? type.split(',') : [];
+    let inventory = state.inventory.filter(item => item.count > 0);
+    if (type) inventory = inventory.filter(item => types.includes(item.type));
+    if (inventory.length === 0) {
+      showMessage(type ? `你没有${type}` : '先去别处转转吧', 'error')
+      return;
+    }
+    value = await selectItem(inventory, message, option.value?.startsWith('items:')).catch(() => {
+      this.disabled = false
+    });
+    if (!value) return;
+  } else if (option.value) {
+    value = prompt(option.value)
+    if (!value) return;
+  }
+  lock = true;
+  fetch(`./${window.storyId}/choose`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    credentials: 'include',
+    body: JSON.stringify({
+      option: option.text,
+      value,
+      timezone: new Date().getTimezoneOffset() / -60,
+      global,
+    })
+  }).then(res => res.json())
+    .then(res => {
+      this.disabled = false;
+      if (!res.code) {
+        const { scene, state, content, message, global } = res.data;
+        startGame(scene, state, content, global);
+        if (message) showMessage(message, 'info')
+      } else {
+        showMessage(res.message, 'error')
+      }
+    }).finally(() => lock = false);
+}
+
+function startGame(scene, state, content, global) {
   const storyDiv = document.getElementById('story');
   const optionsDiv = document.getElementById('options');
   const customStyle = document.getElementById('custom-style');
@@ -8,7 +55,6 @@ function startGame(scene, state, content) {
   optionsDiv.innerHTML = '';
   customStyle.innerHTML = scene.customStyle || '';
 
-  let lock = false;
   if (scene.isEnd) {
     showMessage(`收获结局：${scene.theEnd}`, 'success')
     const button = document.createElement('button');
@@ -40,54 +86,26 @@ function startGame(scene, state, content) {
       button.className = 'option_' + option.text;
       if (option.id) button.id = 'option_' + option.id;
 
-      button.onclick = async () => {
-        if (lock) return;
-        let value;
-        if (option.value?.startsWith('item:') || option.value?.startsWith('items:')) {
-          const [_, message, type] = option.value.split(':');
-          const types = type ? type.split(',') : [];
-          let inventory = state.inventory.filter(item => item.count > 0);
-          if (type) inventory = inventory.filter(item => types.includes(item.type));
-          if (inventory.length === 0) {
-            showMessage(type ? `你没有${type}` : '先去别处转转吧', 'error')
-            return;
-          }
-          value = await selectItem(inventory, message, option.value?.startsWith('items:')).catch(() => {
-            button.disabled = false
-          });
-          if (!value) return;
-        } else if (option.value) {
-          value = prompt(option.value)
-          if (!value) return;
-        }
-        lock = true;
-        fetch(`./${window.storyId}/choose`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          credentials: 'include',
-          body: JSON.stringify({
-            option: option.text,
-            value,
-            timezone: new Date().getTimezoneOffset() / -60
-          })
-        }).then(res => res.json())
-          .then(res => {
-            button.disabled = false;
-            if (!res.code) {
-              const { scene, state, content, message } = res.data;
-              startGame(scene, state, content);
-              if (message) showMessage(message, 'info')
-            } else {
-              showMessage(res.message, 'error')
-            }
-          }).finally(() => lock = false);
-      };
+      button.onclick = () => chooseOption(option, state).bind(button);
       optionsDiv.appendChild(button);
     });
   }
 
+  if (global.options?.length) {
+    const globalDiv = document.getElementById('global');
+    const globalOptionsDiv = globalDiv.querySelector('.options');
+    globalDiv.classList.remove('hidden');
+    globalOptionsDiv.innerHTML = '';
+    global.options.forEach(option => {
+      const button = document.createElement('button');
+      button.textContent = option.text;
+      button.className = 'option-btn option_' + option.text;
+      if (option.id) button.id = 'global_option_' + option.id;
+
+      button.onclick = () => chooseOption(option, state, true).bind(button);
+      globalOptionsDiv.appendChild(button);
+    });
+  }
   showState(state)
 }
 
@@ -167,7 +185,8 @@ function showState(state) {
   const inventory = document.querySelector('#profile .inventory');
 
   attr.innerHTML = '';
-  Object.entries(state.attrName).forEach(function ([key, name]) {
+  const attrNames = Array.isArray(state.attrName) ? state.attrName.map(({ key, name}) => [key, name]) : Object.entries(state.attrName);
+  attrNames.forEach(function ([key, name]) {
     const attrHTML = `<span class="name">${name}</span>
         <span class="value">${state.attr[key]}</span>`
     attr.innerHTML += `<div class="item">${attrHTML}</div>`;
@@ -208,8 +227,8 @@ function initGame(story) {
   }).then(res => res.json())
     .then(res => {
       if (!res.code) {
-        const { scene, state, content } = res.data;
-        startGame(scene, state, content);
+        const { scene, state, content, global } = res.data;
+        startGame(scene, state, content, global);
       } else {
         showMessage(res.message, 'error')
       }

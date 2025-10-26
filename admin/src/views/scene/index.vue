@@ -360,7 +360,7 @@ function gotoPlay () {
               </ButtonEx>
             </el-form>
           </el-header>
-          <el-main class="!h-full overflow-unset">
+          <el-main class="!h-full !overflow-unset">
             <section class="w-full h-full relative" ref="sceneViewRef">
               <section
                 id="scenePanel" ref="scenePanelRef" class="absolute"

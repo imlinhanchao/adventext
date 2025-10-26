@@ -208,8 +208,14 @@ h3 {
   border-radius: 4px;
   cursor: pointer;
 }
+
 #options button {
   margin: 2px;
+}
+
+#global .option-btn {
+  font-size: 14px;
+  padding: 3px 8px;
 }
 
 #profile .item {

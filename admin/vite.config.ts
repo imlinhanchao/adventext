@@ -5,6 +5,7 @@ import { defineConfig, loadEnv } from 'vite';
 import { OUTPUT_DIR } from './build/constant';
 import { wrapperEnv } from './build/utils';
 import { createVitePlugins } from './build/vite/plugin';
+import { createProxy } from './build/vite/proxy';
 
 function pathResolve(dir) {
   return resolve(process.cwd(), '.', dir);
@@ -13,7 +14,7 @@ function pathResolve(dir) {
 function getWebPort() {
   const filePath = pathResolve('../src/config.json');
   if (existsSync(filePath)) {
-    return JSON.parse(readFileSync(filePath, 'utf-8')).webport || 3000;
+    return Number(JSON.parse(readFileSync(filePath, 'utf-8')).webport || 3000);
   } else {
     return 3000; // Default port if config file does not exist
   }
@@ -27,7 +28,7 @@ export default defineConfig(({ command, mode }: ConfigEnv): UserConfig => {
   // The boolean type read by loadEnv is a string. This function can be converted to boolean type
   const viteEnv = wrapperEnv(env);
 
-  const { VITE_PORT, VITE_PUBLIC_PATH, VITE_DROP_CONSOLE } = viteEnv;
+  const { VITE_PORT, VITE_PUBLIC_PATH, VITE_DROP_CONSOLE, VITE_PROXY } = viteEnv;
 
   const isBuild = command === 'build';
 
@@ -64,14 +65,7 @@ export default defineConfig(({ command, mode }: ConfigEnv): UserConfig => {
       cors: true,
       hmr: true,
       // Load proxy configuration from .env
-      proxy: {
-        "/api": {
-          target: `http://127.0.0.1:${getWebPort()}/api`,
-          changeOrigin: true,
-          ws: true,
-          rewrite: (path) => path.replace(new RegExp(`^/api`), ''),
-        }
-      }
+      proxy: createProxy(getWebPort(), VITE_PROXY),
     },
     esbuild: {
       drop: VITE_DROP_CONSOLE ? ['console', 'debugger'] : [],
