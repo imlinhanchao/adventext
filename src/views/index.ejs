@@ -44,6 +44,9 @@
   <script>
     initGame('<%= locals.story?.id-%>');
   </script>
+  <style id="global-style">
+    <%- locals.story.customStyle || '' %>
+  </style>
 </article>
 
 <%- include('footer') %>

@@ -27,8 +27,12 @@
     scene: story?.value.start || '',
     from: '',
     inventory: story?.value.inventory || [],
-    attr: isArray(story?.value.attr) ? story?.value.attr.reduce((acc: any, cur: any) => (acc[cur.key] = cur.value, acc), {}) || {} : story?.value.attr || {},
+    attr: isArray(story?.value.attr)
+      ? story?.value.attr.reduce((acc: any, cur: any) => ((acc[cur.key] = cur.value), acc), {}) ||
+        {}
+      : story?.value.attr || {},
     attrName: story?.value.attrName,
+    sceneAttr: {},
   });
   const sceneMap = computed(() =>
     scenes?.value.reduce(
@@ -48,6 +52,7 @@
   const circle = ref(1);
   const fnLogs = ref<any[]>([]);
   const logView = ref(false);
+  const globalOptions = ref<Option[]>([]);
 
   onMounted(async () => {
     const { options, content: text } = await updateOptions(
@@ -59,6 +64,14 @@
     );
     currentScene.value.options = options;
     content.value = text;
+
+    globalOptions.value = await updateOptions(
+      { name: '', options: story.value.options || [] } as Scene,
+      profile.value,
+      records.value,
+      achievements.value,
+      circle.value,
+    ).then((res) => res.options);
   });
 
   function restart() {
@@ -70,6 +83,7 @@
       inventory: story.value.inventory || [],
       attr: story.value.attr || {},
       attrName: story.value.attrName || {},
+      sceneAttr: {},
     };
     currentScene.value = sceneMap.value[profile.value.scene];
     records.value = [];
@@ -101,7 +115,7 @@
 
   const content = ref('');
   const loading = ref(false);
-  async function run(option: Option) {
+  async function run(option: Option, global = false) {
     let value = await getValue(option);
     if (value === false) return;
     loading.value = true;
@@ -121,6 +135,8 @@
       achievements: achievements.value,
       value,
       circle: circle.value,
+      global,
+      options: story.value.options || [],
     }).catch((err) => {
       msgType.value = 'error';
       message.value = err.message;
@@ -150,10 +166,19 @@
     ).finally(() => {
       loading.value = false;
     });
+
     sceneMap.value[next || scene.name].options = options;
     content.value = updateContent;
     currentScene.value = sceneMap.value[next || scene.name];
     fnLogs.value.push(...optionLogs);
+
+    globalOptions.value = await updateOptions(
+      { name: '', options: story.value.options || [] } as Scene,
+      profile.value,
+      records.value,
+      achievements.value,
+      circle.value,
+    ).then((res) => res.options);
 
     message.value = msg;
     msgType.value = 'info';
@@ -259,7 +284,9 @@
       );
       return attr ? attr.name + `(${attr.key})` : key;
     } else {
-      return (profile.value.attrName?.[key] || key) + (profile.value.attrName?.[key] ? `(${key})` : '');
+      return (
+        (profile.value.attrName?.[key] || key) + (profile.value.attrName?.[key] ? `(${key})` : '')
+      );
     }
   }
 </script>
@@ -303,82 +330,101 @@
           class="!w-20"
         />
       </section>
-      <section class="space-x-2">
-        <label class="bg-black text-white p-1 mr-1 rounded">
-          <ButtonEx
-            link
-            icon="el-icon-plus"
-            class="!text-inherit"
-            content="手动添加"
-            @click="addAttr"
-          />
-          属性
-        </label>
-        <span v-for="(value, key) in profile.attr" :key="key" class="inline-block my-1">
-          {{ getProfileAttrName(key as string) }}:
-          <el-input-number
-            v-if="isNumber(value) || null === value"
-            v-model="profile.attr[key]"
-            size="small"
-            controls-position="right"
-            class="!w-20"
-          />
-          <el-input
-            v-else-if="isString(profile.attr[key])"
-            v-model="profile.attr[key]"
-            size="small"
-            class="!w-20"
-            :type="profile.attr[key].includes('\n') ? 'textarea' : 'text'"
-          />
-          <ButtonEx
-            v-else
-            icon="i-material-symbols:search"
-            link
-            @click="viewObject(profile.attr[key])"
-          />
-        </span>
-      </section>
-      <section class="space-x-2">
-        <label class="bg-black text-white p-1 mr-1 rounded">
-          <ButtonEx
-            link
-            icon="el-icon-plus"
-            class="!text-inherit"
-            content="手动添加"
-            @click="addInventory"
-          />
-          物品
-        </label>
-        <span v-for="item in profile.inventory" :key="item.id">
-          <el-tooltip :content="`[${item.type}]${item.description}`">
-            <span>
-              {{ item.name }}({{ item.key }}) x
-              <el-input-number
-                v-model="item.count"
-                size="small"
-                controls-position="right"
-                class="!w-20 my-1"
-              />
-            </span>
-          </el-tooltip>
-        </span>
-      </section>
-      <section class="space-x-2">
-        <label class="bg-black text-white p-1 mr-1 rounded">
-          <ButtonEx
-            link
-            icon="el-icon-plus"
-            class="!text-inherit"
-            content="手动添加"
-            @click="addAchievement"
-          />
-          成就
-        </label>
-        <span v-for="item in achievements" :key="item.key">
-          <el-tooltip :content="item.description">
-            <span> {{ item.name }}({{ item.key }}) </span>
-          </el-tooltip>
-        </span>
+      <section id="profile">
+        <section id="attr" class="space-x-2">
+          <label class="bg-black text-white p-1 mr-1 rounded">
+            <ButtonEx
+              link
+              icon="el-icon-plus"
+              class="!text-inherit"
+              content="手动添加"
+              @click="addAttr"
+            />
+            属性
+          </label>
+          <span v-for="(value, key) in profile.attr" :key="key" class="inline-block my-1">
+            {{ getProfileAttrName(key as string) }}:
+            <el-input-number
+              v-if="isNumber(value) || null === value"
+              v-model="profile.attr[key]"
+              size="small"
+              controls-position="right"
+              class="!w-20"
+            />
+            <el-input
+              v-else-if="isString(profile.attr[key])"
+              v-model="profile.attr[key]"
+              size="small"
+              class="!w-20"
+              :type="profile.attr[key].includes('\n') ? 'textarea' : 'text'"
+            />
+            <ButtonEx
+              v-else
+              icon="i-material-symbols:search"
+              link
+              @click="viewObject(profile.attr[key])"
+            />
+          </span>
+        </section>
+        <section id="item" class="space-x-2">
+          <label class="bg-black text-white p-1 mr-1 rounded">
+            <ButtonEx
+              link
+              icon="el-icon-plus"
+              class="!text-inherit"
+              content="手动添加"
+              @click="addInventory"
+            />
+            物品
+          </label>
+          <span v-for="item in profile.inventory" :key="item.id">
+            <el-tooltip :content="`[${item.type}]${item.description}`">
+              <span>
+                {{ item.name }}({{ item.key }}) x
+                <el-input-number
+                  v-model="item.count"
+                  size="small"
+                  controls-position="right"
+                  class="!w-20 my-1"
+                />
+              </span>
+            </el-tooltip>
+          </span>
+        </section>
+        <section class="space-x-2">
+          <label class="bg-black text-white p-1 mr-1 rounded">
+            <ButtonEx
+              link
+              icon="el-icon-plus"
+              class="!text-inherit"
+              content="手动添加"
+              @click="addAchievement"
+            />
+            成就
+          </label>
+          <span v-for="item in achievements" :key="item.key">
+            <el-tooltip :content="item.description">
+              <span> {{ item.name }}({{ item.key }}) </span>
+            </el-tooltip>
+          </span>
+        </section>
+        <section id="global">
+          <section class="flex justify-between">
+            <template v-for="o in globalOptions" :key="o.text">
+              <el-button
+                v-if="!o.disabled"
+                plain
+                type="primary"
+                @click="run(o, true)"
+                :loading="loading"
+                :id="o.id && `option_${o.id}`"
+                :class="`option_${o.text}`"
+              >
+                {{ o.text }}
+              </el-button>
+            </template>
+          </section>
+        </section>
       </section>
       <el-alert v-if="message" :type="msgType" :closable="false">{{ message }}</el-alert>
       <ButtonEx
@@ -413,6 +459,9 @@
       </section>
       <component :is="'style'" id="custom-style">
         {{ currentScene.customStyle }}
+      </component>
+      <component :is="'style'" id="global-style">
+        {{ story.customStyle }}
       </component>
       <ItemSelector ref="itemRef" :story="story.id!" multiple inventory :type="type" />
       <TargetSelector ref="targetSelectorRef" :story="story.id!" :type="type" multiple />

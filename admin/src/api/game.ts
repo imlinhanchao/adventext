@@ -1,5 +1,5 @@
 import { defHttp } from '@/utils/http';
-import { Scene } from './scene';
+import { Scene, Option } from './scene';
 import { Inventory } from './draft';
 import { Achievement } from './target';
 
@@ -34,6 +34,11 @@ export class Profile {
    * 属性
    */
   attr: Recordable<any> = {};
+
+  /**
+   * 场景属性
+   */
+  sceneAttr: Recordable<any> = {};
 
   /**
    * 属性名称
@@ -89,7 +94,7 @@ export class SceneRecord {
 /**
  * 模拟运行游戏
  */
-export function gameRun(data: { scene: Scene, profile: Profile, option: string, timezone?: number, value: string, achievements?: Achievement[], circle?: number }) {
+export function gameRun(data: { scene: Scene, profile: Profile, option: string, timezone?: number, value: string, achievements?: Achievement[], circle?: number, global?: boolean, options?: Option[] }) {
   return defHttp.post({
     url: `/story/run`,
     data
