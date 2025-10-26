@@ -33,12 +33,12 @@ export class Profile {
   /**
    * 属性
    */
-  attr: any;
+  attr: Recordable<any> = {};
 
   /**
    * 属性名称
    */
-  attrName: { [key: string]: [string, string] | string } = {}
+  attrName: { [key: string]: [string, string] | string } | { key: string; name: string }[] = []
 
   constructor(user: number, storyId: string) {
     this.userId = user;
@@ -47,7 +47,7 @@ export class Profile {
     this.from = '';
     this.inventory = [];
     this.attr = {};
-    this.attrName = {};
+    this.attrName = [];
   }
 }
 

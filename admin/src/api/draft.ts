@@ -48,7 +48,7 @@ export class Draft {
   /**
    * 属性名称
    */
-  attrName: Recordable<string>;
+  attrName: { key: string; name: string; }[];
 
   /**
    * 初始化物品
@@ -58,12 +58,12 @@ export class Draft {
   /**
    * 全局效果
    */
-  effects: Effect[];
+  effects?: Effect[];
 
   /**
    * 全局选项
    */
-  options: Option[];
+  options?: Option[];
 
   /**
    * 自定义样式
@@ -87,10 +87,8 @@ export class Draft {
     this.description = '';
     this.start = '';
     this.attr = [];
-    this.attrName = {};
+    this.attrName = [];
     this.inventory = [];
-    this.effects = [];
-    this.options = [];
     this.customStyle = '';
     this.status = 0;
     this.comment = '';

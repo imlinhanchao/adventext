@@ -7,7 +7,7 @@
   import { ScenesContext, StoryContext } from './index';
   import { Option, Scene } from '@/api/scene';
   import { Item } from '@/api/item';
-  import { clone, isNumber, isString } from '@/utils';
+  import { clone, isNumber, isString, isArray } from '@/utils';
   import { formatDate } from '@vueuse/core';
   import { Achievement } from '@/api/target';
   import { Inventory } from '@/api/draft';
@@ -27,8 +27,8 @@
     scene: story?.value.start || '',
     from: '',
     inventory: story?.value.inventory || [],
-    attr: story?.value.attr || {},
-    attrName: story?.value.attrName || {},
+    attr: isArray(story?.value.attr) ? story?.value.attr.reduce((acc: any, cur: any) => (acc[cur.key] = cur.value, acc), {}) || {} : story?.value.attr || {},
+    attrName: story?.value.attrName,
   });
   const sceneMap = computed(() =>
     scenes?.value.reduce(
@@ -251,6 +251,17 @@
   function viewObject(data) {
     jsonRef.value?.open(data);
   }
+
+  function getProfileAttrName(key: string) {
+    if (Array.isArray(profile.value.attrName)) {
+      const attr = (profile.value.attrName as { key: string; name: string }[]).find(
+        (a) => a.key === key,
+      );
+      return attr ? attr.name + `(${attr.key})` : key;
+    } else {
+      return (profile.value.attrName?.[key] || key) + (profile.value.attrName?.[key] ? `(${key})` : '');
+    }
+  }
 </script>
 
 <template>
@@ -304,7 +315,7 @@
           属性
         </label>
         <span v-for="(value, key) in profile.attr" :key="key" class="inline-block my-1">
-          {{ (profile.attrName[key] || key) + (profile.attrName[key] ? `(${key})` : '') }}:
+          {{ getProfileAttrName(key as string) }}:
           <el-input-number
             v-if="isNumber(value) || null === value"
             v-model="profile.attr[key]"
