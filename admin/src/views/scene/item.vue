@@ -22,6 +22,7 @@
     visible.value = true;
     data.value = clone(scene || new Scene());
     oldName.value = data.value.name;
+    if (!data.value.attributes) data.value.attributes = [];
     if (position) data.value.position = position;
 
     return new Promise((resolve) => {
