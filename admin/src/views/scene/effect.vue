@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import { Effect, EffectType, Scene } from '@/api/scene';
-  import { clone } from '@/utils';
+  import { clone, isArray } from '@/utils';
   import { FormInstance } from 'element-plus';
   import { ItemsContext, StoryContext, TargetsContext } from './index';
   import ItemSelector from '@/views/item/selector.vue';
@@ -69,7 +69,10 @@
   const defaultAttrs = computed(() =>
     Array.from(
       new Set(
-        Object.keys(story?.value?.attr || {}).map((a) => ({
+        isArray(story?.value?.attr) ? story?.value?.attr.map(a => ({
+          value: a.key,
+          label: a.name,
+        })) : Object.keys(story?.value?.attr || {}).map((a) => ({
           value: a,
           label: story?.value?.attrName[a],
         })),
