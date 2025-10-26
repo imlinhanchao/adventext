@@ -3,6 +3,7 @@
   import { ElMessage, ElMessageBox, FormInstance } from 'element-plus';
   import { clone } from '@/utils';
   import Options from './options.vue';
+  import CustomStyle from './style.vue';
 
   const props = defineProps<{
     story: string;
@@ -64,8 +65,6 @@
       }
     }
   }
-
-  const codeVisible = ref(false);
 </script>
 
 <template>
@@ -101,28 +100,7 @@
       <template v-else>
         <Options v-model:options="data.options" :scenes="scenes" :story="props.story" :type="type" />
       </template>
-      <el-form-item label="自定义样式" prop="customStyle">
-        <section class="relative group w-full">
-          <el-input
-            v-model="data.customStyle"
-            type="textarea"
-            placeholder="自定义样式将会在场景进入时载入"
-            :autosize="{
-              minRows: 3,
-              maxRows: 10,
-            }"
-          />
-          <ButtonEx icon="i-lets-icons:full-alt" link class="group-hover:opacity-60 absolute right-1 bottom-1 z-100 opacity-0" @click="codeVisible = true" />
-        </section>
-      </el-form-item>
-      <el-dialog title="自定义样式" v-model="codeVisible" fullscreen destroy-on-close>
-        <section class="flex flex-col w-full h-full">
-          <section class="relative group h-full bg-gray-100 dark:bg-gray-900 border-l border-r border-[var(--el-border-color)] overflow-auto">
-            <CodeEditor v-model:value="data.customStyle" class="h-full" default="css" />
-            <ButtonEx icon="i-gridicons:fullscreen-exit" link class="group-hover:opacity-60 absolute right-1 bottom-1 z-100 opacity-0" @click="codeVisible = false" />
-          </section>
-        </section>
-      </el-dialog>
+      <CustomStyle v-model="data.customStyle" placeholder="自定义样式将会在场景进入时载入" />
     </el-form>
     <template #footer>
       <el-button @click="visible = false">取消</el-button>

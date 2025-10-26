@@ -1,11 +1,11 @@
 import { Request, Response } from 'express';
 import { Record, Profile, Scene, User, StoryRepo, DraftRepo, ProfileRepo, EndRepo, SceneRepo, ItemRepo, RecordRepo, RankRepo, Item, TargetRepo, AchievementRepo, Achievement, Target, Draft, Story } from "../entities";
 import { render, json, error } from "../utils/route";
-import { Condition, Effect } from '../entities/Scene';
+import { Condition, Effect, Option } from '../entities/Scene';
 import { clone, omit, shortTime } from '../utils';
 import { Inventory } from '../entities/Profile';
 import { isArray, isNumber, isString } from '../utils/is';
-import { In, Not } from 'typeorm';
+import { Not } from 'typeorm';
 import { callFn, createFn, tryEval } from '../utils/call';
 
 function fillVar(content: string, type: string, target: any) {
@@ -125,13 +125,13 @@ export default class GameController {
   private type: string;
   private achievements?: Achievement[];
   private circle?: number;
-  private story?: Draft | Story;
+  private story: Draft | Story | null = null;
 
   private callLogs: { type: string, data: any }[] = [];
 
   constructor(type: string, story?: Draft | Story) {
     this.type = type;
-    this.story = story;
+    this.story = story || null;
   }
 
   get storyRepo() {
@@ -139,7 +139,7 @@ export default class GameController {
   }
 
   setStory(story?: Draft | Story) {
-    this.story = story;
+    this.story = story || null;
   }
 
   async gameState(userId: number, storyId: string) {
@@ -204,7 +204,7 @@ export default class GameController {
     return await TargetRepo.findOneBy({ key, storyId });
   }
 
-  async getStory(id: string) {
+  async getStory(id: string): Promise<Story | Draft | null> {
     return await this.storyRepo.findOne({ where: [{ id }, { alias: id }] });
   }
 
@@ -857,12 +857,12 @@ export default class GameController {
     return content;
   }
 
-  async gameExcute(profile: Profile, scene: Scene, { option: optionText, value: valueText, timezone, achievements, circle, global }: any, virtual = false) {
+  async gameExcute(profile: Profile, scene: Scene, { option: optionText, value: valueText, timezone, achievements, circle, global, options }: any, virtual = false) {
     try {
       const storyId = profile.storyId;
-      const story = this.story;
+      const storyOptions = this.story?.options || options as Option[];
       const userId = profile.userId;
-      const option = !global ? scene?.options.find((option) => option.text === optionText) : story?.options?.find((option) => option.text === optionText);
+      const option = !global ? scene?.options.find((option) => option.text === optionText) : storyOptions.find((option) => option.text === optionText);
       timezone = timezone ?? new Date().getTimezoneOffset() / -60;
       const oldProfile = clone(profile);
       this.achievements = achievements;
@@ -1014,7 +1014,7 @@ export default class GameController {
       this.achievements = achievements;
       this.circle = circle;
       scene.options = await this.updateOptions(scene, profile, timezone ?? new Date().getTimezoneOffset() / -60, records || []);
-      const content = await this.getContent(profile, scene);
+      const content = scene.content && (await this.getContent(profile, scene));
       const logs = records ? this.callLogs : undefined;
       json(res, {
         options: scene.options,

@@ -1,13 +1,14 @@
 <script lang="ts" setup>
   import Sortable from 'sortablejs';
   import { createStory, Draft, updateStory } from '@/api/draft';
+  import { IAttribute, Scene, SceneApi } from '@/api/scene';
   import { ElMessage, ElTable, FormInstance } from 'element-plus';
   import ItemSelector from '@/views/item/selector.vue';
   import { Item } from '@/api/item';
   import { clone, isArray } from '@/utils';
   import Options from '../scene/options.vue';
   import Effects from '../scene/effects.vue';
-  import { IAttribute, Scene, SceneApi } from '@/api/scene';
+  import CustomStyle from '../scene/style.vue';
   
   const tableKey = ref<number>(0);
   const tableRef = ref<InstanceType<typeof ElTable>>();
@@ -124,6 +125,7 @@
       <el-form-item label="描述" prop="description">
         <el-input v-model="data.description" type="textarea" />
       </el-form-item>
+      <CustomStyle v-if="data.id" v-model="data.customStyle" placeholder="全局样式将在全局生效" />
       <el-form-item label="人物基础属性" class="no-error" />
       <el-table ref="tableRef" :data="data.attr as IAttribute[]" class="no-error-padding w-full" max-height="50vh" :key="tableKey">
         <el-table-column label="#" width="50" align="center">
