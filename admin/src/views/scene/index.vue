@@ -315,6 +315,15 @@ function gotoPlay () {
   window.open(url, '_blank');
 }
 
+const focusTag = ref('');
+function moveSync(ev: MouseEvent | TouchEvent) {
+  if (!focusTag.value) return;
+  scenes.value.forEach((scene) => {
+    if (scene.tags.includes(focusTag.value)) {
+      sceneRef.value[scene.name]?.beginMove(ev, true);
+    }
+  });
+}
 </script>
 
 <template>
@@ -369,6 +378,7 @@ function gotoPlay () {
                 <SceneItem
                   v-for="(scene, index) in scenes" :ref="(el) => (sceneRef[scene.name] = el)" :key="index"
                   :story="storyId" :scene="scene" :sceneMap="sceneMap" @next="highlightScene" @edit="editScene"
+                  @focus-tag="focusTag = focusTag != $event ? $event : ''" :focus-tag="focusTag" @move-start="moveSync"
                   @remove="removeScene" @start="setStart" @copy="copyScene" @mousedown.stop class="transition-all duration-200" :class="{
                     'border-2 border-blue-500': highlight === scene.name,
                   }" :start="story.start === scene.name" :zoom="zoom" />

@@ -8,25 +8,27 @@
     sceneMap: Recordable<Scene>;
     start?: boolean;
     zoom: number;
+    focusTag?: string;
   }>();
 
-  const emit = defineEmits(['next', 'edit', 'copy', 'remove', 'start']);
+  const emit = defineEmits(['next', 'edit', 'copy', 'remove', 'start', 'focus-tag', 'move-start']);
   const data = ref<Scene>(props.scene);
 
   const isMove = ref(false);
-  const beginPos = ref({
+  const beginMovePos = ref({
     x: 0,
     y: 0,
   });
 
-  function beginMove(e: MouseEvent|TouchEvent) {
+  function beginMove(e: MouseEvent|TouchEvent, isSync = false) {
     isMove.value = true;
     const client = {
       x: (e as MouseEvent).clientX || (e as TouchEvent).touches[0].clientX,
       y: (e as MouseEvent).clientY || (e as TouchEvent).touches[0].clientY,
     }
-    beginPos.value.x = client.x - data.value.position.x * props.zoom;
-    beginPos.value.y = client.y - data.value.position.y * props.zoom;
+    beginMovePos.value.x = client.x - data.value.position.x * props.zoom;
+    beginMovePos.value.y = client.y - data.value.position.y * props.zoom;
+    if (!isSync) emit('move-start', e);
   }
 
   useEventListener({
@@ -34,8 +36,8 @@
     name: 'mousemove',
     listener: (e: MouseEvent) => {
       if (isMove.value) {
-        data.value.position.x = (e.clientX - beginPos.value.x) / props.zoom;
-        data.value.position.y = (e.clientY - beginPos.value.y) / props.zoom;
+        data.value.position.x = (e.clientX - beginMovePos.value.x) / props.zoom;
+        data.value.position.y = (e.clientY - beginMovePos.value.y) / props.zoom;
       }
     },
     wait: 0,
@@ -46,8 +48,8 @@
     name: 'touchmove',
     listener: (e: TouchEvent) => {
       if (isMove.value) {
-        data.value.position.x = e.touches[0].clientX - beginPos.value.x;
-        data.value.position.y = e.touches[0].clientY - beginPos.value.y;
+        data.value.position.x = e.touches[0].clientX - beginMovePos.value.x;
+        data.value.position.y = e.touches[0].clientY - beginMovePos.value.y;
       }
     },
     wait: 0,
@@ -102,11 +104,16 @@
     loading.value = true;
     emit('remove', data.value, () => loading.value = false);
   }
+
+  defineExpose({
+    beginMove,
+  });
 </script>
 <template>
   <section
     class="scene-item absolute transition-none group w-[400px]"
     :style="{ left: scene.position.x + 'px', top: scene.position.y + 'px' }"
+    :class="{ 'z-10': focusTag && scene.tags.includes(focusTag), 'opacity-50': focusTag && !scene.tags.includes(focusTag) }"
   >
     <el-card class="scene w-full" :header="scene.name" header-class="!flex justify-between">
       <template #header>
@@ -123,6 +130,9 @@
           <ButtonEx type="primary" link icon="el-icon-edit" @click="$emit('edit', scene)" content="编辑" />
         </span>
       </template>
+      <p>
+        <el-tag :effect="focusTag == tag ? 'dark' : 'plain'" @click="emit('focus-tag', tag)" v-for="(tag, index) in scene.tags" :key="index" class="mr-1 mb-1 cursor-pointer" size="small">{{ tag }}</el-tag>
+      </p>
       <p class="my-2">
         <!-- eslint-disable-next-line vue/no-v-html -->
         <span class="whitespace-pre-wrap" v-html="content"></span>

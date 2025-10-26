@@ -33,16 +33,16 @@
 <template>
   <el-breadcrumb separator="/">
     <el-breadcrumb-item v-for="bread in breads" :key="bread.name" :to="bread.name != currentRoute.name && bread.path || undefined">
-      <Icon v-if="bread.meta.icon" :icon="bread.meta.icon" /> {{ bread.meta.title }}
+      <Icon v-if="bread.meta.icon" :icon="bread.meta.icon" /> <span>{{ bread.meta.title }}</span>
     </el-breadcrumb-item>
   </el-breadcrumb>
 </template>
 <style lang="less" scoped>
-@prefix-cls: ~'breadcrumb';
+@prefix-cls: ~'el-breadcrumb';
 
 .@{prefix-cls} {
   :deep(&__item) {
-    display: flex;
+    display: flex; 
 
     .@{prefix-cls}__inner {
       display: flex;

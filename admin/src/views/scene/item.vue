@@ -91,6 +91,9 @@
           placeholder="请输入场景内容，支持通过 ${属性标识符} 引用属性值"
         />
       </el-form-item>
+      <el-form-item label="标签" prop="tags">
+        <el-input-tag v-model="data.tags" />
+      </el-form-item>
       <el-form-item label="是否结局" prop="isEnd">
         <el-switch v-model="data.isEnd" />
       </el-form-item>
