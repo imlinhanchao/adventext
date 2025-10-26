@@ -21,6 +21,7 @@
   function open(effect?: Effect) {
     visible.value = true;
     data.value = clone(effect || new Effect());
+    data.value.conditions = data.value.conditions || [];
 
     return new Promise((resolve) => {
       saveResolve = resolve;

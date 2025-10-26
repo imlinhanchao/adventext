@@ -27,6 +27,13 @@
     emit('update:conditions', val || []);
   });
 
+  onMounted(() => {
+    if (!conditions.value) conditions.value = [];
+    nextTick(() => {
+      rowDrop();
+    });
+  });
+
   const tableKey = ref<number>(Date.now());
   const conditionTableRef = ref<InstanceType<typeof ElTable>>();
   function rowDrop() {
@@ -45,19 +52,19 @@
       },
     });
   }
-  rowDrop();
 
   const conditionRef = ref<InstanceType<typeof ConditionForm>>();
   function addCon() {
     conditionRef.value?.open().then((condition: Condition) => {
       if (!conditions.value) conditions.value = []
       conditions.value.push(condition);
-      // nextTick(() => rowDrop());
+      nextTick(() => rowDrop());
     });
   }
   function editCon(condition: Condition) {
     conditionRef.value?.open(condition).then((data: Condition) => {
       Object.assign(condition, data);
+      emit('update:conditions', conditions.value);
     });
   }
 </script>
