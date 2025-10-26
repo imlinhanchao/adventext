@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import { Condition, ConditionType } from '@/api/scene';
-  import { clone, isNumber } from '@/utils';
+  import { clone, isArray, isNumber } from '@/utils';
   import { FormInstance } from 'element-plus';
   import { pick } from 'lodash-es';
   import { ItemsContext, ScenesContext, StoryContext, TargetsContext } from './index';
@@ -177,7 +177,10 @@
   const defaultAttrs = computed(() =>
     Array.from(
       new Set(
-        Object.keys(story?.value?.attr || {}).map((a) => ({
+        isArray(story?.value?.attr) ? story?.value?.attr.map(a => ({
+          value: a.key,
+          label: a.name,
+        })) : Object.keys(story?.value?.attr || {}).map((a) => ({
           value: a,
           label: story?.value?.attrName[a],
         })),
