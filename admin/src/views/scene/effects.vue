@@ -70,6 +70,7 @@
   function editEffect(effect: Effect) {
     effectRef.value?.open(effect).then((data: Effect) => {
       Object.assign(effect, data);
+      emit('update:effects', effects.value);
     });
   }
 

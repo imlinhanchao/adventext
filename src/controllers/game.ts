@@ -965,7 +965,7 @@ export default class GameController {
         const { message: msg, next, profile: p } = await this.runEffects(profile, globalEffects, {}, '', timezone, undefined, this.achievements, virtual);
         message = msg;
         profile = p;
-        if (next != scene?.name) {
+        if (next && next != scene?.name) {
           const scene = await this.getSence(next, storyId);
           if (scene) nextScene = scene;
         }

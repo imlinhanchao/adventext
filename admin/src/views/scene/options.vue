@@ -42,6 +42,7 @@
     excludeOptions.value = options.value.filter((o) => o !== option);
     optionRef.value?.open(option).then((data: Option) => {
       Object.assign(option, data);
+      emit('update:options', options.value);
     });
   }
 
