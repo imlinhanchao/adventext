@@ -86,7 +86,7 @@ function startGame(scene, state, content, global) {
       button.className = 'option_' + option.text;
       if (option.id) button.id = 'option_' + option.id;
 
-      button.onclick = () => chooseOption(option, state).bind(button);
+      button.onclick = () => chooseOption.call(button, option, state);
       optionsDiv.appendChild(button);
     });
   }
@@ -102,7 +102,7 @@ function startGame(scene, state, content, global) {
       button.className = 'option-btn option_' + option.text;
       if (option.id) button.id = 'global_option_' + option.id;
 
-      button.onclick = () => chooseOption(option, state, true).bind(button);
+      button.onclick = () => chooseOption.call(button, option, state, true);
       globalOptionsDiv.appendChild(button);
     });
   }
