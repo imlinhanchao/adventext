@@ -441,7 +441,7 @@
           <code>　　itemSelect: Inventory, </code>
           <code>　　addItem: (name: string, count: number) => void, </code>
           <code
-          >　　setAttr: (attr: { key: string; name?: string; value: string }) => void</code
+          >　　setAttr: (attr: { key: string; name?: string; value: string, isScene?: boolean }) => void</code
           >
           <code>): boolean {</code>
           <code>　　let message = "", next = null;</code>

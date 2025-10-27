@@ -246,6 +246,14 @@
     if (name) profile.value.attrName[key] = name;
   }
 
+  function addSceneAttr() {
+    const key = prompt('请输入属性key');
+    if (!key) return;
+    const value = prompt('请输入属性值');
+    if (!value) return;
+    profile.value.sceneAttr[key] = isNaN(parseFloat(value)) ? value : parseFloat(value);
+  }
+
   const jumpScene = ref('');
   async function jumpToScene(scene: string) {
     if (!scene) return;
@@ -363,6 +371,41 @@
               icon="i-material-symbols:search"
               link
               @click="viewObject(profile.attr[key])"
+            />
+          </span>
+        </section>
+        <section id="sceneAttr" class="space-x-2" v-if="Object.keys(profile.sceneAttr).length > 0">
+          <label class="bg-black text-white p-1 mr-1 rounded">
+            <ButtonEx
+              link
+              icon="el-icon-plus"
+              class="!text-inherit"
+              content="手动添加"
+              @click="addSceneAttr"
+            />
+            场景属性
+          </label>
+          <span v-for="(value, key) in profile.sceneAttr" :key="key" class="inline-block my-1">
+            {{ key }}:
+            <el-input-number
+              v-if="isNumber(value) || null === value"
+              v-model="profile.sceneAttr[key]"
+              size="small"
+              controls-position="right"
+              class="!w-20"
+            />
+            <el-input
+              v-else-if="isString(profile.sceneAttr[key])"
+              v-model="profile.sceneAttr[key]"
+              size="small"
+              class="!w-20"
+              :type="profile.sceneAttr[key].includes('\n') ? 'textarea' : 'text'"
+            />
+            <ButtonEx
+              v-else
+              icon="i-material-symbols:search"
+              link
+              @click="viewObject(profile.sceneAttr[key])"
             />
           </span>
         </section>
