@@ -423,7 +423,7 @@ const viewMode = ref('panel');
                     'border-2 border-blue-500': highlight === scene.name, 'opacity-50': connectScene && !connections[scene.name]
                   }" :start="story.start === scene.name" :zoom="zoom" />
               </section>
-              <section v-show="viewMode == 'network'" class="w-full h-full">
+              <section v-if="viewMode == 'network'" class="w-full h-full">
                 <SceneMap
                   :scenes="scenes"
                 />

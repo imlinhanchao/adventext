@@ -48,13 +48,23 @@
       return;
     }
 
-    data.value.attrName = [];
+    const formData: Draft = {
+      ...data.value,
+      attr: (data.value.attr as IAttribute[]).map(attr => {
+        attr = { ...attr };
+        attr.value = Number(attr.value).toString() !== attr.value ? attr.value : Number(attr.value);
+        return attr;
+      }),
+      attrName: []
+    }
+
+    formData.attrName = [];
     (data.value.attr as IAttribute[]).forEach((item) => {
-      if (item.key && item.name) data.value.attrName.push({ key: item.key, name: item.name });
+      if (item.key && item.name) formData.attrName.push({ key: item.key, name: item.name });
     });
 
     loading.value = true;
-    await (data.value.id ? updateStory : createStory)(data.value).finally(() => {
+    await (data.value.id ? updateStory : createStory)(formData).finally(() => {
       loading.value = false;
     });
     ElMessage.success('保存成功');
