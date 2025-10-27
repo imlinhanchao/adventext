@@ -32,20 +32,10 @@
 
   const data = ref<IAttribute[]>(props.attributes || []);
   watch(() => props.attributes, (val) => {
-    data.value = (val || []).map(attr => {
-      attr = { ...attr };
-      if (attr.value != attr.value.toString()) {
-        attr.value = attr.value.toString();
-      }
-      return attr;
-    });
+    data.value = val;
   });
   watch(data, (val) => {
-    emit('update:attributes', val.map(attr => {
-      attr = { ...attr };
-      attr.value = Number(attr.value).toString() !== attr.value ? attr.value : Number(attr.value);
-      return attr;
-    }));
+    emit('update:attributes', val);
   }, { deep: true });
 
   const rules = {

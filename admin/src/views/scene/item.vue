@@ -5,7 +5,7 @@
   import Options from './options.vue';
   import CustomStyle from './style.vue';
   import Attribute from '@/views/components/attributes.vue';
-import { SceneContext } from '.';
+  import { SceneContext } from '.';
 
   const props = defineProps<{
     story: string;
@@ -49,7 +49,15 @@ import { SceneContext } from '.';
     }
 
     loading.value = true;
-    const scene = await sceneApi.value.save(data.value).finally(() => {
+    const formData: Scene = {
+      ...data.value,
+      attributes: data.value.attributes?.map(attr => {
+        attr = { ...attr };
+        attr.value = Number(attr.value).toString() !== attr.value ? attr.value : Number(attr.value);
+        return attr;
+      }),
+    };
+    const scene = await sceneApi.value.save(formData).finally(() => {
       loading.value = false;
     });
     visible.value = false;
