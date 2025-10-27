@@ -3,9 +3,12 @@
   import { IAttribute } from '@/api/scene';
   import { ElTable } from 'element-plus';
 
-  const props = defineProps<{
+  const props = withDefaults(defineProps<{
+    prop?: string;
     attributes: IAttribute[];
-  }>();
+  }>(), {
+    prop: 'attr',
+  });
   const emit = defineEmits(['update:attributes']);
   
   const tableKey = ref<number>(0);
@@ -65,7 +68,7 @@
       </el-table-column>
       <el-table-column prop="key" label="标识符" align="center">
         <template #default="{ row, $index: i }">
-          <el-form-item :prop="`attr.${i}.key`" :rules="rules.key">
+          <el-form-item :prop="`${prop}.${i}.key`" :rules="rules.key">
             <el-input v-model.trim="row.key" />
           </el-form-item>
         </template>
@@ -82,7 +85,7 @@
       </el-table-column>
       <el-table-column prop="value" label="值" align="center">
         <template #default="{ row, $index: i }">
-          <el-form-item :prop="`attr.${i}.value`" :rules="rules.value">
+          <el-form-item :prop="`${prop}.${i}.value`" :rules="rules.value">
             <el-input v-model.trim="row.value" />
           </el-form-item>
         </template>
