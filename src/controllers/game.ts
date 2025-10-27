@@ -21,10 +21,11 @@ function fillVar(content: string, type: string, target: any) {
   return content;
 }
 
-function formatContent(content: string, profileAttr: any, value: string, itemTakeAttr?: any) {
+function formatContent(content: string, profileAttr: any, value: string, itemTakeAttr?: any, sceneAttr?: any) {
   if (isNumber(content)) return content;
   content = fillVar(content, '\\$', itemTakeAttr);
   content = fillVar(content, '#', profileAttr);
+  content = fillVar(content, '%', sceneAttr);
   content = content.replace(/\s/g, '')
   while (content.includes('rand') || content.includes('percent')) {
     let mat = content.match(/rand\(([\d-]+),([\d-]+)\)/);
@@ -151,7 +152,7 @@ export default class GameController {
       throw new Error('故事不存在');
     }
     if (!state.scene) {
-      state.attr = isArray(story.attr) ? story.attr.reduce((acc: any, cur: any) => (acc[cur.key] = cur.value, acc ), {}) : story.attr;
+      state.attr = isArray(story.attr) ? story.attr.reduce((acc: any, cur: any) => (acc[cur.key] = cur.value, acc), {}) : story.attr;
       state.attrName = story.attrName;
       state.scene = story.start;
       state.inventory = story.inventory;
@@ -167,7 +168,7 @@ export default class GameController {
     }
 
     if (isBegin && scene?.attributes?.length) {
-      state.sceneAttr = scene.attributes.reduce((acc: any, cur: any) => { acc[cur.key] = cur.value, acc }, {});
+      state.sceneAttr = scene.attributes.reduce((acc: any, cur: any) => (acc[cur.key] = cur.value, acc), {});
     }
 
     return { state, scene, global: { options: story?.options } };
@@ -404,6 +405,30 @@ export default class GameController {
             }
           }
         }
+        if (condition.type === 'SceneAttr') {
+          for (const [key, value] of Object.entries(condition.content as { [key: string]: any })) {
+            if (profile.sceneAttr[key] === undefined) {
+              throw new Error(`你还没准备好.`);
+            }
+            if ((value.value || value) && typeof profile.sceneAttr[key] === 'number') {
+              if (!conditionOperator(
+                profile.sceneAttr[key],
+                parseFloat(value.value ?? value.toString()),
+                value.operator || '≥'
+              )) {
+                throw new Error(`你还没准备好.`);
+              }
+            } else if (value.value || value) {
+              if (!conditionOperator(
+                profile.sceneAttr[key],
+                value.value ?? value,
+                value.operator || '='
+              )) {
+                throw new Error(`你还没准备好.`);
+              }
+            }
+          }
+        }
         if (condition.type === 'Value') {
           if (Number(valueText).toString() == valueText && isNumber(Number(valueText))) {
             if (!conditionOperator(Number(valueText), Number(condition.content), condition.operator || '='))
@@ -430,6 +455,7 @@ export default class GameController {
           let tip = condition.tip.replace(/\$item/g, itemTake?.name || '').replace(/\$value/g, valueText || '');
           tip = fillVar(tip, '\\$', itemTake?.attributes);
           tip = fillVar(tip, '#', profile.attr);
+          tip = fillVar(tip, '%', profile.sceneAttr);
           throw new Error(tip);
         }
       }
@@ -489,7 +515,7 @@ export default class GameController {
           if (!item) throw new Error(`物品 ${effect.name} 未找到.`)
           const inventory = profile.inventory.find((i) => i.key === item.key);
           if (effect.content.replace) effect.content = effect.content.replace(/\$count/g, (itemTake?.count || 1) + '');
-          let count = formatContent(effect.content || '1', profile.attr, valueText, itemTake?.attributes);
+          let count = formatContent(effect.content || '1', profile.attr, valueText, itemTake?.attributes, profile.sceneAttr);
           if (!isNumber(count)) throw new Error(`Item ${effect.name} 效果获取数量失败！`)
           if (inventory) {
             inventory.count += count;
@@ -511,18 +537,19 @@ export default class GameController {
         if (effect.type === 'Attr') {
           const oldValue = profile.attr[effect.name] || '';
           if (profile.attr[effect.name] === undefined) {
-            const content = formatContent(effect.content || '1', profile.attr, valueText, itemTake?.attributes);
+            const content = formatContent(effect.content || '1', profile.attr, valueText, itemTake?.attributes, profile.sceneAttr);
             profile.attr[effect.name] = content;
           }
           else if (typeof profile.attr[effect.name] === 'number') {
             effect.content = effect.content.replace(/\$count/g, itemTake?.count + '');
-            let count = formatContent(effect.content || '1', profile.attr, valueText, itemTake?.attributes);
+            let count = formatContent(effect.content || '1', profile.attr, valueText, itemTake?.attributes, profile.sceneAttr);
             if (!isNumber(count)) throw new Error(`Attr ${effect.name} 效果获取数量失败！`)
             profile.attr[effect.name] = operatorData(profile.attr[effect.name], count, effect.operator);
           }
           else {
             let content = fillVar(effect.content, '\\$', itemTake?.attributes);
             content = fillVar(content, '#', profile.attr);
+            content = fillVar(content, '%', profile.sceneAttr);
             profile.attr[effect.name] = operatorData(profile.attr[effect.name], content, effect.operator);
           }
           if (this.getProfileAttrName(profile, effect.name)) {
@@ -530,6 +557,27 @@ export default class GameController {
           }
           oldVal = oldValue;
           newVal = profile.attr[effect.name];
+        }
+        if (effect.type === 'SceneAttr') {
+          const oldValue = profile.sceneAttr[effect.name] || '';
+          if (profile.sceneAttr[effect.name] === undefined) {
+            const content = formatContent(effect.content || '1', profile.sceneAttr, valueText, itemTake?.attributes, profile.sceneAttr);
+            profile.sceneAttr[effect.name] = content;
+          }
+          else if (typeof profile.sceneAttr[effect.name] === 'number') {
+            effect.content = effect.content.replace(/\$count/g, itemTake?.count + '');
+            let count = formatContent(effect.content || '1', profile.sceneAttr, valueText, itemTake?.attributes, profile.sceneAttr);
+            if (!isNumber(count)) throw new Error(`Attr ${effect.name} 效果获取数量失败！`)
+            profile.sceneAttr[effect.name] = operatorData(profile.sceneAttr[effect.name], count, effect.operator);
+          }
+          else {
+            let content = fillVar(effect.content, '\\$', itemTake?.attributes);
+            content = fillVar(content, '#', profile.attr);
+            content = fillVar(content, '%', profile.sceneAttr);
+            profile.sceneAttr[effect.name] = operatorData(profile.sceneAttr[effect.name], content, effect.operator);
+          }
+          oldVal = oldValue;
+          newVal = profile.sceneAttr[effect.name];
         }
         if (effect.type === 'ItemAttr') {
           if (!itemTake) {
@@ -540,7 +588,7 @@ export default class GameController {
             if (!inventorys.length) {
               throw new Error(`你没有包含${attr}的物品.`);
             }
-            let count = formatContent(effect.content || '1', profile.attr, valueText);
+            let count = formatContent(effect.content || '1', profile.attr, valueText, undefined, profile.sceneAttr);
             if (!isNumber(count)) throw new Error(`ItemAttr ${effect.name} 效果获取数量失败！`)
             let total = 0;
             for (const inventory of inventorys) {
@@ -560,7 +608,7 @@ export default class GameController {
             if (itemTake.attributes[effect.name] === undefined) {
               throw new Error(`物品 ${itemTake.name} 不包含属性 ${effect.name}.`);
             }
-            let count = formatContent(effect.content || '1', profile.attr, valueText, itemTake.attributes);
+            let count = formatContent(effect.content || '1', profile.attr, valueText, itemTake.attributes, profile.sceneAttr);
             if (!isNumber(count)) throw new Error(`ItemAttr ${effect.name} 效果获取数量失败！`)
             const itemCount = Math.ceil(count / itemTake.attributes[effect.name]);
             if (itemCount > itemTake.count) {
@@ -576,13 +624,15 @@ export default class GameController {
           }
         }
         if (effect.type === 'Fn') {
-          const call = createFn('profile', 'inputText', 'itemSelect', 'addItem', 'setAttr', 'let message = "", next = null;\n' + effect.content + '\nreturn { message, next };');
+          const call = createFn('profile', 'inputText', 'itemSelect', 'addItem', 'setAttr', 
+            'let message = "", next = null;\n' + effect.content + '\nreturn { message, next };');
           const items: any[] = []
           const result = callFn(call, clone(profile), valueText, clone(itemTake), (name: string, count: number) => {
             items.push({ name, count })
-          }, (attr: { key: string; name?: string; value: string }) => {
-            profile.attr[attr.key] = attr.value;
-            if (attr.name) {
+          }, (attr: { key: string; name?: string; value: string, isScene?: boolean }) => {
+            const targetAttr = attr.isScene ? profile.sceneAttr : profile.attr;
+            targetAttr[attr.key] = attr.value;
+            if (attr.name && !attr.isScene) {
               if (Array.isArray(profile.attrName)) {
                 const attrItem = profile.attrName.find(item => item.key === attr.key);
                 if (attrItem) attrItem.name = attr.name;
@@ -614,6 +664,7 @@ export default class GameController {
             .replace(/\$new/g, newVal || '');
           msg = fillVar(msg, '\\$', itemTake?.attributes);
           msg = fillVar(msg, '#', profile.attr);
+          msg = fillVar(msg, '%', profile.sceneAttr);
           msg += '\n'
         }
         message += msg;
@@ -825,6 +876,7 @@ export default class GameController {
     let content = scene.content;
 
     content = fillVar(content, '#', profile.attr);
+    content = fillVar(content, '%', profile.sceneAttr);
 
     Object.entries(profile.attr).forEach(([key, value]) => {
       if (scene.content.includes(`\${${key}}`)) {
@@ -911,7 +963,7 @@ export default class GameController {
       }
 
       if (next != scene.name && nextScene?.attributes?.length) {
-        profile.sceneAttr = nextScene.attributes.reduce((acc: any, cur: any) => { acc[cur.key] = cur.value, acc }, {});
+        profile.sceneAttr = nextScene.attributes.reduce((acc: any, cur: any) => (acc[cur.key] = cur.value, acc), {});
       } else if (next != scene.name || !profile.sceneAttr) {
         profile.sceneAttr = {};
       }
