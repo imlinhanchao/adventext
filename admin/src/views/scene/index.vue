@@ -11,10 +11,12 @@ import TargetSelector from '@/views/targets/selector.vue';
 import Virtual from './virtual.vue';
 import StoryForm from '@/views/story/item.vue';
 import DraftForm from '@/views/draft/item.vue';
+import SceneMap from './map.vue';
 import { useBreakpoint } from '@/hooks/event/useBreakpoint';
 import { Draft } from '@/api/draft';
 import { Story } from '@/api/story';
 import { Target, TargetApi } from '@/api/target';
+import Connect from '@/components/Connect/';
 
 const { screenSM: isMobile } = useBreakpoint();
 
@@ -49,6 +51,9 @@ onMounted(() => {
 function loadScene () {
   return sceneApi.getList().then((data) => {
     scenes.value = data;
+    setTimeout(() => {
+      ConnectRef.value?.render();
+    }, 500);
   });
 }
 function loadStory () {
@@ -85,7 +90,7 @@ function updateSceneName (oldName: string, name: string) {
 
 const pos = ref({
   x: 0,
-  y: 120,
+  y: 0,
 });
 
 const saveLoading = ref(false);
@@ -324,13 +329,40 @@ function moveSync(ev: MouseEvent | TouchEvent) {
     }
   });
 }
+
+const connectScene = ref('');
+const ConnectRef = ref<InstanceType<typeof Connect>>();
+const connections = computed(() => {
+  const currentScene = scenes.value.find((scene) => scene.name === connectScene.value);
+  return scenes.value
+  .filter((scene) => scene.name === connectScene.value || scene.options.some(option => option.next === connectScene.value) || currentScene?.options.some(option => option.next === scene.name))
+  .map((scene) => ({
+    name: scene.name,
+    conns: scene.options
+      .filter((option) => 
+        option.next && 
+        option.next !== '<back>' && 
+        option.next !== scene.name && 
+        (scene.name === connectScene.value || 
+        option.next === connectScene.value
+      )).map((option) => ({
+        id: `o_${scene.id}__${option.id || option.text}__${option.next}`,
+        from: scene.name,
+        to: option.next,
+      })),
+  })).reduce((acc, val) => {
+    acc[val.name] = val.conns;
+    return acc;
+  }, {});
+});
+const viewMode = ref('panel');
 </script>
 
 <template>
   <section>
     <Teleport to="body">
       <el-container
-        @mousedown="beginMove" @touchstart="beginMove" :direction="isMobile ? 'vertical' : 'horizontal'"
+        @mousedown="beginMove" @touchstart="beginMove" :direction="isMobile ? 'vertical' : 'horizontal'" @click="connectScene = ''"
         class="story-panel absolute z-1 top-0 bottom-0 right-0 left-0 overflow-hidden"
         :class="{ 'cursor-move': isMove }"
         :style="`--panel-offset-x: ${pos.x}px; --panel-offset-y: ${pos.y}px;`" v-loading="loading">
@@ -372,18 +404,41 @@ function moveSync(ev: MouseEvent | TouchEvent) {
           <el-main class="!h-full !overflow-unset">
             <section class="w-full h-full relative" ref="sceneViewRef">
               <section
-                id="scenePanel" ref="scenePanelRef" class="absolute"
+                v-show="viewMode == 'panel'"
+                id="scenePanel" ref="scenePanelRef" class="absolute w-full h-full"
                 :class="{ 'transition-all duration-200': !isMove }"
                 :style="{ top: pos.y + 'px', left: pos.x + 'px', transform: `scale(${zoom}, ${zoom})` }">
+                <Connect
+                  ref="ConnectRef"
+                  :element-map="sceneRef"
+                  :connections="connections"
+                  :parent="scenePanelRef"
+                  @click.stop
+                />
                 <SceneItem
-                  v-for="(scene, index) in scenes" :ref="(el) => (sceneRef[scene.name] = el)" :key="index"
-                  :story="storyId" :scene="scene" :sceneMap="sceneMap" @next="highlightScene" @edit="editScene"
-                  @focus-tag="focusTag = focusTag != $event ? $event : ''" :focus-tag="focusTag" @move-start="moveSync"
+                  v-for="(scene, index) in scenes" :ref="(el) => (sceneRef[scene.name] = el)" :key="index" @click.stop
+                  :story="storyId" :scene="scene" :sceneMap="sceneMap" @next="highlightScene" @edit="editScene" @connect="connectScene = $event.name"
+                  @focus-tag="focusTag = focusTag != $event ? $event : ''" :focus-tag="focusTag" @move-start="moveSync" @moving="ConnectRef?.render()"
                   @remove="removeScene" @start="setStart" @copy="copyScene" @mousedown.stop class="transition-all duration-200" :class="{
-                    'border-2 border-blue-500': highlight === scene.name,
+                    'border-2 border-blue-500': highlight === scene.name, 'opacity-50': connectScene && !connections[scene.name]
                   }" :start="story.start === scene.name" :zoom="zoom" />
               </section>
-              <section class="px-5 py-2 rounded-[4em] bg-[var(--el-bg-color-overlay)] border border-gray-700 dark:shadow-gray-800 shadow-lg absolute bottom-5 left-5">场景 x {{ scenes.length }}</section>
+              <section v-show="viewMode == 'network'" class="w-full h-full">
+                <SceneMap
+                  :scenes="scenes"
+                />
+              </section>
+              <section 
+                class="px-5 py-2 rounded-[4em] bg-[var(--el-bg-color-overlay)] border border-gray-700 dark:shadow-gray-800 shadow-lg absolute bottom-5 left-5"
+              >
+                场景 x {{ scenes.length }}
+              </section>
+              <section class="absolute bottom-5 right-5">
+                <el-radio-group v-model="viewMode">
+                  <el-radio-button label="面板" value="panel" />
+                  <el-radio-button label="网络" value="network" />
+                </el-radio-group>
+              </section>
             </section>
           </el-main>
           <span @mousedown.stop>
