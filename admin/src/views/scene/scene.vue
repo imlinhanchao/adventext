@@ -11,7 +11,7 @@
     focusTag?: string;
   }>();
 
-  const emit = defineEmits(['next', 'edit', 'copy', 'remove', 'start', 'focus-tag', 'move-start']);
+  const emit = defineEmits(['next', 'edit', 'copy', 'remove', 'start', 'focus-tag', 'move-start', 'moving', 'connect']);
   const data = ref<Scene>(props.scene);
 
   const isMove = ref(false);
@@ -38,6 +38,7 @@
       if (isMove.value) {
         data.value.position.x = (e.clientX - beginMovePos.value.x) / props.zoom;
         data.value.position.y = (e.clientY - beginMovePos.value.y) / props.zoom;
+        emit('moving', e);
       }
     },
     wait: 0,
@@ -115,20 +116,22 @@
     :style="{ left: scene.position.x + 'px', top: scene.position.y + 'px' }"
     :class="{ 'z-10': focusTag && scene.tags.includes(focusTag), 'opacity-50': focusTag && !scene.tags.includes(focusTag) }"
   >
-    <el-card class="scene w-full" :header="scene.name" header-class="!flex justify-between">
+    <el-card class="scene w-full" :header="scene.name">
       <template #header>
-        <span class="text-lg font-bold select-none cursor-move flex items-center space-x-1" @mousedown.stop="beginMove" @touchstart.stop="beginMove">
-          <el-tooltip content="移动场景"><Icon icon="i-tdesign:move" /></el-tooltip>
-          <span>{{ scene.name }}</span>
-          <Icon title="起始场景" :size="20" color="#f63832" v-if="start" icon="i-lets-icons:flag-fill" />
-          <Icon title="结局" :size="20" color="var(--color-primary)" v-if="scene.isEnd" icon="i-carbon:circle-filled" />
-        </span>
-        <span>
-          <ButtonEx class="!group-hover:inline !hidden" icon="i-lets-icons:flag-duotone" v-if="!start && !scene.isEnd" link @click="$emit('start', scene)" content="设置为起始场景" />
-          <ButtonEx type="primary" link icon="el-icon-document" @click="$emit('copy', scene)" :loading="loading" content="复制" />
-          <ButtonEx type="danger" link icon="el-icon-delete" @click="remove" :loading="loading" content="删除" />
-          <ButtonEx type="primary" link icon="el-icon-edit" @click="$emit('edit', scene)" content="编辑" />
-        </span>
+        <section class="!flex justify-between" @dblclick="emit('connect', scene)" title="双击查看关联场景">
+          <span class="text-lg font-bold select-none cursor-move flex items-center space-x-1" @mousedown.stop="beginMove" @touchstart.stop="beginMove">
+            <el-tooltip content="移动场景"><Icon icon="i-tdesign:move" /></el-tooltip>
+            <span>{{ scene.name }}</span>
+            <Icon title="起始场景" :size="20" color="#f63832" v-if="start" icon="i-lets-icons:flag-fill" />
+            <Icon title="结局" :size="20" color="var(--color-primary)" v-if="scene.isEnd" icon="i-carbon:circle-filled" />
+          </span>
+          <span>
+            <ButtonEx class="!group-hover:inline !hidden" icon="i-lets-icons:flag-duotone" v-if="!start && !scene.isEnd" link @click="$emit('start', scene)" content="设置为起始场景" />
+            <ButtonEx type="primary" link icon="el-icon-document" @click="$emit('copy', scene)" :loading="loading" content="复制" />
+            <ButtonEx type="danger" link icon="el-icon-delete" @click="remove" :loading="loading" content="删除" />
+            <ButtonEx type="primary" link icon="el-icon-edit" @click="$emit('edit', scene)" content="编辑" />
+          </span>
+        </section>
       </template>
       <p>
         <el-tag :effect="focusTag == tag ? 'dark' : 'plain'" @click="emit('focus-tag', tag)" v-for="(tag, index) in scene.tags" :key="index" class="mr-1 mb-1 cursor-pointer" size="small">{{ tag }}</el-tag>
@@ -139,7 +142,9 @@
       </p>
       <section>
         <ul>
-          <li v-for="(item, index) in scene.options" :key="index" class="flex justify-between">
+          <li
+            :id="`o_${scene.id}__${item.id || item.text}__${item.next}`"
+            v-for="(item, index) in scene.options" :key="index" class="flex justify-between">
             <span>
               <span class="inline-block mr-2">{{ item.text }}</span>
               <span>
