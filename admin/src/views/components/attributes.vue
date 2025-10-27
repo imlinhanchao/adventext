@@ -34,7 +34,9 @@
   watch(() => props.attributes, (val) => {
     data.value = (val || []).map(attr => {
       attr = { ...attr };
-      attr.value = attr.value.toString();
+      if (attr.value != attr.value.toString()) {
+        attr.value = attr.value.toString();
+      }
       return attr;
     });
   });
