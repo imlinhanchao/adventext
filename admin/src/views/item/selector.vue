@@ -105,29 +105,28 @@
 </script>
 
 <template>
-  <el-dialog title="物品" v-model="visible" width="1000px" append-to-body>
-    <el-container>
-      <el-header class="flex !py-2 justify-between" height="auto">
-        <section class="flex space-x-2">
-          <el-button type="primary" @click="add">添加</el-button>
-          <el-button type="success" @click="exportItems()">导出物品</el-button>
-          <el-button type="primary" plain @click="dowloadTemplate()">下载模板</el-button>
-          <el-upload :show-file-list="false" :before-upload="importData" accept=".xlsx">
-            <el-button type="warning" plain>导入物品</el-button>
-          </el-upload>
-        </section>
-        <section class="flex space-x-2 justify-end items-center">
-          <el-input v-model="query.type" clearable>
-            <template #prefix> 物品类型： </template>
-          </el-input>
-          <el-input v-model="query.name" clearable>
-            <template #prefix> 物品名称： </template>
-          </el-input>
-          <el-button type="primary" @click="search">搜索</el-button>
-        </section>
-      </el-header>
-      <el-main>
-        <el-table row-key="id" :data="items" style="width: 100%" max-height="70vh">
+  <DialogEx title="物品" v-model="visible" width="1000px" append-to-body height="100%" body-class="el-container !flex-col h-full">
+    <el-header class="flex !py-2 justify-between" height="auto">
+      <section class="flex space-x-2">
+        <el-button type="primary" @click="add">添加</el-button>
+        <el-button type="success" @click="exportItems()">导出物品</el-button>
+        <el-button type="primary" plain @click="dowloadTemplate()">下载模板</el-button>
+        <el-upload :show-file-list="false" :before-upload="importData" accept=".xlsx">
+          <el-button type="warning" plain>导入物品</el-button>
+        </el-upload>
+      </section>
+      <section class="flex space-x-2 justify-end items-center">
+        <el-input v-model="query.type" clearable>
+          <template #prefix> 物品类型： </template>
+        </el-input>
+        <el-input v-model="query.name" clearable>
+          <template #prefix> 物品名称： </template>
+        </el-input>
+        <el-button type="primary" @click="search">搜索</el-button>
+      </section>
+    </el-header>
+    <el-main>
+      <el-table row-key="id" :data="items" max-height="100%">
           <el-table-column label="#" width="50" v-if="!readonly">
             <template #default="{ row }">
               <el-checkbox
@@ -153,25 +152,24 @@
               </el-button-group>
             </template>
           </el-table-column>
-        </el-table>
-      </el-main>
-      <el-footer>
-        <el-tag
-          v-for="(item, i) in selected"
-          :key="i"
-          class="mr-2"
-          closable
-          @close="selected.splice(i, 1)"
-        >
-          {{ item.name }}
-          <span v-if="item.count">×{{ item.count }}</span>
-        </el-tag>
-      </el-footer>
-      <ItemForm ref="itemRef" @confirm="search" :story-id="story" :type="type" />
-    </el-container>
+      </el-table>
+    </el-main>
+    <el-footer class="!py-5" height="auto">
+      <el-tag
+        v-for="(item, i) in selected"
+        :key="i"
+        class="mr-2"
+        closable
+        @close="selected.splice(i, 1)"
+      >
+        {{ item.name }}
+        <span v-if="item.count">×{{ item.count }}</span>
+      </el-tag>
+    </el-footer>
+    <ItemForm ref="itemRef" @confirm="search" :story-id="story" :type="type" />
     <template #footer v-if="!readonly">
       <el-button @click="visible = false">取消</el-button>
       <el-button type="primary" @click="selectedResolve(selected)">确定</el-button>
     </template>
-  </el-dialog>
+  </DialogEx>
 </template>

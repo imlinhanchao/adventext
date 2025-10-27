@@ -82,61 +82,59 @@
 </script>
 
 <template>
-  <el-dialog title="成就" v-model="visible" width="1000px" append-to-body>
-    <el-container>
-      <el-header class="flex !py-2 justify-between" height="auto">
-        <section class="flex space-x-2">
-          <el-button type="primary" @click="add">添加</el-button>
-        </section>
-        <section class="flex space-x-2 justify-end targets-center">
-          <el-input v-model="query.key" clearable>
-            <template #prefix> 成就标识符： </template>
-          </el-input>
-          <el-input v-model="query.name" clearable>
-            <template #prefix> 成就名称： </template>
-          </el-input>
-          <el-button type="primary" @click="search">搜索</el-button>
-        </section>
-      </el-header>
-      <el-main>
-        <el-table row-key="id" :data="targets" style="width: 100%" max-height="70vh">
-          <el-table-column label="#" width="50" v-if="!readonly">
-            <template #default="{ row }">
-              <el-checkbox
-                :model-value="selected.some((r) => r.key == row.key)"
-                @change="select(row, $event as boolean)"
-              />
-            </template>
-          </el-table-column>
-          <el-table-column prop="key" label="标识符" width="180" />
-          <el-table-column prop="name" label="名称" width="180" />
-          <el-table-column prop="description" label="描述" min-width="180" />
-          <el-table-column label="操作" align="center" width="180" v-if="readonly">
-            <template #default="{ row }">
-              <el-button-group>
-                <el-button type="primary" size="small" @click="edit(row)">编辑</el-button>
-                <el-button type="danger" size="small" @click="remove(row)">删除</el-button>
-              </el-button-group>
-            </template>
-          </el-table-column>
-        </el-table>
-      </el-main>
-      <el-footer>
-        <el-tag
-          v-for="(target, i) in selected"
-          :key="i"
-          class="mr-2"
-          closable
-          @close="selected.splice(i, 1)"
-        >
-          {{ target.name }}
-        </el-tag>
-      </el-footer>
-      <TargetForm ref="targetRef" @confirm="search" :story-id="story" :type="type" />
-    </el-container>
+  <DialogEx title="成就" v-model="visible" width="1000px" append-to-body body-class="el-container !flex-col">
+    <el-header class="flex !py-2 justify-between" height="auto">
+      <section class="flex space-x-2">
+        <el-button type="primary" @click="add">添加</el-button>
+      </section>
+      <section class="flex space-x-2 justify-end targets-center">
+        <el-input v-model="query.key" clearable>
+          <template #prefix> 成就标识符： </template>
+        </el-input>
+        <el-input v-model="query.name" clearable>
+          <template #prefix> 成就名称： </template>
+        </el-input>
+        <el-button type="primary" @click="search">搜索</el-button>
+      </section>
+    </el-header>
+    <el-main>
+      <el-table row-key="id" :data="targets" style="width: 100%" max-height="70vh">
+        <el-table-column label="#" width="50" v-if="!readonly">
+          <template #default="{ row }">
+            <el-checkbox
+              :model-value="selected.some((r) => r.key == row.key)"
+              @change="select(row, $event as boolean)"
+            />
+          </template>
+        </el-table-column>
+        <el-table-column prop="key" label="标识符" width="180" />
+        <el-table-column prop="name" label="名称" width="180" />
+        <el-table-column prop="description" label="描述" min-width="180" />
+        <el-table-column label="操作" align="center" width="180" v-if="readonly">
+          <template #default="{ row }">
+            <el-button-group>
+              <el-button type="primary" size="small" @click="edit(row)">编辑</el-button>
+              <el-button type="danger" size="small" @click="remove(row)">删除</el-button>
+            </el-button-group>
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-main>
+    <el-footer>
+      <el-tag
+        v-for="(target, i) in selected"
+        :key="i"
+        class="mr-2"
+        closable
+        @close="selected.splice(i, 1)"
+      >
+        {{ target.name }}
+      </el-tag>
+    </el-footer>
+    <TargetForm ref="targetRef" @confirm="search" :story-id="story" :type="type" />
     <template #footer v-if="!readonly">
       <el-button @click="visible = false">取消</el-button>
       <el-button type="primary" @click="selectedResolve(selected)">确定</el-button>
     </template>
-  </el-dialog>
+  </DialogEx>
 </template>

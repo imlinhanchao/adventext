@@ -106,7 +106,7 @@
 </script>
 
 <template>
-  <el-dialog
+  <DialogEx
     :title="data.id ? '更新故事' : '创建故事'"
     v-model="visible"
     width="700px"
@@ -195,5 +195,5 @@
       <el-button @click="visible = false">取消</el-button>
       <el-button type="primary" @click="submit" :loading="loading">保存</el-button>
     </template>
-  </el-dialog>
+  </DialogEx>
 </template>

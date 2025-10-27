@@ -224,7 +224,7 @@
 </script>
 
 <template>
-  <el-dialog title="条件" v-model="visible" width="600px">
+  <DialogEx title="条件" v-model="visible" width="600px">
     <el-form ref="formRef" :model="formData" label-width="auto" :rules="rules">
       <el-alert v-if="data.type" :closable="false" class="!mb-2">
         <span v-if="data.type == 'Time'">
@@ -601,5 +601,5 @@
       <el-button @click="visible = false">取消</el-button>
       <el-button type="primary" @click="save">确定</el-button>
     </template>
-  </el-dialog>
+  </DialogEx>
 </template>

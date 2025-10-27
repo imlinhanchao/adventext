@@ -70,7 +70,7 @@
 </script>
 
 <template>
-  <el-dialog title="场景选项" v-model="visible" width="600px">
+  <DialogEx title="场景选项" v-model="visible" width="600px">
     <el-form ref="formRef" :model="data" label-width="auto" :rules="rules">
       <el-form-item label="唯一标识" prop="id">
         <el-input v-model="data.id" clearable placeholder="给选项按钮添加 id 属性，可在 CSS 中使用 option_xxx 添加样式" />
@@ -153,5 +153,5 @@
       <el-button @click="visible = false">取消</el-button>
       <el-button type="primary" @click="save">保存</el-button>
     </template>
-  </el-dialog>
+  </DialogEx>
 </template>

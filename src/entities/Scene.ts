@@ -49,12 +49,14 @@ export class IAttribute {
   name: string;
   type: string;
   value: any;
+  remark?: string;
 
-  constructor(key: string, name: string, type: string, value: any) {
+  constructor(key: string, name: string, type: string, value: any, remark?: string) {
     this.key = key;
     this.name = name;
     this.type = type;
     this.value = value;
+    this.remark = remark;
   }
 }
 
