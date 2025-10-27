@@ -69,7 +69,7 @@
 </script>
 
 <template>
-  <el-dialog :title="data.id ? '场景编辑' : '场景创建'" v-model="visible" width="600px" append-to-body>
+  <DialogEx :title="data.id ? '场景编辑' : '场景创建'" v-model="visible" width="600px" append-to-body>
     <el-form ref="formRef" :model="data" label-width="auto" :rules="rules" class="colon" @mousedown.stop>
       <el-form-item label="场景名称" prop="name">
         <el-input v-model="data.name" placeholder="请输入场景名称" />
@@ -110,5 +110,5 @@
       <el-button @click="visible = false">取消</el-button>
       <el-button type="primary" @click="save" :loading="loading">保存</el-button>
     </template>
-  </el-dialog>
+  </DialogEx>
 </template>
