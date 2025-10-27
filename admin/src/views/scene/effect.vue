@@ -2,7 +2,7 @@
   import { Effect, EffectType, Scene } from '@/api/scene';
   import { clone, isArray } from '@/utils';
   import { FormInstance } from 'element-plus';
-  import { ItemsContext, StoryContext, TargetsContext } from './index';
+  import { ItemsContext, SceneContext, StoryContext, TargetsContext } from './index';
   import ItemSelector from '@/views/item/selector.vue';
   import { Item } from '@/api/item';
   import Conditions from './conditions.vue';
@@ -16,6 +16,7 @@
   const codeVisible = ref(false);
   const data = ref<Effect>(new Effect());
   const formData = computed(() => ({ ...data.value }));
+  const scene = inject(SceneContext, null);
 
   let saveResolve: (condition: Effect) => void;
   function open(effect?: Effect) {
@@ -79,6 +80,16 @@
       ),
     ),
   );
+  const sceneAttrs = computed(() => 
+    Array.from(
+      new Set(
+        scene?.value?.attributes?.map(a => ({
+          value: a.key,
+          label: a.name,
+        })) || [],
+      ),
+    ),
+  );
   function searchTarget(query: string, cb) {
     const list =
       targets?.value.filter(
@@ -100,7 +111,19 @@
   }
   function searchAttr(type: string) {
     return (query: string, cb) => {
-      const items = (type == 'Attr' ? defaultAttrs : itemAttrs).value.filter(
+      let attrs: any[] = [];
+      switch(type) {
+        case 'ItemAttr':
+          attrs = itemAttrs.value;
+          break;
+        case 'Attr':
+          attrs = defaultAttrs.value;
+          break;
+        case 'SceneAttr':
+          attrs = sceneAttrs.value;
+          break;
+      }
+      const items = attrs.filter(
         (item) => item.value.includes(query) || item.label?.includes(query) || !query,
       );
       cb(items);
@@ -125,6 +148,11 @@
       <el-alert v-if="data.type" :closable="false" class="!mb-2">
         <span v-if="data.type == 'Attr'">
           对玩家的指定属性进行修改，可以通过输入
+          <code>\n</code> 来表示换行字符串。若前面操作符选择了
+          <code>-</code>、<code>/</code>、<code>*</code>，则需要保证值的运算结果为数字。
+        </span>
+        <span v-if="data.type == 'SceneAttr'">
+          对玩家的场景属性进行修改，可以通过输入
           <code>\n</code> 来表示换行字符串。若前面操作符选择了
           <code>-</code>、<code>/</code>、<code>*</code>，则需要保证值的运算结果为数字。
         </span>
@@ -184,7 +212,7 @@
           />
         </el-select>
       </el-form-item>
-      <template v-if="data.type === 'Attr'">
+      <template v-if="data.type === 'Attr' || data.type === 'SceneAttr'">
         <el-form-item label="属性名" prop="name">
           <el-autocomplete
             :fetch-suggestions="searchAttr(data.type)"

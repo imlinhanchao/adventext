@@ -1,32 +1,13 @@
 <script lang="ts" setup>
-  import Sortable from 'sortablejs';
+  import { IAttribute, Scene, SceneApi } from '@/api/scene';
   import { createStory, Story, updateStory } from '@/api/story';
-  import { ElMessage, ElTable, FormInstance } from 'element-plus';
+  import { ElMessage, FormInstance } from 'element-plus';
   import ItemSelector from '@/views/item/selector.vue';
   import { Item } from '@/api/item';
   import { clone, isArray } from '@/utils';
   import Options from '../scene/options.vue';
   import Effects from '../scene/effects.vue';
-  import { IAttribute, Scene, SceneApi } from '@/api/scene';
-  
-  const tableKey = ref<number>(0);
-  const tableRef = ref<InstanceType<typeof ElTable>>();
-  function rowDrop() {
-    if (!tableRef.value) return;
-    const tbody = tableRef.value.$el.querySelector('.el-table__body-wrapper tbody');
-    Sortable.create(tbody, {
-      handle: '.move',
-      animation: 300,
-      ghostClass: 'ghost',
-      onEnd: ({ newIndex, oldIndex }) => {
-        const tableData = (data.value.attr as IAttribute[]) || [];
-        const currRow = tableData.splice(oldIndex, 1)[0];
-        tableData.splice(newIndex, 0, currRow);
-        tableKey.value++;
-        nextTick(() => rowDrop());
-      },
-    });
-  }
+  import Attribute from '@/views/components/attributes.vue';
 
   const emit = defineEmits(['confirm']);
   const visible = ref(false);
@@ -43,7 +24,6 @@
         return new IAttribute(key, data.value.attrName[key], '', value);
       });
     }
-    nextTick(() => rowDrop());
   }
 
   defineExpose({
@@ -87,15 +67,6 @@
     });
   }
 
-  function addAttribute() {
-    (data.value.attr as IAttribute[]).push(new IAttribute());
-    nextTick(() => rowDrop());
-  }
-  function removeAttribute(index: number) {
-    (data.value.attr as IAttribute[]).splice(index, 1);
-    nextTick(() => rowDrop());
-  }
-
   const scenes = ref<Scene[]>([]);  
   function loadScene () {
     return new SceneApi(data.value.id || '', 'story').getList().then((data) => {
@@ -130,49 +101,7 @@
         <el-switch v-model="data.visible" />
       </el-form-item>
       <el-form-item label="人物基础属性" class="no-error" />
-      <el-table ref="tableRef" :data="data.attr as IAttribute[]" class="no-error-padding w-full">
-        <el-table-column label="#" width="50" align="center">
-          <template #default>
-            <el-button type="primary" link class="move cursor-move" icon="el-icon-d-caret" />
-          </template>
-        </el-table-column>
-        <el-table-column prop="key" label="标识符" align="center">
-          <template #default="{ row, $index: i }">
-            <el-form-item :prop="`attr.${i}.key`" :rules="rules.key">
-              <el-input v-model.trim="row.key" />
-            </el-form-item>
-          </template>
-        </el-table-column>
-        <el-table-column prop="name" label="名称" align="center">
-          <template #default="{ row }">
-            <el-input v-model.trim="row.name" placeholder="内置属性则留空" />
-          </template>
-        </el-table-column>
-        <el-table-column prop="value" label="值" align="center">
-          <template #default="{ row, $index: i }">
-            <el-form-item :prop="`attr.${i}.value`" :rules="rules.value">
-              <el-input v-model.trim="row.value" />
-            </el-form-item>
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" width="80" align="center">
-          <template #header>
-            <el-button
-              type="primary"
-              link
-              size="small"
-              @click="addAttribute"
-            >
-              <Icon icon="i-ep:circle-plus" />
-            </el-button>
-          </template>
-          <template #default="{ $index }">
-            <el-button type="danger" link size="small" @click="removeAttribute($index)">
-              <Icon icon="i-ep:remove" />
-            </el-button>
-          </template>
-        </el-table-column>
-      </el-table>
+      <Attribute v-model:attributes="(data.attr as IAttribute[])" />
       <el-form-item label="人物初始背包" v-if="data.id">
         <el-button type="primary" link size="small" @click="addInventory">
           <Icon icon="i-ep:circle-plus-filled" />

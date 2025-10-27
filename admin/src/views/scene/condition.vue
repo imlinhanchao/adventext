@@ -3,7 +3,7 @@
   import { clone, isArray, isNumber } from '@/utils';
   import { FormInstance } from 'element-plus';
   import { pick } from 'lodash-es';
-  import { ItemsContext, ScenesContext, StoryContext, TargetsContext } from './index';
+  import { ItemsContext, SceneContext, ScenesContext, StoryContext, TargetsContext } from './index';
   import ItemSelector from '@/views/item/selector.vue';
   import { Item } from '@/api/item';
 
@@ -16,6 +16,7 @@
   const codeVisible = ref(false);
   const data = ref<Condition>(new Condition());
   const formData = computed(() => ({ ...data.value, attr: attr.value }));
+  const scene = inject(SceneContext, null);
 
   let saveResolve: (condition: Condition) => void;
   function open(condition?: Condition) {
@@ -34,6 +35,14 @@
       });
     } else if (data.value.type == 'Attr') {
       profileAttr.value = Object.entries(data.value.content).map(([key, value]: any) => {
+        return {
+          key,
+          operator: value.operator,
+          value: value.value ?? value.toString(),
+        };
+      });
+    } else if (data.value.type == 'SceneAttr') {
+      sceneAttr.value = Object.entries(data.value.content).map(([key, value]: any) => {
         return {
           key,
           operator: value.operator,
@@ -96,7 +105,7 @@
       return;
     }
 
-    if (data.value.type == 'Attr' || data.value.type == 'ItemAttr') {
+    if (data.value.type == 'Attr' || data.value.type == 'ItemAttr' || data.value.type == 'SceneAttr') {
       data.value.content = {};
       attr.value.forEach((item) => {
         if (item.key) {
@@ -144,11 +153,14 @@
 
   const profileAttr = ref<{ key: string; value: string; operator?: string }[]>([]);
   const itemAttr = ref<{ key: string; value: string; operator?: string }[]>([]);
+  const sceneAttr = ref<{ key: string; value: string; operator?: string }[]>([]);
   const attr = computed(() => {
     if (data.value.type === 'ItemAttr') {
       return itemAttr.value;
     } else if (data.value.type === 'Attr') {
       return profileAttr.value;
+    } else if (data.value.type === 'SceneAttr') {
+      return sceneAttr.value;
     }
     return [];
   });
@@ -187,6 +199,16 @@
       ),
     ),
   );
+  const sceneAttrs = computed(() => 
+    Array.from(
+      new Set(
+        scene?.value?.attributes?.map(a => ({
+          value: a.key,
+          label: a.name,
+        })) || [],
+      ),
+    ),
+  );
   function searchTarget(query: string, cb) {
     const list =
       targets?.value.filter(
@@ -207,7 +229,19 @@
   }
   function searchAttr(type: string) {
     return (query: string, cb) => {
-      const items = (type == 'Attr' ? defaultAttrs : itemAttrs).value.filter(
+      let attrs: any[] = [];
+      switch(type) {
+        case 'ItemAttr':
+          attrs = itemAttrs.value;
+          break;
+        case 'Attr':
+          attrs = defaultAttrs.value;
+          break;
+        case 'SceneAttr':
+          attrs = sceneAttrs.value;
+          break;
+      }
+      const items = attrs.filter(
         (item) => item.value.includes(query) || item.label?.includes(query) || !query,
       );
       cb(items);
@@ -232,6 +266,10 @@
         </span>
         <span v-else-if="data.type == 'Attr'">
           当前角色是否拥有设定的属性，比如设定 100 体力，则需要当前角色的体力大于等于 100
+          才会判定成功。如果不设定值，则只要具备属性就判定为成功。
+        </span>
+        <span v-else-if="data.type == 'SceneAttr'">
+          当前角色是否拥有设定的场景属性，比如设定 100 体力，则需要当前角色的体力大于等于 100
           才会判定成功。如果不设定值，则只要具备属性就判定为成功。
         </span>
         <div v-else-if="data.type == 'ItemAttr'">
@@ -312,7 +350,7 @@
           </section>
         </el-form-item>
       </template>
-      <template v-if="data.type === 'Attr' || data.type === 'ItemAttr'">
+      <template v-if="data.type === 'Attr' || data.type === 'ItemAttr' || data.type === 'SceneAttr'">
         <el-table :data="attr" class="no-error-padding w-full">
           <el-table-column prop="key" label="标识符" align="center">
             <template #default="{ row, $index: i }">

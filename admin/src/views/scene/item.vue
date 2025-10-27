@@ -4,6 +4,8 @@
   import { clone } from '@/utils';
   import Options from './options.vue';
   import CustomStyle from './style.vue';
+  import Attribute from '@/views/components/attributes.vue';
+import { SceneContext } from '.';
 
   const props = defineProps<{
     story: string;
@@ -66,6 +68,8 @@
       }
     }
   }
+
+  provide(SceneContext, data);
 </script>
 
 <template>
@@ -104,6 +108,18 @@
       <template v-else>
         <Options v-model:options="data.options" :scenes="scenes" :story="props.story" :type="type" />
       </template>
+      <el-divider>
+        场景属性
+        <el-tooltip placement="top">
+          <template #content>
+            <p>
+              场景属性会在进入场景时重置，若在场景内跳转，则不会重置。属性名称仅做注释，不会显示在前端。
+            </p>
+          </template>
+          <Icon icon="i-ep:info-filled" :size="14" />
+        </el-tooltip>
+      </el-divider>
+      <Attribute v-model:attributes="data.attributes!" prop="attributes" />
       <CustomStyle v-model="data.customStyle" placeholder="自定义样式将会在场景进入时载入" />
     </el-form>
     <template #footer>
