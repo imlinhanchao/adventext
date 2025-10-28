@@ -1,10 +1,12 @@
-<script setup lang="ts">
-  import { Scene } from '@/api/scene';
+<script setup lang="tsx">
+  import OptionForm from './option.vue';
+  import { Option, Scene, SceneApi } from '@/api/scene';
   import { useEventListener } from '@/hooks/event/useEventListener';
 
   const props = defineProps<{
     story: string;
     scene: Scene;
+    type: string;
     sceneMap: Recordable<Scene>;
     start?: boolean;
     zoom: number;
@@ -106,6 +108,30 @@
     emit('remove', data.value, () => loading.value = false);
   }
 
+  const excludeOptions = ref<Option[]>([]);
+  const optionRef = ref<InstanceType<typeof OptionForm>>();
+  function editOption(option: Option) {
+    excludeOptions.value = props.scene.options.filter((o) => o !== option);
+    optionRef.value?.open(option).then((data: Option) => {
+      Object.assign(option, data);
+      new SceneApi(props.story, props.type).save(props.scene).then(() => {
+        ElMessage.success('保存成功');
+      });
+    });
+  }
+
+  function addOption() {
+    excludeOptions.value = props.scene.options;
+    optionRef.value?.open().then((option: Option) => {
+      const scene = props.scene;
+      scene.options.push(option);
+      new SceneApi(props.story, props.type).save(scene).then(() => {
+        ElMessage.success('保存成功');
+      });
+    });
+  }
+
+
   defineExpose({
     beginMove,
   });
@@ -130,6 +156,7 @@
             <ButtonEx type="primary" link icon="el-icon-document" @click="$emit('copy', scene)" :loading="loading" content="复制" />
             <ButtonEx type="danger" link icon="el-icon-delete" @click="remove" :loading="loading" content="删除" />
             <ButtonEx type="primary" link icon="el-icon-edit" @click="$emit('edit', scene)" content="编辑" />
+            <ButtonEx type="primary" link icon="el-icon-plus" @click="addOption" content="添加选项" />
           </span>
         </section>
       </template>
@@ -146,7 +173,7 @@
             :id="`o_${scene.id}__${item.id || item.text}__${item.next}`"
             v-for="(item, index) in scene.options" :key="index" class="flex justify-between">
             <span>
-              <span class="inline-block mr-2">{{ item.text }}</span>
+              <span class="inline-block mr-2 cursor-pointer hover:underline" @click="editOption(item)">{{ item.text }}</span>
               <span>
                 <Icon icon="i-vaadin:input" v-if="item.value" :title="item.value" />
                 <Icon
@@ -169,12 +196,13 @@
                 'cursor-pointer': item.next != '<back>', 
                 'bg-red px-2 rounded font-bold': item.next != '<back>' && !sceneMap[item.next] 
               }" 
-              @click="item.next != '<back>' && emit('next', item.next)"
+              @click="editOption(item)"
             >→{{ item.next }}</span>
           </li>
         </ul>
       </section>
     </el-card>
+    <OptionForm ref="optionRef" :scenes="Object.values(props.sceneMap)" :story="story" :type="type" :options="excludeOptions" />
   </section>
 </template>
 <style lang="less" scoped>

@@ -176,6 +176,7 @@ function renderFromScenes(scenes) {
   if (!chart) return;
   const { nodes, links } = buildGraph(scenes);
   const option = getOptionFromGraph(nodes, links);
+  console.log('Rendering chart with option:', option);
   chart.setOption(option, { notMerge: true });
 }
 

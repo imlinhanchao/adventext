@@ -15,7 +15,7 @@
   });
 
   const nodes = computed(() => Object.entries(props.elementMap).reduce((acc, [key, el]) => {
-    acc[key] = el.$el || el;
+    if (el) acc[key] = el.$el || el;
     return acc;
   }, {} as Recordable<HTMLElement>));
     
