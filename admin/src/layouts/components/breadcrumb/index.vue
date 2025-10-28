@@ -52,6 +52,10 @@
       &:hover {
         color: var(--el-color-primary);
       }
+
+      .el-icon {
+        margin-right: 5px;
+      }
     }
   }
 
