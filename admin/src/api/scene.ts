@@ -27,6 +27,10 @@ export class Option {
    */
   text: string;
   /**
+   * 快捷键
+   */
+  shortcut?: string;
+  /**
    * 追加内容
    */
   append?: string;

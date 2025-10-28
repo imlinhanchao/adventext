@@ -54,6 +54,7 @@ function startGame(scene, state, content, global) {
   storyDiv.innerHTML = DOMPurify.sanitize(marked?.parse(content) || content);
   optionsDiv.innerHTML = '';
   customStyle.innerHTML = scene.customStyle || '';
+  hotkeys.deleteScope('option');
 
   if (scene.isEnd) {
     showMessage(`收获结局：${scene.theEnd}`, 'success')
@@ -87,6 +88,9 @@ function startGame(scene, state, content, global) {
       if (option.id) button.id = 'option_' + option.id;
 
       button.onclick = () => chooseOption.call(button, option, state);
+      if (option.shortcut) hotkeys(option.shortcut, 'option', () => {
+        chooseOption.call(button, option, state);
+      });
       optionsDiv.appendChild(button);
     });
   }
@@ -103,9 +107,14 @@ function startGame(scene, state, content, global) {
       if (option.id) button.id = 'global_option_' + option.id;
 
       button.onclick = () => chooseOption.call(button, option, state, true);
+      if (option.shortcut) hotkeys(option.shortcut, 'option', () => {
+        chooseOption.call(button, option, state);
+      });
       globalOptionsDiv.appendChild(button);
     });
   }
+
+  hotkeys.setScope('option');
   showState(state)
 }
 

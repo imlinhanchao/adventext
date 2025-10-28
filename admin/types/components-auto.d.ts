@@ -64,6 +64,8 @@ declare module 'vue' {
     ElTag: typeof import('element-plus/es')['ElTag']
     ElTooltip: typeof import('element-plus/es')['ElTooltip']
     ElUpload: typeof import('element-plus/es')['ElUpload']
+    HotKey: typeof import('@/components/HotKey/index.ts')['default']
+    HotKeySrcHotKey: typeof import('@/HotKey.vue')['default']
     Icon: typeof import('@/components/Icon/index.ts')['default']
     'IconDataIcons.data': typeof import('@/components/Icon/data/icons.data.ts')['default']
     IconSrcIcon: typeof import('@/Icon.vue')['default']

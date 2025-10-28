@@ -3,6 +3,7 @@ import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
 export class Option {
   id?: string;
   text: string;
+  shortcut?: string;
   append?: string;
   antiAppend?: string; 
   next: string;
