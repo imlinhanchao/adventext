@@ -2,6 +2,7 @@
   import OptionForm from './option.vue';
   import { Option, Scene, SceneApi } from '@/api/scene';
   import { useEventListener } from '@/hooks/event/useEventListener';
+import { SceneContext } from '.';
 
   const props = defineProps<{
     story: string;
@@ -15,6 +16,7 @@
 
   const emit = defineEmits(['next', 'edit', 'copy', 'remove', 'start', 'focus-tag', 'move-start', 'moving', 'connect']);
   const data = ref<Scene>(props.scene);
+  provide(SceneContext, data);
 
   const isMove = ref(false);
   const beginMovePos = ref({
@@ -123,9 +125,8 @@
   function addOption() {
     excludeOptions.value = props.scene.options;
     optionRef.value?.open().then((option: Option) => {
-      const scene = props.scene;
-      scene.options.push(option);
-      new SceneApi(props.story, props.type).save(scene).then(() => {
+      data.value.options.push(option);
+      new SceneApi(props.story, props.type).save(data.value).then(() => {
         ElMessage.success('保存成功');
       });
     });
