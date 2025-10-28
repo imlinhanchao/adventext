@@ -17,6 +17,7 @@ import { Draft } from '@/api/draft';
 import { Story } from '@/api/story';
 import { Target, TargetApi } from '@/api/target';
 import Connect from '@/components/Connect/';
+import { clone } from '@/utils';
 
 const { screenSM: isMobile } = useBreakpoint();
 
@@ -115,7 +116,7 @@ function addScene (scene?: Scene) {
       position.y += 40;
     }
   });
-  return sceneFormRef.value?.open(scene, position).then((scene: Scene) => {
+  return sceneFormRef.value?.open(scene || new Scene(), position).then((scene: Scene) => {
     scenes.value.push(scene);
     return scene;
   });
@@ -137,7 +138,7 @@ function removeScene (scene: Scene, cb) {
 }
 function copyScene (scene: Scene) {
   const newScene = new Scene();
-  Object.assign(newScene, JSON.parse(JSON.stringify(scene)));
+  Object.assign(newScene, clone(scene));
   newScene.name = `${scene.name}_副本`;
   newScene.id = undefined;
   newScene.position.x += 40;

@@ -55,7 +55,7 @@
 
   const conditionRef = ref<InstanceType<typeof ConditionForm>>();
   function addCon() {
-    conditionRef.value?.open().then((condition: Condition) => {
+    conditionRef.value?.open(new Condition()).then((condition: Condition) => {
       if (!conditions.value) conditions.value = []
       conditions.value.push(condition);
       nextTick(() => rowDrop());

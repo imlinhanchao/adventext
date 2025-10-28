@@ -60,7 +60,7 @@ export class Option {
    */
   disabled?: boolean;
 
-  constructor(text: string, next: string, conditions?: Condition[], effects?: Effect[]) {
+  constructor(text: string = '', next: string = '', conditions: Condition[] = [], effects: Effect[] = []) {
     this.text = text;
     this.next = next;
     this.conditions = conditions;
