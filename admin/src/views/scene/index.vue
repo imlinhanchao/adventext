@@ -1,4 +1,4 @@
-<script setup lang="tsx">
+<script setup lang="ts">
 import { SceneApi, Scene } from '@/api/scene';
 import SceneItem from './scene.vue';
 import { ElMessage, ElMessageBox } from 'element-plus';

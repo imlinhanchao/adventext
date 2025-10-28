@@ -45,16 +45,86 @@ async function chooseOption(option, state, global=false) {
     }).finally(() => lock = false);
 }
 
-function startGame(scene, state, content, global) {
+function splitContent(input) {
+  const parts = input.split(/<((?:line|block|normal))\s*\/>/);
+  const result = [];
+  let prevMarker = 'normal';
+  for (let i = 0; i < parts.length; i += 2) {
+    const text = parts[i];
+    result.push({ text, marker: prevMarker });
+    prevMarker = parts[i + 1] || null;
+  }
+  return result;
+}
+
+
+function renderContent(content) {
+  document.getElementById('action-tip').style.display = 'block';
+  return new Promise(async (resolve) => {
+    const storyDiv = document.getElementById('story');
+    storyDiv.innerHTML = '';
+    const contentParts = splitContent(content);
+    function renderContentBlock({ text, marker }, content) {
+      return new Promise((resolve) => {
+        if (marker === 'normal') {
+          content += text;
+          storyDiv.innerHTML = DOMPurify.sanitize(marked?.parse(content) || content);
+          delete document.body.onclick;
+          resolve(content);
+        } else if (marker === 'line') {
+          const lines = text.split('\n').filter(line => line.trim() !== '');
+          let index = 0;
+          hotkeys.deleteScope('render');
+          hotkeys('Space', 'render', () => {
+            renderNextLine();
+          });
+          hotkeys.setScope('render');
+          document.body.onclick = () => renderNextLine();
+          renderNextLine();
+          function renderNextLine() {
+            if (index < lines.length) {
+              content += lines[index] + '\n';
+              storyDiv.innerHTML = DOMPurify.sanitize(marked?.parse(content) || content);
+              index++;
+            } else {
+              hotkeys.deleteScope('render');
+              resolve(content);
+            }
+          }
+        } else if (marker === 'block') {
+          debugger;
+          content += text;
+          storyDiv.innerHTML = DOMPurify.sanitize(marked?.parse(content) || content);
+          hotkeys.deleteScope('render');
+          hotkeys('Space', 'render', () => {
+            hotkeys.deleteScope('render');
+            resolve(content);
+          });
+          hotkeys.setScope('render');
+          document.body.onclick = () => resolve(content);
+        }
+      });
+    }
+    let renderedContent = '';
+    for (const part of contentParts) {
+      renderedContent = await renderContentBlock(part, renderedContent);
+    }
+    document.getElementById('action-tip').style.display = 'none';
+    resolve();
+  });
+}
+
+async function startGame(scene, state, content, global) {
   const storyDiv = document.getElementById('story');
   const optionsDiv = document.getElementById('options');
   const customStyle = document.getElementById('custom-style');
   showMessage('', 'info')
 
-  storyDiv.innerHTML = DOMPurify.sanitize(marked?.parse(content) || content);
   optionsDiv.innerHTML = '';
   customStyle.innerHTML = scene.customStyle || '';
   hotkeys.deleteScope('option');
+  await renderContent(content);
+  //storyDiv.innerHTML = DOMPurify.sanitize(marked?.parse(content) || content);
 
   if (scene.isEnd) {
     showMessage(`收获结局：${scene.theEnd}`, 'success')
@@ -115,7 +185,7 @@ function startGame(scene, state, content, global) {
   }
 
   hotkeys.setScope('option');
-  showState(state)
+  showState(state);
 }
 
 function selectItem(inventory, message, needCount=false) {

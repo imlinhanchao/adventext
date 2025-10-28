@@ -101,7 +101,11 @@
         <el-input
           v-model="data.content"
           type="textarea"
-          placeholder="请输入场景内容，支持通过 ${属性标识符} 引用属性值"
+          :placeholder="`请输入场景内容，支持通过 \${属性标识符} 引用属性值
+<line /> 标记逐行显示开始，
+<block /> 标记逐段，多段之间需均需标记 <block />，
+<end /> 标记逐行/段显示结束
+`"
         />
       </el-form-item>
       <el-form-item label="标签" prop="tags">

@@ -1,8 +1,8 @@
-<script setup lang="tsx">
+<script setup lang="ts">
   import OptionForm from './option.vue';
   import { Option, Scene, SceneApi } from '@/api/scene';
   import { useEventListener } from '@/hooks/event/useEventListener';
-import { SceneContext } from '.';
+  import { SceneContext } from '.';
 
   const props = defineProps<{
     story: string;

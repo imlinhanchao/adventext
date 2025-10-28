@@ -416,3 +416,25 @@ input {
   background-color: var(--disabled-color);
   cursor: not-allowed;
 }
+
+.pulse {
+  /* 初始可选不影响动画，因为 animation 会覆盖 */
+  opacity: 1;
+  /* 动画：3秒一个循环，缓动，循环无限，方向交替（来回）*/
+  animation: fade 3s ease-in-out infinite;
+  will-change: opacity; /* 提升动画性能 */
+}
+
+@keyframes fade {
+  0%   { opacity: 1; }
+  50%  { opacity: 0.3; }
+  100% { opacity: 1; }
+}
+
+/* 可访问性：用户偏好减少动画时禁用动画 */
+@media (prefers-reduced-motion: reduce) {
+  .pulse {
+    animation: none;
+    opacity: 1;
+  }
+}

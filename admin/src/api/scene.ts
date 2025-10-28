@@ -206,6 +206,11 @@ export class Scene {
   customStyle?: string;
 
   /**
+   * 渲染模式
+   */
+  renderMode: string = 'normal';
+
+  /**
    * 标签
    */
   tags: string[] = [];
