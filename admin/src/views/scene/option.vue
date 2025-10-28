@@ -5,6 +5,7 @@
   import ScenePrompt from './prompt.vue';
   import Conditions from './conditions.vue';
   import Effects from './effects.vue';
+  import { SceneContext } from '.';
 
   const props = defineProps<{
     scenes: Scene[];
@@ -15,11 +16,12 @@
 
   const visible = ref(false);
   const data = ref<Option>(new Option('', ''));
+  const scene = inject(SceneContext, null);
 
   const formRef = ref<FormInstance>();
   const rules = computed(() => ({
     text: [{ required: true, message: '请输入选项', trigger: 'blur' }],
-    next: [{ required: true, message: '请选择下个场景', trigger: 'blur' }],
+    next: [{ required: !scene || !!scene.value?.id, message: '请选择下个场景', trigger: 'blur' }],
   }));
 
 
@@ -60,6 +62,10 @@
     const scenes = props.scenes.filter(
       (item) => item.name.includes(query) || item.content.includes(query),
     );
+    if (scene) scenes.unshift({
+      name: scene?.value?.name,
+      content: scene?.value?.content,
+    } as Scene);
     scenes.unshift({
       name: '<back>',
       content: '返回上一个场景',
@@ -70,7 +76,7 @@
 </script>
 
 <template>
-  <DialogEx title="场景选项" v-model="visible" width="600px">
+  <DialogEx title="场景选项" v-model="visible" width="600px" append-to-body>
     <el-form ref="formRef" :model="data" label-width="auto" :rules="rules">
       <el-form-item label="唯一标识" prop="id">
         <el-input v-model="data.id" clearable placeholder="给选项按钮添加 id 属性，可在 CSS 中使用 option_xxx 添加样式" />
@@ -107,7 +113,7 @@
         <el-input v-model="data.antiAppend" type="textarea" />
       </el-form-item>
       <el-form-item label="下个场景" prop="next">
-        <el-autocomplete v-model="data.next" :fetch-suggestions="searchScene" @select="data.next = $event.name">
+        <el-autocomplete v-model="data.next" :fetch-suggestions="searchScene" @select="data.next = $event.name" clearable>
           <template #default="{ item }">
             <div class="flex items-center">
               <span class="font-bold">{{ item.name }}</span>

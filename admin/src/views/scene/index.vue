@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup lang="tsx">
 import { SceneApi, Scene } from '@/api/scene';
 import SceneItem from './scene.vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
@@ -172,6 +172,7 @@ const sceneViewRef = ref<HTMLElement>();
 const sceneRef = ref<Recordable<any>>({});
 const highlight = ref('');
 function highlightScene (next: string) {
+  if (next == '<back>') return;
   const nextScene = scenes.value.find((item) => item.name === next);
   if (!nextScene) {
     addScene(new Scene(next))?.then((scene: Scene) => {
@@ -355,7 +356,7 @@ const connections = computed(() => {
     return acc;
   }, {});
 });
-const viewMode = ref('panel');
+const viewMode = ref(['panel']);
 </script>
 
 <template>
@@ -402,9 +403,8 @@ const viewMode = ref('panel');
             </el-form>
           </el-header>
           <el-main class="!h-full !overflow-unset">
-            <section class="w-full h-full relative" ref="sceneViewRef">
+            <section v-show="viewMode.includes('panel')" class="w-full h-full relative flex-1" ref="sceneViewRef">
               <section
-                v-show="viewMode == 'panel'"
                 id="scenePanel" ref="scenePanelRef" class="absolute w-full h-full"
                 :class="{ 'transition-all duration-200': !isMove }"
                 :style="{ top: pos.y + 'px', left: pos.x + 'px', transform: `scale(${zoom}, ${zoom})` }">
@@ -416,29 +416,30 @@ const viewMode = ref('panel');
                   @click.stop
                 />
                 <SceneItem
-                  v-for="(scene, index) in scenes" :ref="(el) => (sceneRef[scene.name] = el)" :key="index" @click.stop
-                  :story="storyId" :scene="scene" :sceneMap="sceneMap" @next="highlightScene" @edit="editScene" @connect="connectScene = $event.name"
+                  v-for="(scene, index) in scenes" :ref="(el) => (sceneRef[scene.name] = el)" :key="index" @click.stop :type="type"
+                  :story="storyId" :scene="scene" :sceneMap="sceneMap" @next="highlightScene" @edit="editScene" @connect="connectScene = $event.name,focusTag = ''"
                   @focus-tag="focusTag = focusTag != $event ? $event : ''" :focus-tag="focusTag" @move-start="moveSync" @moving="ConnectRef?.render()"
                   @remove="removeScene" @start="setStart" @copy="copyScene" @mousedown.stop class="transition-all duration-200" :class="{
                     'border-2 border-blue-500': highlight === scene.name, 'opacity-50': connectScene && !connections[scene.name]
                   }" :start="story.start === scene.name" :zoom="zoom" />
               </section>
-              <section v-if="viewMode == 'network'" class="w-full h-full">
-                <SceneMap
-                  :scenes="scenes"
-                />
-              </section>
-              <section 
-                class="px-5 py-2 rounded-[4em] bg-[var(--el-bg-color-overlay)] border border-gray-700 dark:shadow-gray-800 shadow-lg absolute bottom-5 left-5"
-              >
-                场景 x {{ scenes.length }}
-              </section>
-              <section class="absolute bottom-5 right-5">
-                <el-radio-group v-model="viewMode">
-                  <el-radio-button label="面板" value="panel" />
-                  <el-radio-button label="网络" value="network" />
-                </el-radio-group>
-              </section>
+            </section>
+            <section v-if="viewMode.includes('network')" @mousedown.stop class="fixed top-0 left-0 right-0 bottom-0 w-full h-full z-3 flex-1 bg-black bg-opacity-50">
+              <SceneMap
+                :scenes="scenes"
+                @node-click="highlightScene($event.name)"
+              />
+            </section>
+            <section 
+              class="px-5 py-2 rounded-[4em] bg-[var(--el-bg-color-overlay)] border border-gray-700 dark:shadow-gray-800 shadow-lg absolute bottom-5 left-5"
+            >
+              场景 x {{ scenes.length }}
+            </section>
+            <section class="absolute bottom-5 right-5 z-4">
+              <el-checkbox-group v-model="viewMode">
+                <el-checkbox-button label="面板" value="panel" />
+                <el-checkbox-button label="网络" value="network" />
+              </el-checkbox-group>
             </section>
           </el-main>
           <span @mousedown.stop>

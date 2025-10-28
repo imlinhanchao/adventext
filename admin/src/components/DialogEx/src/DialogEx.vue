@@ -1,6 +1,6 @@
 <!-- filepath: /home/hancel/project/text-rpg/admin/src/components/ButtonEx/src/ButtonEx.vue -->
 <template>
-  <el-dialog v-bind="$attrs" :fullscreen="isFullscreen" :show-close="false" lock-scroll>
+  <el-dialog v-bind="$attrs" :fullscreen="isFullscreen" :show-close="false" lock-scroll draggable>
     <template #header="{ close, titleId, titleClass }">
       <slot name="header" v-bind="{ close, titleId, titleClass, toggleFull }">
         <div class="relative h-full flex items-center justify-between">
