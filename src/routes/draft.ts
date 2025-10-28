@@ -110,6 +110,8 @@ router.post('/import', async (req, res) => {
     if (data.items && !Array.isArray(data.items)) {
       return error(res, "故事物品数据不正确");
     }
+    if (!data.options) data.options = [];
+    if (!data.effects) data.effects = [];
     const newStory = DraftRepo.create(omit(data, ['scenes', 'items', 'id', 'status', 'comment']));
     newStory.author = req.user?.username;
     newStory.status = 0; // 默认状态为草稿
@@ -120,6 +122,7 @@ router.post('/import', async (req, res) => {
 
     if (data.scenes && data.scenes.length > 0) {
       const scenes = data.scenes.map((scene: any) => {
+        if (!scene.attributes) scene.attributes = [];
         return SceneRepo.create({
           ...omit(scene, ['id']),
           storyId: result.id
