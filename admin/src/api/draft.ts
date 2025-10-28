@@ -80,6 +80,11 @@ export class Draft {
    */
   comment: string;
 
+  /**
+   * 共享用户列表
+   */
+  shareUser?: string[];
+
   constructor() {
     this.name = '';
     this.alias = '';

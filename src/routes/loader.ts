@@ -24,7 +24,7 @@ export function createRouter(type: string) {
     try {
       const game = new GameController(type, req.story);
       const story = await game.getStory(req.params.storyId);
-      if (!story || type == 'draft' && story?.author !== user.username && !user.isAdmin) {
+      if (!story || type == 'draft' && story?.author !== user.username && !user.isAdmin && !story?.shareUser?.includes(user.username)) {
         return next();
       }
       render(res, "index", req).title(story.name).render({

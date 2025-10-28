@@ -252,7 +252,7 @@ router.post("/:id/approve", async (req, res) => {
   let story:any = await StoryRepo.findOneBy({ sourceId: draft.id });
 
   if (!story) {
-    story = omit(draft, ['id', 'status', 'comment']);
+    story = omit(draft, ['id', 'status', 'comment', 'shareUser']);
     story.status = 2;
     story.sourceId = draft.id;
     story.visible = true;
@@ -260,7 +260,7 @@ router.post("/:id/approve", async (req, res) => {
     const newStory = StoryRepo.create(story);
     story = await StoryRepo.save(newStory);
   } else {
-    const updateStory = omit(story, ['id', 'status', 'comment']);
+    const updateStory = omit(story, ['id', 'status', 'comment', 'shareUser']);
     updateStory.status = 2;
     updateStory.sourceId = draft.id;
     updateStory.id = story.id;

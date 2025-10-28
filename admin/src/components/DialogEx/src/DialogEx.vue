@@ -1,11 +1,11 @@
 <!-- filepath: /home/hancel/project/text-rpg/admin/src/components/ButtonEx/src/ButtonEx.vue -->
 <template>
-  <el-dialog v-bind="$attrs" :fullscreen="isFullscreen" :show-close="false" lock-scroll draggable>
+  <el-dialog v-bind="$attrs" :fullscreen="isFullscreen" :show-close="false" lock-scroll draggable :close-on-click-modal="false" :close-on-press-escape="false">
     <template #header="{ close, titleId, titleClass }">
       <slot name="header" v-bind="{ close, titleId, titleClass, toggleFull }">
         <div class="relative h-full flex items-center justify-between">
           <slot name="title">
-            <span class="text-2xl font-bold">{{ title }}</span>
+            <span class="text-xl font-bold">{{ title }}</span>
           </slot>
           <slot name="extra" v-bind="{ close, toggleFull }">
             <div class="flex items-center justify-between">

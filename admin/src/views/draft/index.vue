@@ -11,6 +11,7 @@
   } from '@/api/draft';
   import { ElMessageBox, ElTable } from 'element-plus';
   import Item from '@/views/draft/item.vue';
+  import Share from './share.vue';
   import Approve from './approve.vue';
   import { copyTextToClipboard } from '@/hooks/web/useCopyToClipboard';
   import { useEventListener } from '@/hooks/event/useEventListener';
@@ -124,6 +125,11 @@
   function gotoPlay(row: Draft) {
     window.open(`/d/${row.id}`, '_blank');
   }
+
+  const shareRef = ref<InstanceType<typeof Share>>();
+  function share(row: Draft) {
+    shareRef.value?.open(row);
+  }
 </script>
 
 <template>
@@ -131,7 +137,7 @@
     <el-main>
       <el-table ref="tableRef" :data="storyList" style="width: 100%">
         <el-table-column type="selection" width="55" align="center" />
-        <el-table-column label="" align="center" width="150">
+        <el-table-column label="" align="center" width="200">
           <template #header>
             <ButtonEx content="新增" type="primary" link @click="add" icon="el-icon-circle-plus" />
             <ButtonEx
@@ -174,6 +180,13 @@
               icon="el-icon-document"
               @click="copy(row)"
             />
+            <ButtonEx
+              content="分享"
+              link
+              type="primary"
+              icon="i-ep:share"
+              @click="share(row)"
+            />
           </template>
         </el-table-column>
         <el-table-column prop="author" label="作者" v-if="isAdmin" width="200" align="center" />
@@ -200,6 +213,7 @@
       </el-table>
       <Item ref="itemRef" @confirm="loadStory" />
       <Approve v-if="isApprove" ref="approveRef" @confirm="loadStory" />
+      <Share ref="shareRef" />
     </el-main>
   </el-container>
 </template>

@@ -16,6 +16,9 @@ export class Draft {
   @Column('varchar', { length: 128, default: '', comment: '别名' })
   alias: string;
 
+  @Column('json', { nullable: true, comment: '共享用户列表' })
+  shareUser?: string[];
+
   @Column('varchar', { length: 255, comment: '起始场景' })
   start: string;
 
