@@ -6,7 +6,7 @@
 <% if (ends.length > 0) { %>
       <section class="flex overflow-auto text-lg">
         <span>
-          <a <%- endId && endId !== profile.endId && `href="/s/${story.id}/history"` || '' -%>>当前</a>
+          <a <%- endId && endId !== profile.endId && `href="/${type}/${story.id}/history"` || '' -%>>当前</a>
         </span>
 <% ends.forEach(function(end, i) { %>
         <span>/</span>
@@ -18,12 +18,13 @@
 <% } -%>
     </header>
     <main class="flex-1 overflow-auto">
-<% if (list.length > 0) { %>
+<% if (list.length > 0 && endId == end.endId) { %>
       <section class="w-full pl-5 h-full overflow-auto space-y-3">
         <p class="text-center">
           <a href="/<%=type-%>/<%=story.id-%>">继续游玩</a>
+          <% if (type == 'd') { %>
           <span class="mx-2">/</span>
-          <% if (type == 'd') { %><a onclick="resetGame()" href="javascript:void(0)" class="text-red-500">重置进度</a>
+          <a onclick="resetGame()" href="javascript:void(0)" class="text-red-500">重置进度</a>
           <span class="mx-2">/</span>
           <a onclick="resetAchievement()" href="javascript:void(0)" class="text-red-500">重置成就</a>
           <% } %>
