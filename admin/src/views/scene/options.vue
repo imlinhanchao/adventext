@@ -32,7 +32,7 @@
   const optionRef = ref<InstanceType<typeof OptionForm>>();
   function addOption() {
     excludeOptions.value = options.value;
-    optionRef.value?.open().then((option: Option) => {
+    optionRef.value?.open(new Option()).then((option: Option) => {
       options.value.push(option);
       nextTick(() => rowDrop());
     });

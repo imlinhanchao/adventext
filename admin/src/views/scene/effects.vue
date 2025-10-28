@@ -61,7 +61,7 @@
 
   const effectRef = ref<InstanceType<typeof EffectForm>>();
   function addEffect() {
-    effectRef.value?.open().then((effect: Effect) => {
+    effectRef.value?.open(new Effect()).then((effect: Effect) => {
       if (!effects.value) effects.value = []
       effects.value.push(effect);
       nextTick(() => rowDrop());
