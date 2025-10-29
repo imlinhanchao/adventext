@@ -962,10 +962,24 @@ export default class GameController {
         throw new Error('Oops! 前方无路……');
       }
 
-      if (next != scene.name && nextScene?.attributes?.length) {
-        profile.sceneAttr = nextScene.attributes.reduce((acc: any, cur: any) => (acc[cur.key] = cur.value, acc), {});
-      } else if (next != scene.name || !profile.sceneAttr) {
-        profile.sceneAttr = {};
+      if (next != scene.name) {
+        if (scene.leaveEffects?.length) {
+          result = await this.runEffects(profile, scene.leaveEffects, option, valueText, timezone, undefined, achievements, virtual);
+          if (result.message) message += result.message;
+          if (result.profile) profile = result.profile;
+        }
+
+        if (nextScene?.attributes?.length) {
+          profile.sceneAttr = nextScene.attributes.reduce((acc: any, cur: any) => (acc[cur.key] = cur.value, acc), {});
+        } else if (next != scene.name || !profile.sceneAttr) {
+          profile.sceneAttr = {};
+        }
+
+        if (nextScene?.enterEffects?.length) {
+          result = await this.runEffects(profile, nextScene.enterEffects, option, valueText, timezone, undefined, achievements, virtual);
+          if (result.message) message += result.message;
+          if (result.profile) profile = result.profile;
+        }
       }
 
       if (!virtual) {
@@ -1015,7 +1029,7 @@ export default class GameController {
       const globalEffects = this.story?.effects || [];
       if (globalEffects.length) {
         const { message: msg, next, profile: p } = await this.runEffects(profile, globalEffects, {}, '', timezone, undefined, this.achievements, virtual);
-        message = msg;
+        message += msg;
         profile = p;
         if (next && next != scene?.name) {
           const scene = await this.getSence(next, storyId);

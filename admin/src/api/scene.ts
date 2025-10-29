@@ -213,6 +213,16 @@ export class Scene {
    * 自定义 CSS
    */
   customStyle?: string;
+  
+  /**
+   * 进入场景效果
+   */
+  enterEffects?: Effect[];
+
+  /**
+   * 退出场景效果
+   */
+  leaveEffects?: Effect[];
 
   /**
    * 渲染模式

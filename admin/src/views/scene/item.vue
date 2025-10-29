@@ -6,6 +6,7 @@
   import Options from '@/views/components/options.vue';
   import CustomStyle from '@/views/components/style.vue';
   import Attribute from '@/views/components/attributes.vue';
+  import Effects from '@/views/components/effects.vue';
 
   const props = defineProps<{
     story: string;
@@ -153,6 +154,24 @@
       </el-divider>
       <Attribute v-model:attributes="data.attributes!" prop="attributes" />
       <CustomStyle v-model="data.customStyle" placeholder="自定义样式将会在场景进入时载入" />
+      <Effects
+        v-if="data.id"
+        v-model:effects="data.enterEffects"
+        :type="type"
+        :story="props.story"
+        :scenes="scenes"
+        title="进入场景效果"
+        tip="进入场景时若满足条件则触发，场景内跳转不会触发。通过配置不同的类型，可以修改玩家的属性、物品等（修改下一场景的效果不会生效）。"
+      />
+      <Effects
+        v-if="data.id"
+        v-model:effects="data.leaveEffects"
+        :type="type"
+        :story="props.story"
+        :scenes="scenes"
+        title="离开场景效果"
+        tip="离开场景时若满足条件则触发，场景内跳转不会触发。通过配置不同的类型，可以修改玩家的属性、物品等（修改下一场景的效果不会生效）。"
+      />
     </el-form>
     <template #footer>
       <el-button @click="visible = false">取消</el-button>

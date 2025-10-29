@@ -74,7 +74,7 @@
   <el-table
     ref="tableRef"
     :data="data"
-    class="no-error-padding w-full"
+    class="no-error-padding w-full mb-5"
     max-height="50vh"
     :key="tableKey"
   >
