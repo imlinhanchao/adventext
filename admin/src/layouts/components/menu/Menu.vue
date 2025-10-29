@@ -4,12 +4,15 @@
   import { transformRouteToMenu } from '@/helper/menuHelper';
   import Logo from '@/layouts/components/logo/index.vue';
   import { useUserStore } from '@/store/modules/user';
-  
-  withDefaults(defineProps<{
-    collapsed?: boolean;
-  }>(), {
-    collapsed: false,
-  })
+
+  withDefaults(
+    defineProps<{
+      collapsed?: boolean;
+    }>(),
+    {
+      collapsed: false,
+    },
+  );
 
   const { getUserInfo } = useUserStore();
   const menus = computed(() => transformRouteToMenu(routeModuleList));
@@ -17,7 +20,11 @@
     menus.value.forEach((menu) => {
       if (menu.children && menu.children.length > 1) {
         menu.children.forEach((child) => {
-          if (child.name === route.name && !route.meta.hidden && (getUserInfo.isAdmin || !child.meta.isAdmin)) {
+          if (
+            child.name === route.name &&
+            !route.meta.hidden &&
+            (getUserInfo.isAdmin || !child.meta.isAdmin)
+          ) {
             selectedKeys.value = child.path;
             openKeys.value = [menu.path];
           } else if (child.name === route.name) {
@@ -47,7 +54,7 @@
   const router = useRouter();
   function handleMenuClick(index) {
     emit('menuClick', index);
-    router.push(index)
+    router.push(index);
   }
 </script>
 

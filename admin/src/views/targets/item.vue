@@ -3,7 +3,7 @@
   import { TargetApi, Target } from '@/api/target';
   import { clone } from '@/utils';
   import { FormInstance } from 'element-plus';
-  import ConditionForm from '@/views/scene/condition.vue';
+  import ConditionForm from '@/views/components/condition.vue';
   import { contentFormat } from '@/views/scene/';
 
   const props = defineProps<{
@@ -13,7 +13,7 @@
 
   const visible = ref(false);
   const data = ref<Target>(new Target());
-  const attr = ref<{ key: string, value: string, name: string}[]>([]);
+  const attr = ref<{ key: string; value: string; name: string }[]>([]);
   const formData = computed(() => ({ ...data.value, attr: attr.value }));
   const targetApi = computed(() => new TargetApi(props.storyId, props.type));
 
@@ -49,11 +49,11 @@
     emit('confirm', data.value);
     visible.value = false;
   }
-  
+
   const conditionRef = ref<InstanceType<typeof ConditionForm>>();
   function addCon() {
     conditionRef.value?.open().then((condition: Condition) => {
-      if (!data.value.conditions) data.value.conditions = []
+      if (!data.value.conditions) data.value.conditions = [];
       data.value.conditions.push(condition);
     });
   }
@@ -64,7 +64,13 @@
   }
 </script>
 <template>
-  <el-dialog :title="data.id ? '成就更新' : '成就创建'" v-model="visible" width="800px" @close="emit('close')" append-to-body>
+  <el-dialog
+    :title="data.id ? '成就更新' : '成就创建'"
+    v-model="visible"
+    width="800px"
+    @close="emit('close')"
+    append-to-body
+  >
     <el-form :model="formData" label-width="auto" class="colon" :rules="rules" ref="formRef">
       <el-form-item label="标识符" prop="key">
         <el-input v-model="data.key" clearable />
@@ -88,9 +94,14 @@
         </el-tooltip>
       </el-divider>
       <el-table :data="data.conditions" border stripe>
-        <el-table-column prop="type" label="类型" :formatter="({type}) => ConditionType[type]" />
+        <el-table-column prop="type" label="类型" :formatter="({ type }) => ConditionType[type]" />
         <el-table-column prop="name" label="条件对象" />
-        <el-table-column prop="content" label="内容" show-overflow-tooltip :formatter="contentFormat" />
+        <el-table-column
+          prop="content"
+          label="内容"
+          show-overflow-tooltip
+          :formatter="contentFormat"
+        />
         <el-table-column label="操作" width="100px" align="center">
           <template #header>
             <el-button type="primary" link size="small" @click="addCon">

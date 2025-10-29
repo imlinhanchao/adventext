@@ -49,7 +49,13 @@
         <el-table-column label="" align="center" width="80">
           <template #default="{ row }">
             <ButtonEx content="编辑" link type="primary" icon="el-icon-edit" @click="edit(row)" />
-            <ButtonEx content="删除" link type="danger" icon="el-icon-remove" @click="remove(row)" />
+            <ButtonEx
+              content="删除"
+              link
+              type="danger"
+              icon="el-icon-remove"
+              @click="remove(row)"
+            />
           </template>
         </el-table-column>
         <el-table-column prop="username" label="用户名" align="center" min-width="120">

@@ -19,7 +19,7 @@ export default [
           title: '首页',
           type: 'draft',
         },
-      }
+      },
     ],
   },
 ];

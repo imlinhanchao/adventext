@@ -63,14 +63,16 @@ export function doLogout() {
 }
 
 export function generateToken() {
-  return defHttp.post<string>(
-    {
-      url: '/token',
-    },
-    {
-      errorMessageMode: 'none',
-    },
-  ).catch(() => '');
+  return defHttp
+    .post<string>(
+      {
+        url: '/token',
+      },
+      {
+        errorMessageMode: 'none',
+      },
+    )
+    .catch(() => '');
 }
 
 export interface User {

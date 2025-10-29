@@ -11,7 +11,8 @@
   --tags: #d00;
   --qualifier: #ff6032;
   --important: var(--string);
-  --font-code: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
+  --font-code: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New,
+    monospace;
 
   position: relative;
   height: auto;
@@ -71,7 +72,11 @@
   font-family: arial;
   line-height: 0.3;
   color: #414141;
-  text-shadow: #f96 1px 1px 2px, #f96 -1px -1px 2px, #f96 1px -1px 2px, #f96 -1px 1px 2px;
+  text-shadow:
+    #f96 1px 1px 2px,
+    #f96 -1px -1px 2px,
+    #f96 1px -1px 2px,
+    #f96 -1px 1px 2px;
   cursor: pointer;
 }
 

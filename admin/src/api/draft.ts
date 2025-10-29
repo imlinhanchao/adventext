@@ -2,7 +2,6 @@ import { defHttp } from '@/utils/http';
 import { Item } from './item';
 import { Effect, IAttribute, Option } from './scene';
 
-
 export class Inventory extends Item {
   /**
    * 物品数量
@@ -43,12 +42,12 @@ export class Draft {
   /**
    * 人物初始化属性
    */
-  attr: Recordable<string|number> | IAttribute[];
+  attr: Recordable<string | number> | IAttribute[];
 
   /**
    * 属性名称
    */
-  attrName: { key: string; name: string; }[];
+  attrName: { key: string; name: string }[];
 
   /**
    * 初始化物品
@@ -69,7 +68,7 @@ export class Draft {
    * 自定义样式
    */
   customStyle: string;
-  
+
   /**
    * 故事状态
    */
@@ -103,7 +102,7 @@ export class Draft {
 export function getStoryList(params: any = {}) {
   return defHttp.get<Draft[]>({
     url: '/draft/list',
-    params
+    params,
   });
 }
 
@@ -142,7 +141,7 @@ export function publishStory(id: string) {
 export function approveStory(id: string, data: { pass: boolean; reason: string }) {
   return defHttp.post({
     url: `/draft/${id}/approve`,
-    data
+    data,
   });
 }
 
@@ -155,13 +154,13 @@ export function exportStory(id: string) {
 export function exportStorys(data: string[]) {
   return defHttp.post({
     url: `/draft/export`,
-    data
+    data,
   });
 }
 
 export function importStorys(dataZips: string[]) {
   return defHttp.post({
     url: `/draft/import`,
-    data: dataZips
+    data: dataZips,
   });
 }

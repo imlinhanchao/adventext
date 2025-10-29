@@ -3,7 +3,13 @@
   import { clone, isArray, isNumber } from '@/utils';
   import { FormInstance } from 'element-plus';
   import { pick } from 'lodash-es';
-  import { ItemsContext, SceneContext, ScenesContext, StoryContext, TargetsContext } from './index';
+  import {
+    ItemsContext,
+    SceneContext,
+    ScenesContext,
+    StoryContext,
+    TargetsContext,
+  } from '../scene/index';
   import ItemSelector from '@/views/item/selector.vue';
   import { Item } from '@/api/item';
 
@@ -105,7 +111,11 @@
       return;
     }
 
-    if (data.value.type == 'Attr' || data.value.type == 'ItemAttr' || data.value.type == 'SceneAttr') {
+    if (
+      data.value.type == 'Attr' ||
+      data.value.type == 'ItemAttr' ||
+      data.value.type == 'SceneAttr'
+    ) {
       data.value.content = {};
       attr.value.forEach((item) => {
         if (item.key) {
@@ -189,20 +199,22 @@
   const defaultAttrs = computed(() =>
     Array.from(
       new Set(
-        isArray(story?.value?.attr) ? story?.value?.attr.map(a => ({
-          value: a.key,
-          label: a.name,
-        })) : Object.keys(story?.value?.attr || {}).map((a) => ({
-          value: a,
-          label: story?.value?.attrName[a],
-        })),
+        isArray(story?.value?.attr)
+          ? story?.value?.attr.map((a) => ({
+              value: a.key,
+              label: a.name,
+            }))
+          : Object.keys(story?.value?.attr || {}).map((a) => ({
+              value: a,
+              label: story?.value?.attrName[a],
+            })),
       ),
     ),
   );
-  const sceneAttrs = computed(() => 
+  const sceneAttrs = computed(() =>
     Array.from(
       new Set(
-        scene?.value?.attributes?.map(a => ({
+        scene?.value?.attributes?.map((a) => ({
           value: a.key,
           label: a.name,
         })) || [],
@@ -230,7 +242,7 @@
   function searchAttr(type: string) {
     return (query: string, cb) => {
       let attrs: any[] = [];
-      switch(type) {
+      switch (type) {
         case 'ItemAttr':
           attrs = itemAttrs.value;
           break;
@@ -253,7 +265,7 @@
     const list = scenes.value.filter(
       (item) => item.name.includes(query) || item.content.includes(query),
     );
-    cb(list)
+    cb(list);
   }
 </script>
 
@@ -350,7 +362,9 @@
           </section>
         </el-form-item>
       </template>
-      <template v-if="data.type === 'Attr' || data.type === 'ItemAttr' || data.type === 'SceneAttr'">
+      <template
+        v-if="data.type === 'Attr' || data.type === 'ItemAttr' || data.type === 'SceneAttr'"
+      >
         <el-table :data="attr" class="no-error-padding w-full">
           <el-table-column prop="key" label="标识符" align="center">
             <template #default="{ row, $index: i }">

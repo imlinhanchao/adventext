@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { ItemsContext } from './index';
+  import { ItemsContext } from '../scene/index';
 
   const props = defineProps<{
     modelValue?: string;
@@ -12,15 +12,19 @@
     type: '',
     tip: '',
     category: [] as string[],
-  })
+  });
 
-  watch(data, (val) => {
-    let value = val.type ? `${val.type}:${val.tip}` : val.tip;
-    if (val.type && val.category) {
-      value += `:${val.category.join(',')}`;
-    }
-    emit('update:modelValue', value);
-  }, { deep: true });
+  watch(
+    data,
+    (val) => {
+      let value = val.type ? `${val.type}:${val.tip}` : val.tip;
+      if (val.type && val.category) {
+        value += `:${val.category.join(',')}`;
+      }
+      emit('update:modelValue', value);
+    },
+    { deep: true },
+  );
 
   function loadDataFromValue(value?: string) {
     if (!value) {
@@ -46,7 +50,6 @@
   const itemTypes = computed<string[]>(() =>
     Array.from(new Set(items?.value.map((item) => item.type) || [])),
   );
-
 </script>
 
 <template>
@@ -75,12 +78,7 @@
     </el-form-item>
     <el-form-item label="物品类型" prop="content" v-if="['item', 'items'].includes(data.type)">
       <el-select filter multiple allow-create v-model="data.category" clearable>
-        <el-option
-          v-for="type in itemTypes"
-          :key="type"
-          :label="type"
-          :value="type"
-        />
+        <el-option v-for="type in itemTypes" :key="type" :label="type" :value="type" />
       </el-select>
     </el-form-item>
   </fieldset>

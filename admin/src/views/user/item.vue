@@ -39,14 +39,15 @@
 </script>
 
 <template>
-  <el-dialog
-    title="更新用户"
-    v-model="visible"
-    width="700px"
-    class="max-h-[80vh]"
-    append-to-body
-  >
-    <el-form v-if="data" ref="formRef" label-width="auto" :model="formData" :rules="rules" class="colon">
+  <el-dialog title="更新用户" v-model="visible" width="700px" class="max-h-[80vh]" append-to-body>
+    <el-form
+      v-if="data"
+      ref="formRef"
+      label-width="auto"
+      :model="formData"
+      :rules="rules"
+      class="colon"
+    >
       <el-form-item label="用户名" name="username">
         <el-input v-model.trim="data.username" />
       </el-form-item>

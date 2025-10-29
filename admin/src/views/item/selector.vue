@@ -88,7 +88,6 @@
       });
     });
   }
-  
 
   function importData(file: File) {
     importItems(file).then((importedItems) => {
@@ -105,7 +104,14 @@
 </script>
 
 <template>
-  <DialogEx title="物品" v-model="visible" width="1000px" append-to-body height="100%" body-class="el-container !flex-col h-full">
+  <DialogEx
+    title="物品"
+    v-model="visible"
+    width="1000px"
+    append-to-body
+    height="100%"
+    body-class="el-container !flex-col h-full"
+  >
     <el-header class="flex !py-2 justify-between" height="auto">
       <section class="flex space-x-2">
         <el-button type="primary" @click="add">添加</el-button>
@@ -127,31 +133,31 @@
     </el-header>
     <el-main>
       <el-table row-key="id" :data="items" max-height="100%">
-          <el-table-column label="#" width="50" v-if="!readonly">
-            <template #default="{ row }">
-              <el-checkbox
-                :model-value="selected.some((r) => r.key == row.key)"
-                @change="select(row, $event as boolean)"
-              />
-            </template>
-          </el-table-column>
-          <el-table-column prop="key" label="标识符" width="180" />
-          <el-table-column prop="name" label="名称" width="180" />
-          <el-table-column prop="description" label="描述" min-width="180" />
-          <el-table-column prop="type" label="类型" width="80" />
-          <el-table-column v-if="inventory" prop="count" label="数量" width="180" align="center">
-            <template #default="{ row }">
-              <el-input-number v-model="row.count" type="number" @mousewheel.prevent />
-            </template>
-          </el-table-column>
-          <el-table-column label="操作" align="center" width="180" v-if="readonly">
-            <template #default="{ row }">
-              <el-button-group>
-                <el-button type="primary" size="small" @click="edit(row)">编辑</el-button>
-                <el-button type="danger" size="small" @click="remove(row)">删除</el-button>
-              </el-button-group>
-            </template>
-          </el-table-column>
+        <el-table-column label="#" width="50" v-if="!readonly">
+          <template #default="{ row }">
+            <el-checkbox
+              :model-value="selected.some((r) => r.key == row.key)"
+              @change="select(row, $event as boolean)"
+            />
+          </template>
+        </el-table-column>
+        <el-table-column prop="key" label="标识符" width="180" />
+        <el-table-column prop="name" label="名称" width="180" />
+        <el-table-column prop="description" label="描述" min-width="180" />
+        <el-table-column prop="type" label="类型" width="80" />
+        <el-table-column v-if="inventory" prop="count" label="数量" width="180" align="center">
+          <template #default="{ row }">
+            <el-input-number v-model="row.count" type="number" @mousewheel.prevent />
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" align="center" width="180" v-if="readonly">
+          <template #default="{ row }">
+            <el-button-group>
+              <el-button type="primary" size="small" @click="edit(row)">编辑</el-button>
+              <el-button type="danger" size="small" @click="remove(row)">删除</el-button>
+            </el-button-group>
+          </template>
+        </el-table-column>
       </el-table>
     </el-main>
     <el-footer class="!py-5" height="auto">

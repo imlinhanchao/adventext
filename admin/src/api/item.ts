@@ -1,7 +1,6 @@
 import { ErrorMessageMode } from '#/axios';
 import { defHttp } from '@/utils/http';
 
-
 export class Item {
   /**
    * 物品Id
@@ -36,7 +35,7 @@ export class Item {
   /**
    * 属性
    */
-  attributes: Recordable<string|number> = {};
+  attributes: Recordable<string | number> = {};
 
   /**
    * 属性名称
@@ -65,14 +64,17 @@ export class ItemApi {
   getList(params?: IItemQuery) {
     return defHttp.get<Item[]>({
       url: `/${this.type}/${this.storyId}/items`,
-      params
+      params,
     });
   }
 
   get(name: string, mode: ErrorMessageMode = 'message') {
-    return defHttp.get<Item>({
-      url: `/${this.type}/${this.storyId}/item/${name}`,
-    }, { errorMessageMode: mode });
+    return defHttp.get<Item>(
+      {
+        url: `/${this.type}/${this.storyId}/item/${name}`,
+      },
+      { errorMessageMode: mode },
+    );
   }
 
   bulkCreate(items: Item[]) {

@@ -4,7 +4,6 @@ import { Inventory } from './draft';
 import { Achievement } from './target';
 
 export class Profile {
-
   /**
    * 用户ID
    */
@@ -43,7 +42,7 @@ export class Profile {
   /**
    * 属性名称
    */
-  attrName: { [key: string]: [string, string] | string } | { key: string; name: string }[] = []
+  attrName: { [key: string]: [string, string] | string } | { key: string; name: string }[] = [];
 
   constructor(user: number, storyId: string) {
     this.userId = user;
@@ -94,20 +93,49 @@ export class SceneRecord {
 /**
  * 模拟运行游戏
  */
-export function gameRun(data: { scene: Scene, profile: Profile, option: string, timezone?: number, value: string, achievements?: Achievement[], circle?: number, global?: boolean, options?: Option[] }) {
-  return defHttp.post({
-    url: `/story/run`,
-    data
-  }, {
-    errorMessageMode: 'none',
-  });
+export function gameRun(data: {
+  scene: Scene;
+  profile: Profile;
+  option: string;
+  timezone?: number;
+  value: string;
+  achievements?: Achievement[];
+  circle?: number;
+  global?: boolean;
+  options?: Option[];
+}) {
+  return defHttp.post(
+    {
+      url: `/story/run`,
+      data,
+    },
+    {
+      errorMessageMode: 'none',
+    },
+  );
 }
 
-export function updateOptions(scene: Scene, profile: Profile, records: SceneRecord[], achievements: any[], circle?: number) {
-  return defHttp.post({
-    url: `/story/filter`,
-    data: { scene, profile, records, timezone: new Date().getTimezoneOffset() / -60, achievements, circle } 
-  }, {
-    errorMessageMode: 'none',
-  });
+export function updateOptions(
+  scene: Scene,
+  profile: Profile,
+  records: SceneRecord[],
+  achievements: any[],
+  circle?: number,
+) {
+  return defHttp.post(
+    {
+      url: `/story/filter`,
+      data: {
+        scene,
+        profile,
+        records,
+        timezone: new Date().getTimezoneOffset() / -60,
+        achievements,
+        circle,
+      },
+    },
+    {
+      errorMessageMode: 'none',
+    },
+  );
 }

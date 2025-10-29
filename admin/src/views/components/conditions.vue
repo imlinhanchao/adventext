@@ -3,26 +3,31 @@
   import { ConditionType, Condition } from '@/api/scene';
   import { ElTable } from 'element-plus';
   import ConditionForm from './condition.vue';
-  import { contentFormat } from './index';
+  import { contentFormat } from '../scene/index';
 
-  const props = withDefaults(defineProps<{
-    type: string;
-    checkOnly?: boolean;
-    conditions?: Condition[];
-    title?: string;
-  }>(), {
-    checkOnly: false,
-    conditions: () => [],
-    title: '条件列表',
-  });
+  const props = withDefaults(
+    defineProps<{
+      type: string;
+      checkOnly?: boolean;
+      conditions?: Condition[];
+      title?: string;
+    }>(),
+    {
+      checkOnly: false,
+      title: '条件列表',
+    },
+  );
   const emit = defineEmits<{
-    (e: 'update:conditions', value: Condition[]): void;
+    (e: 'update:conditions', value?: Condition[]): void;
   }>();
 
   const conditions = ref(props.conditions);
-  watch(() => props.conditions, (val) => {
-    conditions.value = val || [];
-  });
+  watch(
+    () => props.conditions,
+    (val) => {
+      conditions.value = val || [];
+    },
+  );
   watch(conditions, (val) => {
     emit('update:conditions', val || []);
   });
@@ -56,7 +61,7 @@
   const conditionRef = ref<InstanceType<typeof ConditionForm>>();
   function addCon() {
     conditionRef.value?.open(new Condition()).then((condition: Condition) => {
-      if (!conditions.value) conditions.value = []
+      if (!conditions.value) conditions.value = [];
       conditions.value.push(condition);
       nextTick(() => rowDrop());
     });
@@ -87,7 +92,7 @@
         <el-button type="primary" link class="move cursor-move" icon="el-icon-d-caret" />
       </template>
     </el-table-column>
-    <el-table-column prop="type" label="类型" :formatter="({type}) => ConditionType[type]" />
+    <el-table-column prop="type" label="类型" :formatter="({ type }) => ConditionType[type]" />
     <el-table-column prop="name" label="条件对象" />
     <el-table-column prop="content" label="内容" show-overflow-tooltip :formatter="contentFormat" />
     <el-table-column prop="tip" label="提示" show-overflow-tooltip />
@@ -101,7 +106,12 @@
         <el-button type="primary" link size="small" @click="editCon(row)">
           <Icon icon="i-ep:edit" />
         </el-button>
-        <el-button type="danger" link size="small" @click="conditions?.splice($index, 1)">
+        <el-button
+          type="danger"
+          link
+          size="small"
+          @click="conditions?.splice($index, 1), $nextTick(() => rowDrop())"
+        >
           <Icon icon="i-ep:remove" />
         </el-button>
       </template>

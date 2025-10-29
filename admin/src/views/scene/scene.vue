@@ -1,8 +1,8 @@
 <script setup lang="ts">
-  import OptionForm from './option.vue';
+  import OptionForm from '@/views/components/option.vue';
   import { Option, Scene, SceneApi } from '@/api/scene';
   import { useEventListener } from '@/hooks/event/useEventListener';
-  import { SceneContext } from '.';
+  import { SceneContext } from './index';
 
   const props = defineProps<{
     story: string;
@@ -14,7 +14,17 @@
     focusTag?: string;
   }>();
 
-  const emit = defineEmits(['next', 'edit', 'copy', 'remove', 'start', 'focus-tag', 'move-start', 'moving', 'connect']);
+  const emit = defineEmits([
+    'next',
+    'edit',
+    'copy',
+    'remove',
+    'start',
+    'focus-tag',
+    'move-start',
+    'moving',
+    'connect',
+  ]);
   const data = ref<Scene>(props.scene);
   provide(SceneContext, data);
 
@@ -24,12 +34,12 @@
     y: 0,
   });
 
-  function beginMove(e: MouseEvent|TouchEvent, isSync = false) {
+  function beginMove(e: MouseEvent | TouchEvent, isSync = false) {
     isMove.value = true;
     const client = {
       x: (e as MouseEvent).clientX || (e as TouchEvent).touches[0].clientX,
       y: (e as MouseEvent).clientY || (e as TouchEvent).touches[0].clientY,
-    }
+    };
     beginMovePos.value.x = client.x - data.value.position.x * props.zoom;
     beginMovePos.value.y = client.y - data.value.position.y * props.zoom;
     if (!isSync) emit('move-start', e);
@@ -93,8 +103,8 @@
       if (option.append) {
         if (content.includes('${' + option.text + '}')) {
           content = content.replaceAll(
-            '${' + option.text + '}', 
-            `</b><span title="来自选项：${option.text}" class="hover:font-bold">${option.append}</span><b>`
+            '${' + option.text + '}',
+            `</b><span title="来自选项：${option.text}" class="hover:font-bold">${option.append}</span><b>`,
           );
         } else {
           content += `<span title="来自选项：${option.text}" class="hover:font-bold">${option.append}</span>`;
@@ -107,7 +117,7 @@
   const loading = ref(false);
   function remove() {
     loading.value = true;
-    emit('remove', data.value, () => loading.value = false);
+    emit('remove', data.value, () => (loading.value = false));
   }
 
   const excludeOptions = ref<Option[]>([]);
@@ -132,7 +142,6 @@
     });
   }
 
-
   defineExpose({
     beginMove,
   });
@@ -141,28 +150,92 @@
   <section
     class="scene-item absolute transition-none group w-[400px]"
     :style="{ left: scene.position.x + 'px', top: scene.position.y + 'px' }"
-    :class="{ 'z-10': focusTag && scene.tags.includes(focusTag), 'opacity-50': focusTag && !scene.tags.includes(focusTag) }"
+    :class="{
+      'z-10': focusTag && scene.tags.includes(focusTag),
+      'opacity-50': focusTag && !scene.tags.includes(focusTag),
+    }"
   >
     <el-card class="scene w-full" :header="scene.name">
       <template #header>
-        <section class="!flex justify-between" @dblclick="emit('connect', scene)" title="双击查看关联场景">
-          <span class="text-lg font-bold select-none cursor-move flex items-center space-x-1" @mousedown.stop="beginMove" @touchstart.stop="beginMove">
+        <section
+          class="!flex justify-between"
+          @dblclick="emit('connect', scene)"
+          title="双击查看关联场景"
+        >
+          <span
+            class="text-lg font-bold select-none cursor-move flex items-center space-x-1"
+            @mousedown.stop="beginMove"
+            @touchstart.stop="beginMove"
+          >
             <el-tooltip content="移动场景"><Icon icon="i-tdesign:move" /></el-tooltip>
             <span>{{ scene.name }}</span>
-            <Icon title="起始场景" :size="20" color="#f63832" v-if="start" icon="i-lets-icons:flag-fill" />
-            <Icon title="结局" :size="20" color="var(--color-primary)" v-if="scene.isEnd" icon="i-carbon:circle-filled" />
+            <Icon
+              title="起始场景"
+              :size="20"
+              color="#f63832"
+              v-if="start"
+              icon="i-lets-icons:flag-fill"
+            />
+            <Icon
+              title="结局"
+              :size="20"
+              color="var(--color-primary)"
+              v-if="scene.isEnd"
+              icon="i-carbon:circle-filled"
+            />
           </span>
           <span>
-            <ButtonEx class="!group-hover:inline !hidden" icon="i-lets-icons:flag-duotone" v-if="!start && !scene.isEnd" link @click="$emit('start', scene)" content="设置为起始场景" />
-            <ButtonEx type="primary" link icon="el-icon-document" @click="$emit('copy', scene)" :loading="loading" content="复制" />
-            <ButtonEx type="danger" link icon="el-icon-delete" @click="remove" :loading="loading" content="删除" />
-            <ButtonEx type="primary" link icon="el-icon-edit" @click="$emit('edit', scene)" content="编辑" />
-            <ButtonEx type="primary" link icon="el-icon-plus" @click="addOption" content="添加选项" />
+            <ButtonEx
+              class="!group-hover:inline !hidden"
+              icon="i-lets-icons:flag-duotone"
+              v-if="!start && !scene.isEnd"
+              link
+              @click="$emit('start', scene)"
+              content="设置为起始场景"
+            />
+            <ButtonEx
+              type="primary"
+              link
+              icon="el-icon-document"
+              @click="$emit('copy', scene)"
+              :loading="loading"
+              content="复制"
+            />
+            <ButtonEx
+              type="danger"
+              link
+              icon="el-icon-delete"
+              @click="remove"
+              :loading="loading"
+              content="删除"
+            />
+            <ButtonEx
+              type="primary"
+              link
+              icon="el-icon-edit"
+              @click="$emit('edit', scene)"
+              content="编辑"
+            />
+            <ButtonEx
+              type="primary"
+              link
+              icon="el-icon-plus"
+              @click="addOption"
+              content="添加选项"
+            />
           </span>
         </section>
       </template>
       <p>
-        <el-tag :effect="focusTag == tag ? 'dark' : 'plain'" @click="emit('focus-tag', tag)" v-for="(tag, index) in scene.tags" :key="index" class="mr-1 mb-1 cursor-pointer" size="small">{{ tag }}</el-tag>
+        <el-tag
+          :effect="focusTag == tag ? 'dark' : 'plain'"
+          @click="emit('focus-tag', tag)"
+          v-for="(tag, index) in scene.tags"
+          :key="index"
+          class="mr-1 mb-1 cursor-pointer"
+          size="small"
+          >{{ tag }}</el-tag
+        >
       </p>
       <p class="my-2">
         <!-- eslint-disable-next-line vue/no-v-html -->
@@ -172,9 +245,16 @@
         <ul>
           <li
             :id="`o_${scene.id}__${item.id || item.text}__${item.next}`"
-            v-for="(item, index) in scene.options" :key="index" class="flex justify-between">
+            v-for="(item, index) in scene.options"
+            :key="index"
+            class="flex justify-between"
+          >
             <span>
-              <span class="inline-block mr-2 cursor-pointer hover:underline" @click="editOption(item)">{{ item.text }}</span>
+              <span
+                class="inline-block mr-2 cursor-pointer hover:underline"
+                @click="editOption(item)"
+                >{{ item.text }}</span
+              >
               <span>
                 <Icon icon="i-vaadin:input" v-if="item.value" :title="item.value" />
                 <Icon
@@ -187,27 +267,42 @@
                   v-if="item.effects?.length"
                   :title="`效果x` + item.effects?.length"
                 />
-                <Icon icon="i-icon-park-outline:play-once" v-if="(item.loop ?? 0) < 0" title="单次执行" />
-                <Icon icon="i-icon-park-outline:loop-once" v-if="(item.loop ?? 0) > 0" :title="`循环/${item.loop}s`" />
+                <Icon
+                  icon="i-icon-park-outline:play-once"
+                  v-if="(item.loop ?? 0) < 0"
+                  title="单次执行"
+                />
+                <Icon
+                  icon="i-icon-park-outline:loop-once"
+                  v-if="(item.loop ?? 0) > 0"
+                  :title="`循环/${item.loop}s`"
+                />
               </span>
             </span>
-            <span 
-              ref="nextRef" 
-              :class="{ 
-                'cursor-pointer': item.next != '<back>', 
-                'bg-red px-2 rounded font-bold': item.next != '<back>' && !sceneMap[item.next] 
-              }" 
+            <span
+              ref="nextRef"
+              :class="{
+                'cursor-pointer': item.next != '<back>',
+                'bg-red px-2 rounded font-bold': item.next != '<back>' && !sceneMap[item.next],
+              }"
               @click="editOption(item)"
-            >→{{ item.next }}</span>
+              >→{{ item.next }}</span
+            >
           </li>
         </ul>
       </section>
     </el-card>
-    <OptionForm ref="optionRef" :scenes="Object.values(props.sceneMap)" :story="story" :type="type" :options="excludeOptions" />
+    <OptionForm
+      ref="optionRef"
+      :scenes="Object.values(props.sceneMap)"
+      :story="story"
+      :type="type"
+      :options="excludeOptions"
+    />
   </section>
 </template>
 <style lang="less" scoped>
-.scene-item {
-  content-visibility: auto;
-}
+  .scene-item {
+    content-visibility: auto;
+  }
 </style>

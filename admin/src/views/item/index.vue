@@ -2,7 +2,7 @@
   import { ItemApi, Item } from '@/api/item';
   import ItemForm from '@/views/item/item.vue';
   import { ElMessageBox } from 'element-plus';
-  import { dowloadTemplate, importItems } from './index'
+  import { dowloadTemplate, importItems } from './index';
 
   const query = reactive({
     name: '',
@@ -54,7 +54,6 @@
   function exportItems() {
     dowloadTemplate(items.value);
   }
-
 </script>
 
 <template>
@@ -64,11 +63,7 @@
         <el-button type="primary" @click="add">添加</el-button>
         <el-button type="info" @click="exportItems()">导出物品</el-button>
         <el-button type="success" @click="dowloadTemplate()">下载模板</el-button>
-        <el-upload
-          :show-file-list="false"
-          :before-upload="importData"
-          accept=".xlsx"
-        >
+        <el-upload :show-file-list="false" :before-upload="importData" accept=".xlsx">
           <el-button type="warning">导入物品</el-button>
         </el-upload>
       </section>
@@ -87,7 +82,12 @@
         <el-table-column prop="key" label="标识符" width="180" />
         <el-table-column prop="name" label="名称" width="180" />
         <el-table-column prop="description" label="描述" min-width="180" />
-        <el-table-column prop="attributes" label="属性" show-tooltip-overflow :formatter="({ attributes }) => JSON.stringify(attributes)" />
+        <el-table-column
+          prop="attributes"
+          label="属性"
+          show-tooltip-overflow
+          :formatter="({ attributes }) => JSON.stringify(attributes)"
+        />
         <el-table-column prop="type" label="类型" width="80" />
         <el-table-column label="操作" align="center" width="180">
           <template #default="{ row }">

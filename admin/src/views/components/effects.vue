@@ -6,26 +6,31 @@
   import ItemForm from '@/views/item/item.vue';
   import { ItemApi, Item } from '@/api/item';
 
-  const props = withDefaults(defineProps<{
-    scenes: Scene[];
-    effects?: Effect[];
-    story: string;
-    type: string;
-    title?: string;
-    tip?: string;
-  }>(), {
-    effects: () => [],
-    title: '效果列表',
-    tip: '用于设置玩家选择选项后属性或背包的修改。通过配置不同的类型，可以修改玩家的属性、物品和下一个场景等。',
-  });
+  const props = withDefaults(
+    defineProps<{
+      scenes: Scene[];
+      effects?: Effect[];
+      story: string;
+      type: string;
+      title?: string;
+      tip?: string;
+    }>(),
+    {
+      title: '效果列表',
+      tip: '用于设置玩家选择选项后属性或背包的修改。通过配置不同的类型，可以修改玩家的属性、物品和下一个场景等。',
+    },
+  );
   const emit = defineEmits<{
-    (e: 'update:effects', value: Effect[]): void;
+    (e: 'update:effects', value?: Effect[]): void;
   }>();
 
   const effects = ref(props.effects);
-  watch(() => props.effects, (val) => {
-    effects.value = val || [];
-  });
+  watch(
+    () => props.effects,
+    (val) => {
+      effects.value = val || [];
+    },
+  );
   watch(effects, (val) => {
     emit('update:effects', val || []);
   });
@@ -36,7 +41,6 @@
       rowDrop();
     });
   });
-
 
   const itemApi = computed(() => new ItemApi(props.story, props.type));
 
@@ -62,7 +66,7 @@
   const effectRef = ref<InstanceType<typeof EffectForm>>();
   function addEffect() {
     effectRef.value?.open(new Effect()).then((effect: Effect) => {
-      if (!effects.value) effects.value = []
+      if (!effects.value) effects.value = [];
       effects.value.push(effect);
       nextTick(() => rowDrop());
     });
@@ -79,7 +83,6 @@
     const item = await itemApi.value.get(name, 'none').catch(() => new Item(name));
     itemRef.value?.open(item);
   }
-
 </script>
 
 <template>
@@ -100,11 +103,17 @@
         <el-button type="primary" link class="move cursor-move" icon="el-icon-d-caret" />
       </template>
     </el-table-column>
-    <el-table-column prop="type" label="类型" :formatter="({type}) => EffectType[type]" />
+    <el-table-column prop="type" label="类型" :formatter="({ type }) => EffectType[type]" />
     <el-table-column prop="name" label="效果对象">
       <template #default="{ row }">
         <span>{{ row.name }}</span>
-        <el-button v-if="row.type == 'Item'" link icon="el-icon-edit" size="small" @click="editItem(row.name)" />
+        <el-button
+          v-if="row.type == 'Item'"
+          link
+          icon="el-icon-edit"
+          size="small"
+          @click="editItem(row.name)"
+        />
       </template>
     </el-table-column>
     <el-table-column prop="content" label="内容" show-overflow-tooltip>
@@ -123,7 +132,12 @@
         <el-button type="primary" link size="small" @click="editEffect(row)">
           <Icon icon="i-ep:edit" />
         </el-button>
-        <el-button type="danger" link size="small" @click="effects.splice($index, 1)">
+        <el-button
+          type="danger"
+          link
+          size="small"
+          @click="effects?.splice($index, 1), $nextTick(() => rowDrop())"
+        >
           <Icon icon="i-ep:remove" />
         </el-button>
       </template>

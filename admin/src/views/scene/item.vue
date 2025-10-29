@@ -1,11 +1,11 @@
 <script lang="ts" setup>
-  import { Scene, SceneApi } from '@/api/scene';
   import { ElMessage, ElMessageBox, FormInstance } from 'element-plus';
+  import { Scene, SceneApi } from '@/api/scene';
   import { clone } from '@/utils';
-  import Options from './options.vue';
-  import CustomStyle from './style.vue';
+  import { SceneContext } from './index';
+  import Options from '@/views/components/options.vue';
+  import CustomStyle from '@/views/components/style.vue';
   import Attribute from '@/views/components/attributes.vue';
-  import { SceneContext } from '.';
 
   const props = defineProps<{
     story: string;
@@ -20,7 +20,7 @@
 
   const oldName = ref('');
   let saveResolve: (scene: Scene) => void;
-  function open(scene?: Scene, position?: { x: number, y: number }) {
+  function open(scene?: Scene, position?: { x: number; y: number }) {
     visible.value = true;
     data.value = clone(scene || new Scene());
     oldName.value = data.value.name;
@@ -51,7 +51,7 @@
     loading.value = true;
     const formData: Scene = {
       ...data.value,
-      attributes: data.value.attributes?.map(attr => {
+      attributes: data.value.attributes?.map((attr) => {
         attr = { ...attr };
         attr.value = Number(attr.value).toString() !== attr.value ? attr.value : Number(attr.value);
         return attr;
@@ -81,8 +81,20 @@
 </script>
 
 <template>
-  <DialogEx :title="data.id ? '场景编辑' : '场景创建'" v-model="visible" width="600px" append-to-body>
-    <el-form ref="formRef" :model="data" label-width="auto" :rules="rules" class="colon" @mousedown.stop>
+  <DialogEx
+    :title="data.id ? '场景编辑' : '场景创建'"
+    v-model="visible"
+    width="600px"
+    append-to-body
+  >
+    <el-form
+      ref="formRef"
+      :model="data"
+      label-width="auto"
+      :rules="rules"
+      class="colon"
+      @mousedown.stop
+    >
       <el-form-item label="场景名称" prop="name">
         <el-input v-model="data.name" placeholder="请输入场景名称" />
       </el-form-item>
@@ -91,7 +103,10 @@
           <span>
             <el-tooltip placement="top">
               <template #content>
-                <p>支持通过<code>${选项名}</code>引用选项追加内容。#属性标识# 可插入玩家对应属性值。</p>
+                <p
+                  >支持通过<code>${选项名}</code>引用选项追加内容。#属性标识#
+                  可插入玩家对应属性值。</p
+                >
               </template>
               <Icon icon="i-ep:info-filled" :size="14" />
             </el-tooltip>
@@ -118,7 +133,12 @@
         <el-input clearable v-model="data.theEnd" />
       </el-form-item>
       <template v-else>
-        <Options v-model:options="data.options" :scenes="scenes" :story="props.story" :type="type" />
+        <Options
+          v-model:options="data.options"
+          :scenes="scenes"
+          :story="props.story"
+          :type="type"
+        />
       </template>
       <el-divider>
         场景属性

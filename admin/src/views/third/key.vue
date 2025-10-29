@@ -49,31 +49,32 @@
         }));
       }
     },
-    { immediate: true }
+    { immediate: true },
   );
 
   watch(
     formData,
     (val) => {
-      dataList.value = val
-        .map(({ key, value }) => `${key.trim()},${value.trim()}`)
-        .join('\n');
+      dataList.value = val.map(({ key, value }) => `${key.trim()},${value.trim()}`).join('\n');
     },
-    { immediate: true }
+    { immediate: true },
   );
 </script>
 
 <template>
-  <el-dialog
-    :title="title"
-    v-model="visible"
-    width="700px"
-    class="max-h-[80vh]"
-    append-to-body
-  >
-    <el-alert>使用 $callback 表示回调地址，$auth.xyz 获取认证地址回调参数，$verify.xyz 获取校验接口返回参数，$user.xyz 获取用户信息接口返回参数</el-alert>
+  <el-dialog :title="title" v-model="visible" width="700px" class="max-h-[80vh]" append-to-body>
+    <el-alert
+      >使用 $callback 表示回调地址，$auth.xyz 获取认证地址回调参数，$verify.xyz
+      获取校验接口返回参数，$user.xyz 获取用户信息接口返回参数</el-alert
+    >
     <el-switch v-model="isBatch" /> 批量设置
-    <el-input type="textarea" v-model="dataList" :rows="3" placeholder="批量设置时，直接写 key,value" v-if="isBatch" />
+    <el-input
+      type="textarea"
+      v-model="dataList"
+      :rows="3"
+      placeholder="批量设置时，直接写 key,value"
+      v-if="isBatch"
+    />
     <el-table ref="tableRef" v-else :data="formData" style="width: 100%">
       <el-table-column label="key" align="center" min-width="120">
         <template #default="{ row }">
@@ -87,7 +88,12 @@
       </el-table-column>
       <el-table-column label="操作" align="center" width="80">
         <template #header>
-          <el-button link type="primary" icon="el-icon-plus" @click="formData.push({ key: '', value: '' })" />
+          <el-button
+            link
+            type="primary"
+            icon="el-icon-plus"
+            @click="formData.push({ key: '', value: '' })"
+          />
         </template>
         <template #default="{ $index }">
           <el-button link type="danger" icon="el-icon-remove" @click="formData.splice($index, 1)" />

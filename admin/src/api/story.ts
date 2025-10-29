@@ -1,7 +1,6 @@
 import { defHttp } from '@/utils/http';
 import { Draft } from './draft';
 
-
 export class Story extends Draft {
   /**
    * 来源故事ID
@@ -12,7 +11,7 @@ export class Story extends Draft {
    * 是否可见
    */
   visible: boolean;
-  
+
   constructor() {
     super();
     this.sourceId = 0;

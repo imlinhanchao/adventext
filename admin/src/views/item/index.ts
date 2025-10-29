@@ -16,12 +16,16 @@ export function dowloadTemplate(items: Item[] = []) {
       key: item.key,
       name: item.name,
       description: item.description,
-      attributes: Object.entries(item.attributes).map(([k, v]) => item.attrName[k] ? `${k}:${v}:${item.attrName[k]}` : `${k}:${v}`).join(';'),
+      attributes: Object.entries(item.attributes)
+        .map(([k, v]) => (item.attrName[k] ? `${k}:${v}:${item.attrName[k]}` : `${k}:${v}`))
+        .join(';'),
       type: item.type,
     });
   });
   workbook.xlsx.writeBuffer().then((buffer) => {
-    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const blob = new Blob([buffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = 'item_template.xlsx';
@@ -52,9 +56,11 @@ export function importItems(file: File) {
           headers[colNumber] = s !== '' ? s : `col${colNumber}`;
         });
         const headerNames = ['标识符', '名称', '描述', '类型', '属性', '属性名'];
-        const missingHeaders = headerNames.filter(h => !headers.includes(h));
+        const missingHeaders = headerNames.filter((h) => !headers.includes(h));
         if (missingHeaders.length > 0) {
-          ElMessage.error(`缺少必要的列：${missingHeaders.join(', ')}，请下载最新模板后填写数据再导入`);
+          ElMessage.error(
+            `缺少必要的列：${missingHeaders.join(', ')}，请下载最新模板后填写数据再导入`,
+          );
           return;
         }
         const result: Record<string, string>[] = [];
@@ -68,7 +74,7 @@ export function importItems(file: File) {
             obj[key] = cell.value?.toString().trim() || '';
           }
           // 可选：如果整行全为空字符串则跳过
-          const allEmpty = Object.values(obj).every(v => v === '');
+          const allEmpty = Object.values(obj).every((v) => v === '');
           if (!allEmpty) result.push(obj);
         });
         const importedItems: Item[] = [];
@@ -78,13 +84,15 @@ export function importItems(file: File) {
             name: row['名称'],
             description: row['描述'],
             type: row['类型'],
-            attributes: row['属性'].split(';').reduce((attrs: Recordable<string|number>, pair) => {
-              const [k, v] = pair.split(':');
-              if (k && v !== undefined) {
-                attrs[k] = Number(v).toString() === v ? Number(v) : v;
-              }
-              return attrs;
-            }, {}),
+            attributes: row['属性']
+              .split(';')
+              .reduce((attrs: Recordable<string | number>, pair) => {
+                const [k, v] = pair.split(':');
+                if (k && v !== undefined) {
+                  attrs[k] = Number(v).toString() === v ? Number(v) : v;
+                }
+                return attrs;
+              }, {}),
             attrName: row['属性名'].split(';').reduce((attrNames: Recordable<string>, pair) => {
               const [k, _, name] = pair.split(':');
               if (k && name) {

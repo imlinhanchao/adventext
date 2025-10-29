@@ -40,11 +40,23 @@
       <el-table :data="thirdList" style="width: 100%">
         <el-table-column label="" align="center" width="80">
           <template #header>
-            <ButtonEx content="添加" link type="primary" icon="el-icon-plus" @click="itemRef?.open()" />
+            <ButtonEx
+              content="添加"
+              link
+              type="primary"
+              icon="el-icon-plus"
+              @click="itemRef?.open()"
+            />
           </template>
           <template #default="{ row }">
             <ButtonEx content="编辑" link type="primary" icon="el-icon-edit" @click="edit(row)" />
-            <ButtonEx content="删除" link type="danger" icon="el-icon-remove" @click="remove(row)" />
+            <ButtonEx
+              content="删除"
+              link
+              type="danger"
+              icon="el-icon-remove"
+              @click="remove(row)"
+            />
           </template>
         </el-table-column>
         <el-table-column prop="name" label="名称" align="center" min-width="120" />

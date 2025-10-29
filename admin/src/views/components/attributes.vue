@@ -3,14 +3,17 @@
   import { IAttribute } from '@/api/scene';
   import { ElTable } from 'element-plus';
 
-  const props = withDefaults(defineProps<{
-    prop?: string;
-    attributes: IAttribute[];
-  }>(), {
-    prop: 'attr',
-  });
+  const props = withDefaults(
+    defineProps<{
+      prop?: string;
+      attributes?: IAttribute[];
+    }>(),
+    {
+      prop: 'attr',
+    },
+  );
   const emit = defineEmits(['update:attributes']);
-  
+
   const tableKey = ref<number>(0);
   const tableRef = ref<InstanceType<typeof ElTable>>();
   function rowDrop() {
@@ -30,13 +33,20 @@
     });
   }
 
-  const data = ref<IAttribute[]>(props.attributes || []);
-  watch(() => props.attributes, (val) => {
-    data.value = val;
-  });
-  watch(data, (val) => {
-    emit('update:attributes', val);
-  }, { deep: true });
+  const data = ref(props.attributes);
+  watch(
+    () => props.attributes,
+    (val) => {
+      data.value = val;
+    },
+  );
+  watch(
+    data,
+    (val) => {
+      emit('update:attributes', val);
+    },
+    { deep: true },
+  );
 
   const rules = {
     name: [{ required: true, message: '请输入名称', trigger: 'blur' }],
@@ -46,11 +56,12 @@
   };
 
   function addAttribute() {
+    if (!data.value) data.value = [];
     data.value.push(new IAttribute());
     nextTick(() => rowDrop());
   }
   function removeAttribute(index: number) {
-    data.value.splice(index, 1);
+    data.value?.splice(index, 1);
     nextTick(() => rowDrop());
   }
 
@@ -60,57 +71,58 @@
 </script>
 
 <template>
-    <el-table ref="tableRef" :data="data" class="no-error-padding w-full" max-height="50vh" :key="tableKey">
-      <el-table-column label="#" width="50" align="center">
-        <template #default>
-          <el-button type="primary" link class="move cursor-move" icon="el-icon-d-caret" />
-        </template>
-      </el-table-column>
-      <el-table-column prop="key" label="标识符" align="center">
-        <template #default="{ row, $index: i }">
-          <el-form-item :prop="`${prop}.${i}.key`" :rules="rules.key">
-            <el-input v-model.trim="row.key" />
-          </el-form-item>
-        </template>
-      </el-table-column>
-      <el-table-column prop="name" label="名称" align="center">
-        <template #default="{ row }">
-          <el-input v-model.trim="row.name" placeholder="内置属性则留空" />
-        </template>
-      </el-table-column>
-      <el-table-column prop="type" label="分类" align="center">
-        <template #default="{ row }">
-          <el-input v-model.trim="row.type" />
-        </template>
-      </el-table-column>
-      <el-table-column prop="value" label="值" align="center">
-        <template #default="{ row, $index: i }">
-          <el-form-item :prop="`${prop}.${i}.value`" :rules="rules.value">
-            <el-input v-model.trim="row.value" />
-          </el-form-item>
-        </template>
-      </el-table-column>
-      <el-table-column prop="remark" label="备注" align="center">
-        <template #default="{ row }">
-          <el-input v-model.trim="row.remark" />
-        </template>
-      </el-table-column>
-      <el-table-column label="操作" width="80" align="center">
-        <template #header>
-          <el-button
-            type="primary"
-            link
-            size="small"
-            @click="addAttribute"
-          >
-            <Icon icon="i-ep:circle-plus" />
-          </el-button>
-        </template>
-        <template #default="{ $index }">
-          <el-button type="danger" link size="small" @click="removeAttribute($index)">
-            <Icon icon="i-ep:remove" />
-          </el-button>
-        </template>
-      </el-table-column>
-    </el-table>
+  <el-table
+    ref="tableRef"
+    :data="data"
+    class="no-error-padding w-full"
+    max-height="50vh"
+    :key="tableKey"
+  >
+    <el-table-column label="#" width="50" align="center">
+      <template #default>
+        <el-button type="primary" link class="move cursor-move" icon="el-icon-d-caret" />
+      </template>
+    </el-table-column>
+    <el-table-column prop="key" label="标识符" align="center">
+      <template #default="{ row, $index: i }">
+        <el-form-item :prop="`${prop}.${i}.key`" :rules="rules.key">
+          <el-input v-model.trim="row.key" />
+        </el-form-item>
+      </template>
+    </el-table-column>
+    <el-table-column prop="name" label="名称" align="center">
+      <template #default="{ row }">
+        <el-input v-model.trim="row.name" placeholder="内置属性则留空" />
+      </template>
+    </el-table-column>
+    <el-table-column prop="type" label="分类" align="center">
+      <template #default="{ row }">
+        <el-input v-model.trim="row.type" />
+      </template>
+    </el-table-column>
+    <el-table-column prop="value" label="值" align="center">
+      <template #default="{ row, $index: i }">
+        <el-form-item :prop="`${prop}.${i}.value`" :rules="rules.value">
+          <el-input v-model.trim="row.value" />
+        </el-form-item>
+      </template>
+    </el-table-column>
+    <el-table-column prop="remark" label="备注" align="center">
+      <template #default="{ row }">
+        <el-input v-model.trim="row.remark" />
+      </template>
+    </el-table-column>
+    <el-table-column label="操作" width="80" align="center">
+      <template #header>
+        <el-button type="primary" link size="small" @click="addAttribute">
+          <Icon icon="i-ep:circle-plus" />
+        </el-button>
+      </template>
+      <template #default="{ $index }">
+        <el-button type="danger" link size="small" @click="removeAttribute($index)">
+          <Icon icon="i-ep:remove" />
+        </el-button>
+      </template>
+    </el-table-column>
+  </el-table>
 </template>

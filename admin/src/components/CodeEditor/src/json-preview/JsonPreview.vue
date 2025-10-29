@@ -17,6 +17,5 @@
 
   defineExpose({
     open,
-  })
-
+  });
 </script>

@@ -17,7 +17,7 @@ export default [
         meta: {
           title: '故事',
           type: 'draft',
-          query: { status: 1, all: true }
+          query: { status: 1, all: true },
         },
       },
       {

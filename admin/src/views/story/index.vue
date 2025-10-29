@@ -59,9 +59,27 @@
       <el-table :data="storyList" style="width: 100%">
         <el-table-column label="" align="center" width="150">
           <template #default="{ row }">
-            <ButtonEx content="删除" link type="danger" icon="el-icon-remove" @click="remove(row)" />
-            <ButtonEx content="导出" link type="primary" icon="el-icon-download" @click="exportJson(row)" />
-            <ButtonEx content="游玩" link type="success" icon="i-codicon:game" @click="gotoPlay(row)" />
+            <ButtonEx
+              content="删除"
+              link
+              type="danger"
+              icon="el-icon-remove"
+              @click="remove(row)"
+            />
+            <ButtonEx
+              content="导出"
+              link
+              type="primary"
+              icon="el-icon-download"
+              @click="exportJson(row)"
+            />
+            <ButtonEx
+              content="游玩"
+              link
+              type="success"
+              icon="i-codicon:game"
+              @click="gotoPlay(row)"
+            />
             <ButtonEx
               content="复制"
               link

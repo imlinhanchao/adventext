@@ -1,6 +1,14 @@
 <!-- filepath: /home/hancel/project/text-rpg/admin/src/components/ButtonEx/src/ButtonEx.vue -->
 <template>
-  <el-dialog v-bind="$attrs" :fullscreen="isFullscreen" :show-close="false" lock-scroll draggable :close-on-click-modal="false" :close-on-press-escape="false">
+  <el-dialog
+    v-bind="$attrs"
+    :fullscreen="isFullscreen"
+    :show-close="false"
+    lock-scroll
+    draggable
+    :close-on-click-modal="false"
+    :close-on-press-escape="false"
+  >
     <template #header="{ close, titleId, titleClass }">
       <slot name="header" v-bind="{ close, titleId, titleClass, toggleFull }">
         <div class="relative h-full flex items-center justify-between">
@@ -12,7 +20,9 @@
               <Icon
                 class="is-hover mr-10px cursor-pointer"
                 :icon="
-                  isFullscreen ? 'i-radix-icons:exit-full-screen' : 'i-radix-icons:enter-full-screen'
+                  isFullscreen
+                    ? 'i-radix-icons:exit-full-screen'
+                    : 'i-radix-icons:enter-full-screen'
                 "
                 color="var(--el-color-info)"
                 hover-color="var(--el-color-primary)"

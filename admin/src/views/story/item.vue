@@ -1,12 +1,12 @@
 <script lang="ts" setup>
-  import { IAttribute, Scene, SceneApi } from '@/api/scene';
-  import { createStory, Story, updateStory } from '@/api/story';
   import { ElMessage, FormInstance } from 'element-plus';
-  import ItemSelector from '@/views/item/selector.vue';
-  import { Item } from '@/api/item';
   import { clone, isArray } from '@/utils';
-  import Options from '../scene/options.vue';
-  import Effects from '../scene/effects.vue';
+  import { createStory, Story, updateStory } from '@/api/story';
+  import { IAttribute, Scene, SceneApi } from '@/api/scene';
+  import { Item } from '@/api/item';
+  import ItemSelector from '@/views/item/selector.vue';
+  import Options from '@/views/components/options.vue';
+  import Effects from '@/views/components/effects.vue';
   import Attribute from '@/views/components/attributes.vue';
 
   const emit = defineEmits(['confirm']);
@@ -48,13 +48,13 @@
 
     const formData: Story = {
       ...data.value,
-      attr: (data.value.attr as IAttribute[]).map(attr => {
+      attr: (data.value.attr as IAttribute[]).map((attr) => {
         attr = { ...attr };
         attr.value = Number(attr.value).toString() !== attr.value ? attr.value : Number(attr.value);
         return attr;
       }),
-      attrName: []
-    }
+      attrName: [],
+    };
 
     formData.attrName = [];
     (data.value.attr as IAttribute[]).forEach((item) => {
@@ -77,13 +77,12 @@
     });
   }
 
-  const scenes = ref<Scene[]>([]);  
-  function loadScene () {
+  const scenes = ref<Scene[]>([]);
+  function loadScene() {
     return new SceneApi(data.value.id || '', 'story').getList().then((data) => {
       scenes.value = data;
     });
   }
-
 </script>
 
 <template>
@@ -111,7 +110,7 @@
         <el-switch v-model="data.visible" />
       </el-form-item>
       <el-form-item label="人物基础属性" class="no-error" />
-      <Attribute v-model:attributes="(data.attr as IAttribute[])" />
+      <Attribute v-model:attributes="data.attr as IAttribute[]" />
       <el-form-item label="人物初始背包" v-if="data.id">
         <el-button type="primary" link size="small" @click="addInventory">
           <Icon icon="i-ep:circle-plus-filled" />
@@ -127,8 +126,22 @@
         </el-tag>
       </el-form-item>
       <ItemSelector v-if="data.id" ref="itemRef" :story="data.id" multiple inventory type="story" />
-      <Options v-if="data.id" v-model:options="data.options" :scenes="scenes" :story="data.id" type="story" />
-      <Effects v-if="data.id" v-model:effects="data.effects" type="draft" :story="data.id" :scenes="scenes" title="全局效果" tip="全局生效效果，每次进入场景时若满足条件则触发，可无限触发。通过配置不同的类型，可以修改玩家的属性、物品和下一个场景等。" />
+      <Options
+        v-if="data.id"
+        v-model:options="data.options"
+        :scenes="scenes"
+        :story="data.id"
+        type="story"
+      />
+      <Effects
+        v-if="data.id"
+        v-model:effects="data.effects"
+        type="draft"
+        :story="data.id"
+        :scenes="scenes"
+        title="全局效果"
+        tip="全局生效效果，每次进入场景时若满足条件则触发，可无限触发。通过配置不同的类型，可以修改玩家的属性、物品和下一个场景等。"
+      />
     </el-form>
     <template #footer>
       <el-button @click="visible = false">取消</el-button>

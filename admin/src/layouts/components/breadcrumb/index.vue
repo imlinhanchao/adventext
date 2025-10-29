@@ -18,65 +18,68 @@
       }
     }
   }
-    
-  const breads = ref< AppRouteModule[]>(getBreadCrumbList([], routeModuleList));
+
+  const breads = ref<AppRouteModule[]>(getBreadCrumbList([], routeModuleList));
 
   watch(
     () => currentRoute.value,
     () => {
       breads.value = getBreadCrumbList([], routeModuleList);
     },
-    { immediate: true }
+    { immediate: true },
   );
-  
 </script>
 <template>
   <el-breadcrumb separator="/">
-    <el-breadcrumb-item v-for="bread in breads" :key="bread.name" :to="bread.name != currentRoute.name && bread.path || undefined">
+    <el-breadcrumb-item
+      v-for="bread in breads"
+      :key="bread.name"
+      :to="(bread.name != currentRoute.name && bread.path) || undefined"
+    >
       <Icon v-if="bread.meta.icon" :icon="bread.meta.icon" /> <span>{{ bread.meta.title }}</span>
     </el-breadcrumb-item>
   </el-breadcrumb>
 </template>
 <style lang="less" scoped>
-@prefix-cls: ~'el-breadcrumb';
+  @prefix-cls: ~'el-breadcrumb';
 
-.@{prefix-cls} {
-  :deep(&__item) {
-    display: flex; 
-
-    .@{prefix-cls}__inner {
+  .@{prefix-cls} {
+    :deep(&__item) {
       display: flex;
-      align-items: center;
-      color: var(--header-text-color);
 
-      &:hover {
-        color: var(--el-color-primary);
-      }
+      .@{prefix-cls}__inner {
+        display: flex;
+        align-items: center;
+        color: var(--header-text-color);
 
-      .el-icon {
-        margin-right: 5px;
-      }
-    }
-  }
+        &:hover {
+          color: var(--el-color-primary);
+        }
 
-  :deep(&__item):not(:last-child) {
-    .@{prefix-cls}__inner {
-      color: var(--header-text-color);
-
-      &:hover {
-        color: var(--el-color-primary);
+        .el-icon {
+          margin-right: 5px;
+        }
       }
     }
-  }
 
-  :deep(&__item):last-child {
-    .@{prefix-cls}__inner {
-      color: var(--el-text-color-placeholder);
+    :deep(&__item):not(:last-child) {
+      .@{prefix-cls}__inner {
+        color: var(--header-text-color);
 
-      &:hover {
+        &:hover {
+          color: var(--el-color-primary);
+        }
+      }
+    }
+
+    :deep(&__item):last-child {
+      .@{prefix-cls}__inner {
         color: var(--el-text-color-placeholder);
+
+        &:hover {
+          color: var(--el-text-color-placeholder);
+        }
       }
     }
   }
-}
 </style>

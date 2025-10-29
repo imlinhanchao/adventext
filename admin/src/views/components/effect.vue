@@ -2,7 +2,7 @@
   import { Effect, EffectType, Scene } from '@/api/scene';
   import { clone, isArray } from '@/utils';
   import { FormInstance } from 'element-plus';
-  import { ItemsContext, SceneContext, StoryContext, TargetsContext } from './index';
+  import { ItemsContext, SceneContext, StoryContext, TargetsContext } from '../scene/index';
   import ItemSelector from '@/views/item/selector.vue';
   import { Item } from '@/api/item';
   import Conditions from './conditions.vue';
@@ -70,20 +70,22 @@
   const defaultAttrs = computed(() =>
     Array.from(
       new Set(
-        isArray(story?.value?.attr) ? story?.value?.attr.map(a => ({
-          value: a.key,
-          label: a.name,
-        })) : Object.keys(story?.value?.attr || {}).map((a) => ({
-          value: a,
-          label: story?.value?.attrName[a],
-        })),
+        isArray(story?.value?.attr)
+          ? story?.value?.attr.map((a) => ({
+              value: a.key,
+              label: a.name,
+            }))
+          : Object.keys(story?.value?.attr || {}).map((a) => ({
+              value: a,
+              label: story?.value?.attrName[a],
+            })),
       ),
     ),
   );
-  const sceneAttrs = computed(() => 
+  const sceneAttrs = computed(() =>
     Array.from(
       new Set(
-        scene?.value?.attributes?.map(a => ({
+        scene?.value?.attributes?.map((a) => ({
           value: a.key,
           label: a.name,
         })) || [],
@@ -112,7 +114,7 @@
   function searchAttr(type: string) {
     return (query: string, cb) => {
       let attrs: any[] = [];
-      switch(type) {
+      switch (type) {
         case 'ItemAttr':
           attrs = itemAttrs.value;
           break;
@@ -137,9 +139,8 @@
       name: '<back>',
       content: '返回上一个场景',
     } as Scene);
-    cb(scenes)
+    cb(scenes);
   }
-
 </script>
 
 <template>
@@ -162,9 +163,7 @@
         <span v-else-if="data.type == 'Target'">
           会给玩家发放指定成就，成就不可重复发放。已发放成就再次触发不会产生发放提醒。
         </span>
-        <span v-else-if="data.type == 'Tip'">
-          仅给玩家发送提示信息。
-        </span>
+        <span v-else-if="data.type == 'Tip'"> 仅给玩家发送提示信息。 </span>
         <span v-else-if="data.type == 'Item'">
           会从背包修改指定物品的数量，设置正值则新增，负值则扣除，若<b>弹窗提示</b>设置了选择物品，可以通过
           <code>$item</code> 指代选择的物品。
@@ -196,7 +195,9 @@
               >：当前场景对象，包含属性<code>name</code>（场景名称）、<code>content</code>（场景内容）、<code>options</code>（场景选项数组）。
             </li>
             <li>
-              返回值：<code>next</code> 为下一个场景的名称，<code>message</code> 为提示信息，<code>next</code>
+              返回值：<code>next</code> 为下一个场景的名称，<code>message</code> 为提示信息，<code
+                >next</code
+              >
               和 <code>message</code> 都是可选的。
             </li>
           </ul>
@@ -304,7 +305,11 @@
       </template>
       <template v-if="data.type === 'Scene'">
         <el-form-item label="场景" prop="name">
-          <el-autocomplete v-model="data.name" :fetch-suggestions="searchScene" @select="data.name = $event.name">
+          <el-autocomplete
+            v-model="data.name"
+            :fetch-suggestions="searchScene"
+            @select="data.name = $event.name"
+          >
             <template #default="{ item }">
               <div class="flex items-center">
                 <span class="font-bold">{{ item.name }}</span>
@@ -365,7 +370,7 @@
               <code>　　itemSelect: Inventory, </code>
               <code>　　addItem: (name: string, count: number) => void, </code>
               <code
-              >　　setAttr: (attr: { key: string; name?: string; value: string }) => void</code
+                >　　setAttr: (attr: { key: string; name?: string; value: string }) => void</code
               >
               <code>): boolean {</code>
               <code>　　let message = "", next = null;</code>
@@ -379,7 +384,12 @@
                 class="border-l border-r border-[var(--el-border-color)] z-10"
                 style="--el-input-border-radius: 0; --el-input-border-color: transparent"
               />
-              <ButtonEx icon="i-lets-icons:full-alt" link class="group-hover:opacity-60 absolute right-1 bottom-1 z-100 opacity-0" @click="codeVisible = true" />
+              <ButtonEx
+                icon="i-lets-icons:full-alt"
+                link
+                class="group-hover:opacity-60 absolute right-1 bottom-1 z-100 opacity-0"
+                @click="codeVisible = true"
+              />
             </section>
             <span
               class="bg-gray-100 dark:bg-gray-900 flex flex-col px-2 rounded-bl rounded-br border border-t-0 border-[var(--el-border-color)]"
@@ -415,7 +425,10 @@
           </template>
           <el-input v-model="data.tip" clearable type="textarea" />
         </el-form-item>
-        <p v-if="data.type !== 'Target' && data.type !== 'Tip' && data.type !== 'Scene'" class="mb-2">
+        <p
+          v-if="data.type !== 'Target' && data.type !== 'Tip' && data.type !== 'Scene'"
+          class="mb-2"
+        >
           <el-button @click="data.content = 'rand(1,100)'">随机数</el-button>
           <el-button @click="data.content = 'percent(10,2)'">概率数</el-button>
           <el-button @click="data.content = '$value'">弹窗输入</el-button>
@@ -441,14 +454,22 @@
           <code>　　itemSelect: Inventory, </code>
           <code>　　addItem: (name: string, count: number) => void, </code>
           <code
-          >　　setAttr: (attr: { key: string; name?: string; value: string, isScene?: boolean }) => void</code
+            >　　setAttr: (attr: { key: string; name?: string; value: string, isScene?: boolean })
+            => void</code
           >
           <code>): boolean {</code>
           <code>　　let message = "", next = null;</code>
         </span>
-        <section class="relative group h-full bg-gray-100 dark:bg-gray-900 border-l border-r border-[var(--el-border-color)] overflow-auto">
+        <section
+          class="relative group h-full bg-gray-100 dark:bg-gray-900 border-l border-r border-[var(--el-border-color)] overflow-auto"
+        >
           <CodeEditor v-model:value="data.content" class="h-full" />
-          <ButtonEx icon="i-gridicons:fullscreen-exit" link class="group-hover:opacity-60 absolute right-1 bottom-1 z-100 opacity-0" @click="codeVisible = false" />
+          <ButtonEx
+            icon="i-gridicons:fullscreen-exit"
+            link
+            class="group-hover:opacity-60 absolute right-1 bottom-1 z-100 opacity-0"
+            @click="codeVisible = false"
+          />
         </section>
         <span
           class="bg-gray-100 dark:bg-gray-900 flex flex-col px-2 rounded-bl rounded-br border border-t-0 border-[var(--el-border-color)]"

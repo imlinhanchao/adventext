@@ -51,14 +51,16 @@
   }
 
   const tokenLoading = ref(true);
-  generateToken().then((token) => {
-    if (!token) return;
-    userStore.setToken(token);
-    userStore.getUserInfoAction();
-    return router.replace(PageEnum.BASE_HOME)
-  }).finally(() => {
-    tokenLoading.value = false;
-  });
+  generateToken()
+    .then((token) => {
+      if (!token) return;
+      userStore.setToken(token);
+      userStore.getUserInfoAction();
+      return router.replace(PageEnum.BASE_HOME);
+    })
+    .finally(() => {
+      tokenLoading.value = false;
+    });
 
   useDark();
 </script>
@@ -70,12 +72,7 @@
       </template>
       <el-form ref="formRef" :model="formData" :rules="rules">
         <el-form-item name="username">
-          <el-input
-            v-model="formData.username"
-            placeholder="用户名"
-            allow-clear
-            class="max-w-80"
-          >
+          <el-input v-model="formData.username" placeholder="用户名" allow-clear class="max-w-80">
             <template #prefix>
               <Icon icon="i-mdi:user" />
             </template>
@@ -96,7 +93,9 @@
         </el-form-item>
         <el-form-item>
           <section class="flex justify-between w-full">
-            <el-button type="primary" @click="login" :loading="loading" class="w-full">登录</el-button>
+            <el-button type="primary" @click="login" :loading="loading" class="w-full"
+              >登录</el-button
+            >
           </section>
         </el-form-item>
       </el-form>

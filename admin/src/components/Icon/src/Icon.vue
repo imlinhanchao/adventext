@@ -46,7 +46,7 @@
 
     <!-- iconify图标 -->
     <span v-else ref="elRef" :class="$attrs.class">
-      <IconifyIcon :icon="(symbolId as string)" />
+      <IconifyIcon :icon="symbolId as string" />
     </span>
   </i>
 </template>

@@ -6,24 +6,29 @@
   import { copyTextToClipboard } from '@/hooks/web/useCopyToClipboard';
   import { useEventListener } from '@/hooks/event/useEventListener';
 
-  const props = withDefaults(defineProps<{
-    story: string;
-    type: string;
-    scenes: Scene[];
-    options?: Option[];
-    title?: string;
-  }>(), {
-    options: () => [],
-    title: '选项列表',
-  });
+  const props = withDefaults(
+    defineProps<{
+      story: string;
+      type: string;
+      scenes: Scene[];
+      options?: Option[];
+      title?: string;
+    }>(),
+    {
+      title: '选项列表',
+    },
+  );
   const emit = defineEmits<{
-    (e: 'update:options', value: Option[]): void;
+    (e: 'update:options', value?: Option[]): void;
   }>();
 
   const options = ref(props.options);
-  watch(() => props.options, (val) => {
-    options.value = val || [];
-  });
+  watch(
+    () => props.options,
+    (val) => {
+      options.value = val || [];
+    },
+  );
   watch(options, (val) => {
     emit('update:options', val || []);
   });
@@ -31,15 +36,16 @@
   const excludeOptions = ref<Option[]>([]);
   const optionRef = ref<InstanceType<typeof OptionForm>>();
   function addOption() {
-    excludeOptions.value = options.value;
+    excludeOptions.value = options.value || [];
     optionRef.value?.open(new Option()).then((option: Option) => {
+      if (!options.value) options.value = [];
       options.value.push(option);
       nextTick(() => rowDrop());
     });
   }
 
   function editOption(option: Option) {
-    excludeOptions.value = options.value.filter((o) => o !== option);
+    excludeOptions.value = options.value?.filter((o) => o !== option) || [];
     optionRef.value?.open(option).then((data: Option) => {
       Object.assign(option, data);
       emit('update:options', options.value);
@@ -56,7 +62,7 @@
       animation: 300,
       ghostClass: 'ghost',
       onEnd: ({ newIndex, oldIndex }) => {
-        const tableData = options.value;
+        const tableData = options.value || [];
         const currRow = tableData.splice(oldIndex, 1)[0];
         tableData.splice(newIndex, 0, currRow);
         optionsKey.value++;
@@ -73,7 +79,8 @@
   function deleteOptions() {
     const selection = optionTableRef.value?.getSelectionRows();
     if (selection && selection.length > 0) {
-      options.value = options.value.filter((o) => !selection.includes(o));
+      options.value = options.value?.filter((o) => !selection.includes(o)) || [];
+      nextTick(() => rowDrop());
     } else {
       ElMessage.warning('请先选择要删除的选项');
     }
@@ -89,7 +96,7 @@
         const data = JSON.parse(text) as Option[];
         if (Array.isArray(data) && data.every((o) => o.text)) {
           const sameNameOptions = data.filter((o) =>
-            options.value.find((existO) => existO.text === o.text)
+            options.value?.find((existO) => existO.text === o.text),
           );
           if (sameNameOptions.length > 0) {
             await ElMessageBox.confirm(
@@ -100,12 +107,13 @@
                 showCancelButton: true,
                 cancelButtonText: '取消',
                 confirmButtonText: '继续粘贴',
-              }
-            )
+              },
+            );
             sameNameOptions.forEach((o) => {
               o.text += ' (复制)';
             });
           }
+          if (!options.value) options.value = [];
           options.value.push(...data);
           nextTick(() => rowDrop());
           ElMessage.success('选项粘贴成功');
@@ -113,13 +121,11 @@
       } catch (err) {}
     },
     wait: 0,
-  })
+  });
 </script>
 
 <template>
-  <el-divider>
-    {{ title }}({{ options?.length || 0 }})
-  </el-divider>
+  <el-divider> {{ title }}({{ options?.length || 0 }}) </el-divider>
   <p class="py-2">
     <ButtonEx type="primary" link icon="el-icon-document" @click="copyOptions">复制选项</ButtonEx>
     <ButtonEx type="danger" link icon="el-icon-remove" @click="deleteOptions">批量删除</ButtonEx>
@@ -144,11 +150,22 @@
         <el-button type="primary" link size="small" @click="editOption(row)">
           <Icon icon="i-ep:edit" />
         </el-button>
-        <el-button type="danger" link size="small" @click="options.splice($index, 1)">
+        <el-button
+          type="danger"
+          link
+          size="small"
+          @click="options?.splice($index, 1), $nextTick(() => rowDrop())"
+        >
           <Icon icon="i-ep:remove" />
         </el-button>
       </template>
     </el-table-column>
   </el-table>
-  <OptionForm ref="optionRef" :scenes="scenes" :story="story" :type="type" :options="excludeOptions" />
+  <OptionForm
+    ref="optionRef"
+    :scenes="scenes"
+    :story="story"
+    :type="type"
+    :options="excludeOptions"
+  />
 </template>

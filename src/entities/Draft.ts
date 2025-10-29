@@ -31,14 +31,14 @@ export class Draft {
   @Column('json', { comment: '属性名称' })
   attrName: { [key: string]: [string, string] | string } | { key: string; name: string; }[] = [];
 
-  @Column('json', { comment: '初始化物品' })
+  @Column('json', { comment: '初始化物品' })  
   inventory: Inventory[];
 
-  @Column("json", { comment: '全局选项' })
-  options: Option[];
+  @Column("json", { nullable: true, comment: '全局选项' })
+  options?: Option[];
 
-  @Column("json", { comment: '全局效果，达成条件后触发' })
-  effects: Effect[];
+  @Column("json", { nullable: true, comment: '全局效果，达成条件后触发' })
+  effects?: Effect[];
   
   @Column("text", { nullable: true, comment: '全局自定义样式' })
   customStyle: string;

@@ -2,8 +2,6 @@ import { defHttp } from '@/utils/http';
 import { getStory, updateStory } from './story';
 import { getStory as getDraft, updateStory as updateDraft } from './draft';
 
-
-
 export class IAttribute {
   key: string;
   name: string;
@@ -11,7 +9,13 @@ export class IAttribute {
   value: any;
   remark?: string;
 
-  constructor(key: string = '', name: string = '', type: string = '', value: any = null, remark?: string) {
+  constructor(
+    key: string = '',
+    name: string = '',
+    type: string = '',
+    value: any = null,
+    remark?: string,
+  ) {
     this.key = key;
     this.name = name;
     this.type = type;
@@ -37,7 +41,7 @@ export class Option {
   /**
    * 反追加
    */
-  antiAppend?: string; 
+  antiAppend?: string;
   /**
    * 下一场景
    */
@@ -64,7 +68,12 @@ export class Option {
    */
   disabled?: boolean;
 
-  constructor(text: string = '', next: string = '', conditions: Condition[] = [], effects: Effect[] = []) {
+  constructor(
+    text: string = '',
+    next: string = '',
+    conditions: Condition[] = [],
+    effects: Effect[] = [],
+  ) {
     this.text = text;
     this.next = next;
     this.conditions = conditions;
@@ -123,7 +132,7 @@ export const EffectType = {
   Fn: '函数调用',
   Scene: '场景变化',
   Tip: '消息提醒',
-}
+};
 
 export class Effect {
   /**
@@ -198,7 +207,7 @@ export class Scene {
   /**
    * 面板位置
    */
-  position: { x: number, y: number, w?: number, h?: number } = { x: 10, y: 10 };
+  position: { x: number; y: number; w?: number; h?: number } = { x: 10, y: 10 };
 
   /**
    * 自定义 CSS

@@ -102,16 +102,12 @@
           ElMessage.error('无效的故事数据');
           return;
         }
-        await ElMessageBox.confirm(
-          `确定导入故事 "${data.name}" 吗?`,
-          '提示',
-          {
-            type: 'warning',
-            showCancelButton: true,
-            cancelButtonText: '取消',
-            confirmButtonText: '确定',
-          }
-        );
+        await ElMessageBox.confirm(`确定导入故事 "${data.name}" 吗?`, '提示', {
+          type: 'warning',
+          showCancelButton: true,
+          cancelButtonText: '取消',
+          confirmButtonText: '确定',
+        });
         await importStorys([text]);
         ElMessage.success('导入成功');
         loadStory();
@@ -157,7 +153,13 @@
               @click="approve(row)"
               v-if="row.status == 1 && isApprove"
             />
-            <ButtonEx content="游玩" link type="success" icon="i-codicon:game" @click="gotoPlay(row)" />
+            <ButtonEx
+              content="游玩"
+              link
+              type="success"
+              icon="i-codicon:game"
+              @click="gotoPlay(row)"
+            />
             <ButtonEx
               content="推荐"
               link
@@ -180,13 +182,7 @@
               icon="el-icon-document"
               @click="copy(row)"
             />
-            <ButtonEx
-              content="分享"
-              link
-              type="primary"
-              icon="i-ep:share"
-              @click="share(row)"
-            />
+            <ButtonEx content="分享" link type="primary" icon="i-ep:share" @click="share(row)" />
           </template>
         </el-table-column>
         <el-table-column prop="author" label="作者" v-if="isAdmin" width="200" align="center" />

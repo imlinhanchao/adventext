@@ -2,7 +2,7 @@
   import { Draft, updateStory } from '@/api/draft';
   import { copyTextToClipboard } from '@/hooks/web/useCopyToClipboard';
 
-  const draft = ref<Draft>()
+  const draft = ref<Draft>();
   const visible = ref(false);
   function open(d: Draft) {
     draft.value = d;
@@ -18,12 +18,14 @@
   function submit() {
     if (!draft.value) return;
     loading.value = true;
-    updateStory(draft.value).then(() => {
-      ElMessage.success('保存成功');
-      visible.value = false;
-    }).finally(() => {
-      loading.value = false;
-    });
+    updateStory(draft.value)
+      .then(() => {
+        ElMessage.success('保存成功');
+        visible.value = false;
+      })
+      .finally(() => {
+        loading.value = false;
+      });
   }
 
   defineExpose({
@@ -32,26 +34,13 @@
 </script>
 
 <template>
-  <DialogEx
-    title="分享草稿"
-    :width="'500px'"
-    v-model="visible"
-    @close="$emit('close')"
-  >
+  <DialogEx title="分享草稿" :width="'500px'" v-model="visible" @close="$emit('close')">
     <div v-if="draft">
       <el-form-item>
-        <el-input-tag
-          v-model="draft.shareUser"
-          placeholder="输入允许访问该草稿的用户名"
-          clearable
-        >
+        <el-input-tag v-model="draft.shareUser" placeholder="输入允许访问该草稿的用户名" clearable>
           <template #suffix>
             <el-tooltip content="复制访问地址">
-              <ButtonEx
-                icon="i-ep:copy-document"
-                type="text"
-                @click="copyLink"
-              />
+              <ButtonEx icon="i-ep:copy-document" type="text" @click="copyLink" />
             </el-tooltip>
           </template>
         </el-input-tag>

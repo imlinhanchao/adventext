@@ -10,7 +10,7 @@
 
   const visible = ref(false);
   const data = ref<Item>(new Item());
-  const attr = ref<{ key: string, value: string, name: string}[]>([]);
+  const attr = ref<{ key: string; value: string; name: string }[]>([]);
   const formData = computed(() => ({ ...data.value, attr: attr.value }));
   const itemApi = computed(() => new ItemApi(props.storyId, props.type));
 
@@ -49,7 +49,9 @@
     data.value.attrName = {};
     attr.value.forEach((item) => {
       if (item.key) {
-        data.value.attributes[item.key] = isNaN(parseFloat(item.value)) ? item.value : parseFloat(item.value);
+        data.value.attributes[item.key] = isNaN(parseFloat(item.value))
+          ? item.value
+          : parseFloat(item.value);
         if (item.name) data.value.attrName[item.key] = item.name;
       }
     });
@@ -60,10 +62,15 @@
     emit('confirm', data.value);
     visible.value = false;
   }
-  
 </script>
 <template>
-  <el-dialog :title="data.id ? '物品更新' : '物品创建'" v-model="visible" width="800px" @close="emit('close')" append-to-body>
+  <el-dialog
+    :title="data.id ? '物品更新' : '物品创建'"
+    v-model="visible"
+    width="800px"
+    @close="emit('close')"
+    append-to-body
+  >
     <el-form :model="formData" label-width="auto" class="colon" :rules="rules" ref="formRef">
       <el-form-item label="标识符" prop="key">
         <el-input v-model="data.key" clearable />
@@ -100,7 +107,12 @@
         </el-table-column>
         <el-table-column label="操作" width="80" align="center">
           <template #header>
-            <el-button type="primary" link size="small" @click="attr.push({ key: '', value: '', name: '' })">
+            <el-button
+              type="primary"
+              link
+              size="small"
+              @click="attr.push({ key: '', value: '', name: '' })"
+            >
               <Icon icon="i-ep:circle-plus" />
             </el-button>
           </template>

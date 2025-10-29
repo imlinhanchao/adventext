@@ -82,7 +82,13 @@
 </script>
 
 <template>
-  <DialogEx title="成就" v-model="visible" width="1000px" append-to-body body-class="el-container !flex-col">
+  <DialogEx
+    title="成就"
+    v-model="visible"
+    width="1000px"
+    append-to-body
+    body-class="el-container !flex-col"
+  >
     <el-header class="flex !py-2 justify-between" height="auto">
       <section class="flex space-x-2">
         <el-button type="primary" @click="add">添加</el-button>

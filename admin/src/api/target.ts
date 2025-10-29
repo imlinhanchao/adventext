@@ -92,14 +92,17 @@ export class TargetApi {
   getList(params?: ITargetQuery) {
     return defHttp.get<Target[]>({
       url: `/${this.type}/${this.storyId}/targets`,
-      params
+      params,
     });
   }
 
   get(name: string, mode: ErrorMessageMode = 'message') {
-    return defHttp.get<Target>({
-      url: `/${this.type}/${this.storyId}/target/${name}`,
-    }, { errorMessageMode: mode });
+    return defHttp.get<Target>(
+      {
+        url: `/${this.type}/${this.storyId}/target/${name}`,
+      },
+      { errorMessageMode: mode },
+    );
   }
 
   create(Target: Target) {

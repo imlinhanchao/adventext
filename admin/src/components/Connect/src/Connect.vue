@@ -1,24 +1,29 @@
 <script setup lang="ts">
   import { add, angleOf, len, mul, norm, perp, sub } from '../index';
-  
-  const props = withDefaults(defineProps<{
-    elementMap: Recordable<any>;
-    connections: Recordable<{ id: string; from: string; to: string }[]>;
-    parent?: HTMLElement;
-    spacing?: number;
-    tension?: number;
-    minCtrl?: number;
-  }>(), {
-    spacing: 14,
-    tension: 0.30,
-    minCtrl: 0,
-  });
 
-  const nodes = computed(() => Object.entries(props.elementMap).reduce((acc, [key, el]) => {
-    if (el) acc[key] = el.$el || el;
-    return acc;
-  }, {} as Recordable<HTMLElement>));
-    
+  const props = withDefaults(
+    defineProps<{
+      elementMap: Recordable<any>;
+      connections: Recordable<{ id: string; from: string; to: string }[]>;
+      parent?: HTMLElement;
+      spacing?: number;
+      tension?: number;
+      minCtrl?: number;
+    }>(),
+    {
+      spacing: 14,
+      tension: 0.3,
+      minCtrl: 0,
+    },
+  );
+
+  const nodes = computed(() =>
+    Object.entries(props.elementMap).reduce((acc, [key, el]) => {
+      if (el) acc[key] = el.$el || el;
+      return acc;
+    }, {} as Recordable<HTMLElement>),
+  );
+
   const svgRect = ref({
     left: 0,
     top: 0,
@@ -42,15 +47,15 @@
 
   /* ---------- 几何与锚点计算 ---------- */
   function getCenter(el) {
-    const parentNode = props.parent || el.parentNode as HTMLElement;
+    const parentNode = props.parent || (el.parentNode as HTMLElement);
     const r = el.getBoundingClientRect();
     const pr = parentNode.getBoundingClientRect();
-    return { x: r.left + r.width/2 - pr.left, y: r.top + r.height/2 - pr.top };
+    return { x: r.left + r.width / 2 - pr.left, y: r.top + r.height / 2 - pr.top };
   }
 
   // 返回元素四边中点之一，选择哪一边取决于目标方向（避免线穿过元素）
   function getEdgeAnchor(el, targetPoint) {
-    const parentNode = props.parent || el.parentNode as HTMLElement;
+    const parentNode = props.parent || (el.parentNode as HTMLElement);
     let r = el.getBoundingClientRect();
     const pr = parentNode.getBoundingClientRect();
     r = {
@@ -61,8 +66,10 @@
       width: r.width,
       height: r.height,
     };
-    const cx = r.left + r.width/2, cy = r.top + r.height/2;
-    const dx = targetPoint.x - cx, dy = targetPoint.y - cy;
+    const cx = r.left + r.width / 2,
+      cy = r.top + r.height / 2;
+    const dx = targetPoint.x - cx,
+      dy = targetPoint.y - cy;
     if (Math.abs(dx) > Math.abs(dy)) {
       // 左右
       return { x: dx > 0 ? r.right : r.left, y: cy };
@@ -81,7 +88,8 @@
 
     for (const key in props.connections) {
       for (const conn of props.connections[key]) {
-        const from = conn.from, to = conn.to;
+        const from = conn.from,
+          to = conn.to;
         const fromC = centers[from];
         const toC = centers[to];
 
@@ -99,22 +107,30 @@
     const inIndex = new Map();
     for (const nodeId in outMap) {
       const arr = outMap[nodeId];
-      arr.sort((a,b)=> a.angle - b.angle);
+      arr.sort((a, b) => a.angle - b.angle);
       const total = arr.length;
       arr.forEach((it, i) => outIndex.set(it.conn.id, { idx: i, total }));
     }
     for (const nodeId in inMap) {
       const arr = inMap[nodeId];
-      arr.sort((a,b)=> a.angle - b.angle);
+      arr.sort((a, b) => a.angle - b.angle);
       const total = arr.length;
       arr.forEach((it, i) => inIndex.set(it.conn.id, { idx: i, total }));
     }
     return { outIndex, inIndex };
   }
-  
 
   /* ---------- 生成单条连接的 SVG path d（增强版：在控制点上加入 perp 曲率偏移） ---------- */
-  function computeConnectionPath(srcEl, dstEl, idxSrc = 0, totalSrc = 1, idxDst = 0, totalDst = 1, spacingPx = 14, tensionRatio = 0.28) {
+  function computeConnectionPath(
+    srcEl,
+    dstEl,
+    idxSrc = 0,
+    totalSrc = 1,
+    idxDst = 0,
+    totalDst = 1,
+    spacingPx = 14,
+    tensionRatio = 0.28,
+  ) {
     const dstCenter = getCenter(dstEl);
     const srcCenter = getCenter(srcEl);
 
@@ -125,7 +141,7 @@
     // 方向与法线
     let baseDir = sub(B, A);
     const distAB = len(baseDir);
-    if (distAB < 1) baseDir = {x:1,y:0};
+    if (distAB < 1) baseDir = { x: 1, y: 0 };
     baseDir = norm(baseDir);
     const basePerp = norm(perp(baseDir));
 
@@ -150,7 +166,7 @@
     let curvature = (offsetSrc - offsetDst) * 0.6;
     if (Math.abs(curvature) < 1) {
       const defaultCurv = Math.min(fullDist * 0.18, 120);
-      const sign = (baseDir.x * baseDir.y >= 0) ? 1 : -1;
+      const sign = baseDir.x * baseDir.y >= 0 ? 1 : -1;
       curvature = defaultCurv * sign;
     }
     c1 = add(c1, mul(basePerp, curvature));
@@ -165,7 +181,7 @@
   function render() {
     pending = false;
 
-    svgRect.value = getSvgRect(); 
+    svgRect.value = getSvgRect();
     const { outIndex, inIndex } = computeIndexes();
 
     for (const key in props.connections) {
@@ -174,9 +190,18 @@
         const dstEl = nodes.value[conn.to];
 
         const outInfo = outIndex.get(conn.id) || { idx: 0, total: 1 };
-        const inInfo  = inIndex.get(conn.id)  || { idx: 0, total: 1 };
+        const inInfo = inIndex.get(conn.id) || { idx: 0, total: 1 };
 
-        const d = computeConnectionPath(srcEl, dstEl, outInfo.idx, outInfo.total, inInfo.idx, inInfo.total, props.spacing, props.tension);
+        const d = computeConnectionPath(
+          srcEl,
+          dstEl,
+          outInfo.idx,
+          outInfo.total,
+          inInfo.idx,
+          inInfo.total,
+          props.spacing,
+          props.tension,
+        );
         const pathEl = pathMap.value[conn.id];
         pathEl.setAttribute('d', d);
       }
@@ -189,9 +214,13 @@
     requestAnimationFrame(render);
   }
 
-  watch(() => props.connections, () => {
-    requestRender();
-  }, { deep: true });
+  watch(
+    () => props.connections,
+    () => {
+      requestRender();
+    },
+    { deep: true },
+  );
 
   defineExpose({
     render: requestRender,
@@ -199,9 +228,9 @@
 </script>
 
 <template>
-  <svg 
-    id="svgLayer" 
-    xmlns="http://www.w3.org/2000/svg" 
+  <svg
+    id="svgLayer"
+    xmlns="http://www.w3.org/2000/svg"
     class="absolute top-0 left-0 w-full h-full pointer-events-none"
     :viewBox="`${svgRect.left} ${svgRect.top} ${svgRect.width} ${svgRect.height}`"
     :style="{
@@ -212,11 +241,13 @@
     }"
   >
     <defs>
-      <marker 
+      <marker
         id="arrow-small"
         viewBox="0 0 6 10"
-        refX="5" refY="5"
-        markerWidth="15" markerHeight="15"
+        refX="5"
+        refY="5"
+        markerWidth="15"
+        markerHeight="15"
         orient="auto"
         markerUnits="userSpaceOnUse"
       >
@@ -224,15 +255,15 @@
       </marker>
     </defs>
     <template v-for="(conn, key) in connections" :key="key">
-      <path 
+      <path
         v-for="c in conn"
-        :ref="(el) => pathMap[c.id] = el as any"
+        :ref="(el) => (pathMap[c.id] = el as any)"
         :key="c.id"
-        :id="`conn-path-${c.id}`" 
-        stroke="var(--el-color-primary)" 
-        stroke-width="2" 
-        fill="none" 
-        marker-end="url(#arrow-small)" 
+        :id="`conn-path-${c.id}`"
+        stroke="var(--el-color-primary)"
+        stroke-width="2"
+        fill="none"
+        marker-end="url(#arrow-small)"
       />
     </template>
   </svg>

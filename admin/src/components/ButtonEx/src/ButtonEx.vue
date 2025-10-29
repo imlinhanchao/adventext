@@ -28,7 +28,6 @@
   import { ElButton, Placement, ElTooltip } from 'element-plus';
   import Icon from '@/components/Icon';
 
-
   defineProps<{
     content?: string;
     placement?: Placement;

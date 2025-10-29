@@ -61,7 +61,6 @@ export class IAttribute {
   }
 }
 
-
 @Entity({ comment: '场景'})
 export class Scene {
   @PrimaryGeneratedColumn()
@@ -97,8 +96,14 @@ export class Scene {
   @Column("simple-array", { comment: '场景标签' })
   tags: string[] = [];
 
-  @Column("json", { comment: '场景属性' })
-  attributes: IAttribute[];
+  @Column("json", { nullable: true, comment: '场景属性' })
+  attributes?: IAttribute[];
+
+  @Column("json", { nullable: true, comment: '进入场景效果' })
+  enterEffects?: Effect[];
+
+  @Column("json", { nullable: true, comment: '离开场景效果' })
+  leaveEffects?: Effect[];
 
   @Column('bigint', { comment: "创建时间" })
   createTime: number = 0;

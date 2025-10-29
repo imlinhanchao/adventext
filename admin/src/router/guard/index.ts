@@ -38,4 +38,3 @@ function createScrollGuard(router: Router) {
     return true;
   });
 }
-

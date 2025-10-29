@@ -1,6 +1,6 @@
 <script setup lang="ts">
-  import { approveStory, Draft } from '@/api/draft';
   import { FormInstance } from 'element-plus';
+  import { approveStory, Draft } from '@/api/draft';
 
   const emit = defineEmits(['confirm', 'close']);
   const story = ref(new Draft());
