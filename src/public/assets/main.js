@@ -245,6 +245,7 @@ function selectItem(inventory, message, needCount=false) {
       itemList.appendChild(itemDiv);
 
       confirmBtn.onclick = () => {
+        const item = itemChoose[0];
         if (needCount) {
           const countInput = itemDiv.querySelector('input[type="number"]');
           resolve(`item:${item.key}:${countInput.value}`);
