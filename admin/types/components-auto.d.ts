@@ -8,8 +8,6 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     ButtonEx: typeof import('@/components/ButtonEx/index.ts')['default']
-    ButtonExcopy: typeof import('@/components/ButtonEx copy/index.ts')['default']
-    ButtonExcopySrcButtonEx: typeof import('@/ButtonEx.vue')['default']
     ButtonExSrcButtonEx: typeof import('@/ButtonEx.vue')['default']
     CodeEditor: typeof import('@/components/CodeEditor/index.ts')['default']
     CodeEditorSrcCodeEditor: typeof import('@/CodeEditor.vue')['default']
@@ -21,7 +19,6 @@ declare module 'vue' {
     Connect: typeof import('@/components/Connect/index.ts')['default']
     ConnectSrcConnect: typeof import('@/Connect.vue')['default']
     DialogEx: typeof import('@/components/DialogEx/index.ts')['default']
-    DialogExSrcButtonEx: typeof import('@/ButtonEx.vue')['default']
     DialogExSrcDialogEx: typeof import('@/DialogEx.vue')['default']
     ElAlert: typeof import('element-plus/es')['ElAlert']
     ElAside: typeof import('element-plus/es')['ElAside']
@@ -54,8 +51,6 @@ declare module 'vue' {
     ElMenu: typeof import('element-plus/es')['ElMenu']
     ElMenuItem: typeof import('element-plus/es')['ElMenuItem']
     ElOption: typeof import('element-plus/es')['ElOption']
-    ElRadioButton: typeof import('element-plus/es')['ElRadioButton']
-    ElRadioGroup: typeof import('element-plus/es')['ElRadioGroup']
     ElSelect: typeof import('element-plus/es')['ElSelect']
     ElSubMenu: typeof import('element-plus/es')['ElSubMenu']
     ElSwitch: typeof import('element-plus/es')['ElSwitch']
