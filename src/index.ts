@@ -47,6 +47,10 @@ if (utils.config) {
 
   // 路由
   app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
+  app.get('/api/docs.json', (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    res.send(swaggerSpecs);
+  });
   app.use("/auth", authRoutes);
   app.use("/u", profileRoutes);
   app.use("/api", adminRoutes);

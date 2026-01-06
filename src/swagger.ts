@@ -11,7 +11,7 @@ const options: swaggerJsdoc.Options = {
     servers: [
       {
         url: '/api',
-        description: '游戏管理测试 API',
+        description: '游戏管理测试接口',
       },
     ],
     components: {
