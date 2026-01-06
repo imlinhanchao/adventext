@@ -15,6 +15,49 @@ import { omit } from '../utils';
 
 const router = Router();
 
+/**
+ * @swagger
+ * tags:
+ *   name: Admin
+ *   description: 管理操作
+ */
+
+/**
+ * @swagger
+ * /api/login:
+ *   post:
+ *     summary: 用户登录
+ *     tags: [Admin]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - username
+ *               - password
+ *             properties:
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: 登录成功
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       type: string
+ *                       description: JWT 令牌
+ *       500:
+ *         description: 服务器错误
+ */
 router.post("/login", async (req, res) => {
   try {
     const { token } = await login(req.body, true);
@@ -26,6 +69,27 @@ router.post("/login", async (req, res) => {
 });
 
 
+/**
+ * @swagger
+ * /api/token:
+ *   post:
+ *     summary: 从会话获取令牌
+ *     tags: [Admin]
+ *     responses:
+ *       200:
+ *         description: 令牌已生成
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       type: string
+ *       403:
+ *         description: 未登录
+ */
 router.post("/token", async (req, res) => {
   try {
     if (!req.session.user) {
@@ -38,6 +102,25 @@ router.post("/token", async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/logout:
+ *   post:
+ *     summary: 用户登出
+ *     tags: [Admin]
+ *     responses:
+ *       200:
+ *         description: 登出成功
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       type: string
+ */
 router.post('/logout', (req, res) => {
   try {
     req.session.user = null;
@@ -47,6 +130,49 @@ router.post('/logout', (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/storys/{author}:
+ *   get:
+ *     summary: 获取作者的故事列表
+ *     tags: [Admin]
+ *     parameters:
+ *       - in: path
+ *         name: author
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: 作者名称
+ *       - in: query
+ *         name: index
+ *         schema:
+ *           type: integer
+ *         description: 分页索引
+ *       - in: query
+ *         name: count
+ *         schema:
+ *           type: integer
+ *         description: 每页数量
+ *       - in: query
+ *         name: gzip
+ *         schema:
+ *           type: boolean
+ *         description: 压缩响应
+ *     responses:
+ *       200:
+ *         description: 故事列表
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ */
 router.get("/storys{/:author}", async (req, res) => {
   try {
     const { index, count } = req.query;
@@ -92,6 +218,18 @@ router.get("/storys{/:author}", async (req, res) => {
   }
 })
 
+/**
+ * @swagger
+ * /api/profile:
+ *   get:
+ *     summary: 获取用户资料
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: 用户资料数据
+ */
 router.get("/profile", authenticate(async (payload: JwtPayload, req, res) => {
   try {
     json(res, await profile(payload.id));

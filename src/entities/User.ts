@@ -1,5 +1,31 @@
 import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     User:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *         username:
+ *           type: string
+ *           description: 用户名
+ *         nickname:
+ *           type: string
+ *           description: 昵称
+ *         isAdmin:
+ *           type: boolean
+ *           description: 是否为管理员
+ *         lastLogin:
+ *           type: integer
+ *           format: int64
+ *           description: 上次登录时间
+ *         attr:
+ *           type: object
+ *           description: 第三方信息
+ */
 @Entity({ comment: '用户表'})
 export class User {
   @PrimaryGeneratedColumn()

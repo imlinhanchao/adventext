@@ -1,5 +1,37 @@
 import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Option:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *         text:
+ *           type: string
+ *           description: 选项文本
+ *         next:
+ *           type: string
+ *           description: 下一个场景ID
+ *         loop:
+ *           type: integer
+ *           description: 循环次数
+ *         disabled:
+ *           type: boolean
+ *           description: 是否禁用
+ *         conditions:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/Condition'
+ *           description: 出现条件
+ *         effects:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/Effect'
+ *           description: 触发效果
+ */
 export class Option {
   id?: string;
   text: string;
@@ -21,6 +53,32 @@ export class Option {
   }
 }
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Condition:
+ *       type: object
+ *       properties:
+ *         type:
+ *           type: string
+ *           description: 条件类型
+ *         name:
+ *           type: string
+ *           description: 属性名
+ *         content:
+ *           type: object
+ *           description: 条件内容
+ *         tip:
+ *           type: string
+ *           description: 提示信息
+ *         operator:
+ *           type: string
+ *           description: 运算符
+ *         isHide:
+ *           type: boolean
+ *           description: 是否隐藏
+ */
 export class Condition {
   type: string;
   name: string;
@@ -30,6 +88,34 @@ export class Condition {
   isHide: boolean = false;
 }
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Effect:
+ *       type: object
+ *       properties:
+ *         type:
+ *           type: string
+ *           description: 效果类型
+ *         name:
+ *           type: string
+ *           description: 属性名
+ *         operator:
+ *           type: string
+ *           description: 运算符
+ *         content:
+ *           type: string
+ *           description: 效果内容
+ *         tip:
+ *           type: string
+ *           description: 提示信息
+ *         conditions:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/Condition'
+ *           description: 触发条件
+ */
 export class Effect {
   type: string;
   name: string;
@@ -61,6 +147,44 @@ export class IAttribute {
   }
 }
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Scene:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *         storyId:
+ *           type: string
+ *           description: 故事 ID
+ *         name:
+ *           type: string
+ *           description: 场景名称
+ *         content:
+ *           type: string
+ *           description: 场景描述
+ *         options:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/Option'
+ *           description: 场景选项
+ *         theEnd:
+ *           type: string
+ *           description: 结局名称
+ *         isEnd:
+ *           type: boolean
+ *           description: 是否结局
+ *         position:
+ *           type: object
+ *           description: 面板位置
+ *         tags:
+ *           type: array
+ *           items:
+ *             type: string
+ *           description: 场景标签
+ */
 @Entity({ comment: '场景'})
 export class Scene {
   @PrimaryGeneratedColumn()

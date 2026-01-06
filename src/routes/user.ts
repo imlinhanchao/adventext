@@ -14,6 +14,29 @@ router.use((req, res, next) => {
   }
 })
 
+/**
+ * @swagger
+ * /api/user/list:
+ *   get:
+ *     summary: 获取所有用户
+ *     tags: [User]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: 用户列表
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/User'
+ */
 router.get('/list', async (req, res) => {
   try {
     const users = await UserRepo.find();
@@ -23,6 +46,39 @@ router.get('/list', async (req, res) => {
   }
 })
 
+/**
+ * @swagger
+ * /api/user/update/{id}:
+ *   post:
+ *     summary: 更新用户
+ *     tags: [User]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             $ref: '#/components/schemas/User'
+ *     responses:
+ *       200:
+ *         description: 用户已更新
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       $ref: '#/components/schemas/User'
+ */
 router.post('/update/:id', async (req, res) => {
   try {
     let user = await UserRepo.findOneBy({ id: Number(req.params.id) });
@@ -44,6 +100,36 @@ router.post('/update/:id', async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/user/delete/{id}:
+ *   delete:
+ *     summary: 删除用户
+ *     tags: [User]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: 已删除
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       type: object
+ *                       properties:
+ *                         message:
+ *                           type: string
+ */
 router.delete('/delete/:id', async (req, res) => {
   try {
     const result = await UserRepo.delete({ id: Number(req.params.id) });

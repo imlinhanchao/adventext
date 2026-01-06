@@ -1,5 +1,34 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Achievement:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *         user:
+ *           type: integer
+ *           description: 用户 ID
+ *         storyId:
+ *           type: string
+ *           description: 故事 ID
+ *         key:
+ *           type: string
+ *           description: 唯一标识
+ *         name:
+ *           type: string
+ *           description: 名称
+ *         description:
+ *           type: string
+ *           description: 描述
+ *         time:
+ *           type: integer
+ *           format: int64
+ *           description: 触发时间
+ */
 @Entity()
 export class Achievement {
   @PrimaryGeneratedColumn()

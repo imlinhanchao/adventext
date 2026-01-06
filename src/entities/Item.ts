@@ -1,5 +1,41 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Item:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *         storyId:
+ *           type: string
+ *           description: 故事 ID
+ *         key:
+ *           type: string
+ *           description: 唯一标识
+ *         name:
+ *           type: string
+ *           description: 名称
+ *         description:
+ *           type: string
+ *           description: 描述
+ *         type:
+ *           type: string
+ *           description: 类型
+ *         attributes:
+ *           type: object
+ *           description: 属性
+ *         createTime:
+ *           type: integer
+ *           format: int64
+ *           description: 创建时间
+ *         updateTime:
+ *           type: integer
+ *           format: int64
+ *           description: 更新时间
+ */
 @Entity({ comment: '物品'})
 export class Item {
   @PrimaryGeneratedColumn()

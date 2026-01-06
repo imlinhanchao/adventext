@@ -1,5 +1,40 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Record:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *         user:
+ *           type: integer
+ *           description: 用户 ID
+ *         storyId:
+ *           type: string
+ *           description: 故事 ID
+ *         scene:
+ *           type: string
+ *           description: 场景
+ *         from:
+ *           type: string
+ *           description: 来源场景
+ *         content:
+ *           type: string
+ *           description: 内容
+ *         option:
+ *           type: string
+ *           description: 选项
+ *         time:
+ *           type: integer
+ *           format: int64
+ *           description: 选择时间
+ *         endId:
+ *           type: integer
+ *           description: 结局 ID
+ */
 @Entity({ comment: '玩家游玩记录'})
 export class Record {
   @PrimaryGeneratedColumn()

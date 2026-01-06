@@ -1,6 +1,19 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 import { Item } from './Item';
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Inventory:
+ *       allOf:
+ *         - $ref: '#/components/schemas/Item'
+ *         - type: object
+ *           properties:
+ *             count:
+ *               type: integer
+ *               description: 物品数量
+ */
 export class Inventory extends Item {
   /**
    * 物品数量
@@ -8,6 +21,50 @@ export class Inventory extends Item {
   count: number;
 }
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Profile:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *         userId:
+ *           type: integer
+ *           description: 用户ID
+ *         storyId:
+ *           type: string
+ *           description: 故事 ID
+ *         scene:
+ *           type: string
+ *           description: 当前场景
+ *         from:
+ *           type: string
+ *           description: 来源场景
+ *         inventory:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/Inventory'
+ *           description: 物品栏
+ *         attr:
+ *           type: object
+ *           description: 属性
+ *         sceneAttr:
+ *           type: object
+ *           description: 场景属性
+ *         isEnd:
+ *           type: boolean
+ *           description: 已经结局
+ *         createTime:
+ *           type: integer
+ *           format: int64
+ *           description: 创建时间
+ *         updateTime:
+ *           type: integer
+ *           format: int64
+ *           description: 更新时间
+ */
 @Entity({ comment: '玩家档案' })
 export class Profile {
   @PrimaryGeneratedColumn()

@@ -1,5 +1,37 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     End:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *         endId:
+ *           type: integer
+ *           description: 结局 ID
+ *         user:
+ *           type: integer
+ *           description: 用户 ID
+ *         storyId:
+ *           type: string
+ *           description: 故事 ID
+ *         end:
+ *           type: string
+ *           description: 结局
+ *         from:
+ *           type: string
+ *           description: 来源场景
+ *         time:
+ *           type: integer
+ *           format: int64
+ *           description: 触发时间
+ *         cost:
+ *           type: integer
+ *           description: 耗费时间
+ */
 @Entity({ comment: '玩家解锁结局'})
 export class End {
   @PrimaryGeneratedColumn()

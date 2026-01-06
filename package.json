@@ -29,6 +29,8 @@
     "reflect-metadata": "^0.2.2",
     "session-file-store": "^1.5.0",
     "svg-captcha": "^1.4.0",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
     "typeorm": "^0.3.22"
   },
   "devDependencies": {
@@ -38,6 +40,8 @@
     "@types/node": "^22.15.3",
     "@types/pako": "^2.0.3",
     "@types/session-file-store": "^1.2.5",
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.8",
     "copyfiles": "^2.4.1",
     "rimraf": "^6.0.1",
     "ts-node": "^10.9.2",

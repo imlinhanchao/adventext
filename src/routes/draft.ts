@@ -10,7 +10,92 @@ import { omit, pick } from "../utils";
 import { In, Not } from "typeorm";
 
 const router = Router();
+
+/**
+ * @swagger
+ * tags:
+ *   name: Draft
+ *   description: 草稿相关操作
+ */
+
+/**
+ * @swagger
+ * /api/draft/run:
+ *   post:
+ *     summary: 运行草稿游戏
+ *     tags: [Draft]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               profile:
+ *                 $ref: '#/components/schemas/Profile'
+ *               scene:
+ *                 $ref: '#/components/schemas/Scene'
+ *     responses:
+ *       200:
+ *         description: 游戏执行结果
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       type: object
+ */
 router.post("/run", (req: Request, res: Response) => new GameController('draft').gameVirtual(req, res));
+
+/**
+ * @swagger
+ * /api/draft/filter:
+ *   post:
+ *     summary: 筛选选项
+ *     tags: [Draft]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               profile:
+ *                 $ref: '#/components/schemas/Profile'
+ *               scene:
+ *                 $ref: '#/components/schemas/Scene'
+ *               timezone:
+ *                 type: integer
+ *               records:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   $ref: '#/components/schemas/Record'
+ *               achievements:
+ *                 type: array
+ *                 items:
+ *                   $ref: '#/components/schemas/Achievement'
+ *               circle:
+ *                 type: integer
+ *     responses:
+ *       200:
+ *         description: 筛选后的选项
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       type: object
+ */
 router.post("/filter", (req: Request, res: Response) => new GameController('draft').optionFilter(req, res));
 
 router.use((req, res, next) => {
@@ -22,6 +107,45 @@ router.use((req, res, next) => {
 })
 
 // 获取所有故事
+/**
+ * @swagger
+ * /api/draft/list:
+ *   get:
+ *     summary: 获取草稿列表
+ *     tags: [Draft]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: all
+ *         schema:
+ *           type: string
+ *         description: 获取所有草稿（仅限管理员）
+ *       - in: query
+ *         name: name
+ *         schema:
+ *           type: string
+ *         description: 按名称筛选
+ *       - in: query
+ *         name: description
+ *         schema:
+ *           type: string
+ *         description: 按描述筛选
+ *     responses:
+ *       200:
+ *         description: 草稿列表
+ *         content:
+ *            application/json:
+ *              schema:
+ *                allOf:
+ *                  - $ref: '#/components/schemas/ApiResponse'
+ *                  - type: object
+ *                    properties:
+ *                      data:
+ *                        type: array
+ *                        items: 
+ *                          $ref: '#/components/schemas/Draft'
+ */
 router.get("/list", async (req, res) => {
   let query: any = req.query;
   if (!req.user?.isAdmin || req.query.all != 'true') {
@@ -41,6 +165,34 @@ router.get("/list", async (req, res) => {
 });
 
 // 添加新故事
+/**
+ * @swagger
+ * /api/draft:
+ *   post:
+ *     summary: 创建新草稿
+ *     tags: [Draft]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             $ref: '#/components/schemas/Draft'
+ *     responses:
+ *       200:
+ *         description: 草稿已创建
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       $ref: '#/components/schemas/Draft'
+ */
 router.post("/", async (req, res) => {
   req.body.author = req.user?.username;
   const newStory = DraftRepo.create(omit(req.body, ['status', 'comment']));
@@ -55,6 +207,38 @@ router.post("/", async (req, res) => {
 });
 
 
+/**
+ * @swagger
+ * /api/draft/export:
+ *   post:
+ *     summary: 导出草稿
+ *     tags: [Draft]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: array
+ *             items:
+ *               type: string
+ *             description: 草稿 ID 数组
+ *     responses:
+ *       200:
+ *         description: 压缩的草稿数据
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ */
 router.post('/export', async (req, res) => {
   const ids = req.body;
   if (!ids || ids.length === 0) {
@@ -91,6 +275,38 @@ router.post('/export', async (req, res) => {
   json(res, dataZips);
 });
 
+/**
+ * @swagger
+ * /api/draft/import:
+ *   post:
+ *     summary: 导入草稿
+ *     tags: [Draft]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: array
+ *             items:
+ *               type: string
+ *             description: 压缩的草稿数据字符串数组
+ *     responses:
+ *       200:
+ *         description: 导入有效
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Draft'
+ */
 router.post('/import', async (req, res) => {
   const dataZips = req.body;
   if (!dataZips || dataZips.length === 0) {
@@ -169,11 +385,74 @@ router.use('/:id', async (req, res, next) => {
 })
 
 // 获取故事详情
+/**
+ * @swagger
+ * /api/draft/{id}:
+ *   get:
+ *     summary: 获取草稿详情
+ *     tags: [Draft]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 草稿 ID
+ *     responses:
+ *       200:
+ *         description: 草稿详情
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       $ref: '#/components/schemas/Draft'
+ */
 router.get("/:id", async (req, res) => {
   json(res, req.story);
 });
 
 // 更新故事
+/**
+ * @swagger
+ * /api/draft/{id}:
+ *   put:
+ *     summary: 更新草稿
+ *     tags: [Draft]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 草稿 ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             $ref: '#/components/schemas/Draft'
+ *     responses:
+ *       200:
+ *         description: 草稿已更新
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       $ref: '#/components/schemas/Draft'
+ */
 router.put("/:id", async (req, res) => {
   const story = req.story!;
 
@@ -191,6 +470,37 @@ router.put("/:id", async (req, res) => {
 });
 
 // 删除故事
+/**
+ * @swagger
+ * /api/draft/{id}:
+ *   delete:
+ *     summary: 删除草稿
+ *     tags: [Draft]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 草稿 ID
+ *     responses:
+ *       200:
+ *         description: 草稿已删除
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       type: object
+ *                       properties:
+ *                         message:
+ *                           type: string
+ */
 router.delete("/:id", async (req, res) => {
   const story = req.story!;
   const result = await DraftRepo.delete({ id: story.id });
@@ -201,6 +511,34 @@ router.delete("/:id", async (req, res) => {
 });
 
 // 推送故事
+/**
+ * @swagger
+ * /api/draft/{id}/publish:
+ *   post:
+ *     summary: 发布草稿
+ *     tags: [Draft]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 草稿 ID
+ *     responses:
+ *       200:
+ *         description: 草稿已发布
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       $ref: '#/components/schemas/Draft'
+ */
 router.post("/:id/publish", async (req, res) => {
   const story = req.story!;
   story.status = 1;
@@ -209,6 +547,34 @@ router.post("/:id/publish", async (req, res) => {
   json(res, result);
 });
 
+/**
+ * @swagger
+ * /api/draft/{id}/export:
+ *   get:
+ *     summary: 导出草稿
+ *     tags: [Draft] 
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 草稿 ID
+ *     responses:
+ *       200:
+ *         description: 压缩的草稿数据
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       type: string
+ */
 router.get('/:id/export', async (req, res) => {
   const story = req.story!;
   const scenes = await SceneRepo.find({
@@ -236,6 +602,46 @@ router.get('/:id/export', async (req, res) => {
 });
 
 // 审核故事
+/**
+ * @swagger
+ * /api/draft/{id}/approve:
+ *   post:
+ *     summary: 审核草稿
+ *     tags: [Draft]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 草稿 ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               pass:
+ *                 type: boolean
+ *               reason:
+ *                 type: string
+ *             description: 审核决定及原因
+ *     responses:
+ *       200:
+ *         description: 草稿已审核
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       $ref: '#/components/schemas/Story'
+ */
 router.post("/:id/approve", async (req, res) => {
   if (!req.user?.isAdmin) {
     return error(res, "权限不足", 403);

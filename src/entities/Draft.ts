@@ -2,6 +2,60 @@ import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 import { Inventory } from './Profile';
 import { Effect, IAttribute, Option } from './Scene';
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Draft:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *         author:
+ *           type: string
+ *           description: 作者用户名
+ *         name:
+ *           type: string
+ *           description: 故事名称
+ *         alias:
+ *           type: string
+ *           description: 别名
+ *         shareUser:
+ *           type: array
+ *           items:
+ *             type: string
+ *           description: 共享用户列表
+ *         start:
+ *           type: string
+ *           description: 起始场景
+ *         description:
+ *           type: string
+ *           description: 描述
+ *         attr:
+ *           type: object
+ *           description: 人物初始化属性
+ *         inventory:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/Inventory'
+ *           description: 初始化物品
+ *         options:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/Option'
+ *           description: 全局选项
+ *         effects:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/Effect'
+ *           description: 全局效果，达成条件后触发
+ *         status:
+ *           type: integer
+ *           description: "故事状态: 0 - 草稿，1 - 推送，2 - 发布，3 - 下架"
+ *         comment:
+ *           type: string
+ *           description: 未通过原因
+ */
 @Entity({ comment: '故事草稿'})
 export class Draft {
   @PrimaryGeneratedColumn('uuid')

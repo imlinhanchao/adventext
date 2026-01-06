@@ -13,6 +13,13 @@ export function updateStoryStatus(req: Request) {
 
 const router = Router();
 
+/**
+ * @swagger
+ * tags:
+ *   name: Scene
+ *   description: 场景管理
+ */
+
 router.use((req, res, next) => {
   if (req.user && req.story) {
     next();
@@ -22,6 +29,36 @@ router.use((req, res, next) => {
 })
 
 // 获取故事场景
+/**
+ * @swagger
+ * /api/draft/{id}/scenes:
+ *   get:
+ *     summary: 获取所有场景
+ *     tags: [Scene]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 故事 ID
+ *     responses:
+ *       200:
+ *         description: 场景列表
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Scene'
+ */
 router.get("/scenes", async (req, res) => {
   const story = req.story!;
 
@@ -32,6 +69,40 @@ router.get("/scenes", async (req, res) => {
 });
 
 // 添加新场景
+/**
+ * @swagger
+ * /api/draft/{id}/scene:
+ *   post:
+ *     summary: 创建新场景
+ *     tags: [Scene]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 故事 ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Scene'
+ *     responses:
+ *       200:
+ *         description: 场景已创建
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       $ref: '#/components/schemas/Scene'
+ */
 router.post("/scene", async (req, res) => {
   const story = req.story!;
 
@@ -48,6 +119,44 @@ router.post("/scene", async (req, res) => {
 });
 
 // 更新场景
+/**
+ * @swagger
+ * /api/draft/{id}/scene/{sceneId}:
+ *   put:
+ *     summary: 更新场景
+ *     tags: [Scene]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: sceneId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Scene'
+ *     responses:
+ *       200:
+ *         description: 场景已更新
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       $ref: '#/components/schemas/Scene'
+ */
 router.put("/scene/:sceneId", async (req, res) => {
   const story = req.story!;
   const scene = await SceneRepo.findOneBy({ id: Number(req.params.sceneId), storyId: story.id });
@@ -72,6 +181,41 @@ router.put("/scene/:sceneId", async (req, res) => {
 });
 
 // 删除场景
+/**
+ * @swagger
+ * /api/draft/{id}/scene/{sceneId}:
+ *   delete:
+ *     summary: 删除场景
+ *     tags: [Scene]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: sceneId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: 删除确认
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       type: object
+ *                       properties:
+ *                         message:
+ *                           type: string
+ */
 router.delete("/scene/:sceneId", async (req, res) => {
   const story = req.story!;
 
@@ -85,6 +229,38 @@ router.delete("/scene/:sceneId", async (req, res) => {
 });
 
 // 批量更新场景
+/**
+ * @swagger
+ * /api/draft/{id}/scenes:
+ *   post:
+ *     summary: 批量更新场景
+ *     tags: [Scene]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: array
+ *             items:
+ *               $ref: '#/components/schemas/Scene'
+ *     responses:
+ *       200:
+ *         description: 场景已更新
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Scene'
+ */
 router.post("/scenes", async (req, res) => {
   try {
     const story = req.story!;

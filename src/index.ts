@@ -1,6 +1,8 @@
 import "reflect-metadata";
 import http from 'http';
 import express from "express";
+import swaggerUi from 'swagger-ui-express';
+import swaggerSpecs from './swagger';
 import authRoutes from "./routes/auth";
 import adminRoutes from "./routes/admin";
 import homeRoutes from "./routes/home";
@@ -44,6 +46,7 @@ if (utils.config) {
   );
 
   // 路由
+  app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
   app.use("/auth", authRoutes);
   app.use("/u", profileRoutes);
   app.use("/api", adminRoutes);
