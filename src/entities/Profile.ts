@@ -27,6 +27,7 @@ export class Inventory extends Item {
  *   schemas:
  *     Profile:
  *       type: object
+ *       description: 玩家档案
  *       properties:
  *         id:
  *           type: integer

@@ -6,6 +6,7 @@ import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
  *   schemas:
  *     User:
  *       type: object
+ *       description: 用户
  *       properties:
  *         id:
  *           type: integer

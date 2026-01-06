@@ -8,6 +8,7 @@ import { Effect, IAttribute, Option } from './Scene';
  *   schemas:
  *     Draft:
  *       type: object
+ *       description: 故事草稿
  *       properties:
  *         id:
  *           type: string

@@ -7,6 +7,7 @@ import { Condition } from './Scene';
  *   schemas:
  *     Target:
  *       type: object
+ *       description: 可解锁成就
  *       properties:
  *         id:
  *           type: integer

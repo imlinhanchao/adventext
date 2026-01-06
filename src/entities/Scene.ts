@@ -6,6 +6,7 @@ import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
  *   schemas:
  *     Option:
  *       type: object
+ *       description: 场景选项
  *       properties:
  *         id:
  *           type: string
@@ -59,6 +60,7 @@ export class Option {
  *   schemas:
  *     Condition:
  *       type: object
+ *       description: 条件
  *       properties:
  *         type:
  *           type: string
@@ -94,6 +96,7 @@ export class Condition {
  *   schemas:
  *     Effect:
  *       type: object
+ *       description: 效果
  *       properties:
  *         type:
  *           type: string
@@ -153,6 +156,7 @@ export class IAttribute {
  *   schemas:
  *     Scene:
  *       type: object
+ *       description: 场景
  *       properties:
  *         id:
  *           type: integer

@@ -6,6 +6,8 @@ import { Draft } from './Draft';
  * components:
  *   schemas:
  *     Story:
+ *       type: object
+ *       description: 已发布故事
  *       allOf:
  *         - $ref: '#/components/schemas/Draft'
  *         - type: object

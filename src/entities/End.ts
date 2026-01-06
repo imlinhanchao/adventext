@@ -6,6 +6,7 @@ import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
  *   schemas:
  *     End:
  *       type: object
+ *       description: 玩家解锁的结局
  *       properties:
  *         id:
  *           type: integer

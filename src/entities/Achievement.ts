@@ -6,6 +6,7 @@ import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
  *   schemas:
  *     Achievement:
  *       type: object
+ *       description: 成就/目标
  *       properties:
  *         id:
  *           type: integer
