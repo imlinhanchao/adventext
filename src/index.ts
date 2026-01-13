@@ -22,6 +22,7 @@ const PORT = process.env.PORT || 3000;
 const FileStore = SessionStore(session);
 
 // 中间件
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -35,16 +36,6 @@ app.set("views", path.join(__dirname, "views"));
 app.enable('trust proxy');
 
 if (utils.config) {
-  // MCP 路由不应该使用 session 中间件，因为它可能导致 SSE 连接死锁
-  app.use("/api/mcp", (req, res, next) => {
-    // 简单的请求日志
-    console.log(`[MCP Request] ${req.method} ${req.url}`);
-    next();
-  }, mcpRoutes);
-
-  // 确保 OPTIONS 请求也能被正确处理（CORS 预检）
-  app.options("/api/mcp/", cors());
-
   // 添加会话支持
   app.use(
     session({

@@ -1,5 +1,5 @@
 import 'express-session';
-import { User } from '../entities/User';
+import type { User } from '../entities/User';
 import { GameState } from '../entities/GameState';
 import { Request } from "express";
 import { Story, Draft } from '../src/entities';

@@ -8,6 +8,7 @@ import { ItemRepo, SceneRepo, StoryRepo, User, UserRepo } from '../entities';
 import DraftRoute from './draft';
 import StoryRoute from './story';
 import UserRoute from './user';
+import McpRoute from './mcp';
 import ThirdPartyRoute from './thirdParty';
 import pako from 'pako';
 import { In } from 'typeorm';
@@ -252,6 +253,7 @@ router.use(authenticate(async (payload: JwtPayload, req, res, next) => {
   }
 }))
 
+router.use("/mcp", McpRoute);
 router.use("/user", UserRoute);
 router.use("/draft", DraftRoute);
 router.use("/story", StoryRoute);

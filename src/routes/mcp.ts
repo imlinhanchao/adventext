@@ -13,21 +13,10 @@ const transports = new Map<string, SSEServerTransport>();
 // GET /api/mcp/sse
 // Initiate SSE connection
 router.get("/sse", async (req, res) => {
-  const token = req.query.token as string;
+  const user = req.user as User
+  const token = req.headers.authorization?.split(" ")[1];
   if (!token) {
-    res.status(401).send("Unauthorized: No token provided");
-    return;
-  }
-
-  const payload = verifyToken(token);
-  if (!payload || !payload.id) {
-     res.status(403).send("Unauthorized: Invalid token");
-     return;
-  }
-
-  const user = await UserRepo.findOneBy({ id: payload.id });
-  if (!user) {
-      res.status(403).send("Unauthorized: User not found");
+      res.status(401).send("Unauthorized");
       return;
   }
 
