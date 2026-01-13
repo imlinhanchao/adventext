@@ -1,6 +1,7 @@
 import "reflect-metadata";
 import http from 'http';
 import express from "express";
+import cors from "cors";
 import swaggerUi from 'swagger-ui-express';
 import swaggerSpecs from './swagger';
 import authRoutes from "./routes/auth";
@@ -8,6 +9,7 @@ import adminRoutes from "./routes/admin";
 import homeRoutes from "./routes/home";
 import profileRoutes from "./routes/profile";
 import configRoutes from "./routes/config";
+import mcpRoutes from "./routes/mcp";
 import path from "path";
 import { AppDataSource } from "./entities";
 import session from "express-session";
@@ -33,6 +35,16 @@ app.set("views", path.join(__dirname, "views"));
 app.enable('trust proxy');
 
 if (utils.config) {
+  // MCP 路由不应该使用 session 中间件，因为它可能导致 SSE 连接死锁
+  app.use("/api/mcp", (req, res, next) => {
+    // 简单的请求日志
+    console.log(`[MCP Request] ${req.method} ${req.url}`);
+    next();
+  }, mcpRoutes);
+
+  // 确保 OPTIONS 请求也能被正确处理（CORS 预检）
+  app.options("/api/mcp/", cors());
+
   // 添加会话支持
   app.use(
     session({
@@ -53,6 +65,7 @@ if (utils.config) {
   });
   app.use("/auth", authRoutes);
   app.use("/u", profileRoutes);
+
   app.use("/api", adminRoutes);
   app.use("/", homeRoutes);
   app.use((req, res, next) => {
