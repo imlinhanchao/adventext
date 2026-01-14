@@ -104,7 +104,7 @@ export function registerMcpTools(server: McpServer, currentUser?: { username: st
         draftId: z.string().describe("故事草稿 ID (创建时必填，更新/删除操作自动校验)"),
         sceneId: z.string().optional().describe("场景 ID (更新/删除时必填)"),
         name: z.string().optional().describe("场景名称 (创建时必填)"),
-        content: z.string().optional().describe("场景内容的文本描述 (创建时必填)"),
+        content: z.string().optional().describe("场景内容的文本描述 (创建时必填)，支持 Markdown 格式"),
         isEnd: z.boolean().optional().describe("该场景是否为结局场景"),
         theEnd: z.string().optional().describe("如果是结局场景，结局的名称"),
       }
