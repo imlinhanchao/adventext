@@ -44,6 +44,22 @@ export function login(params: LoginParams, mode: ErrorMessageMode = 'modal') {
   );
 }
 
+export function register(params: LoginParams, mode: ErrorMessageMode = 'modal') {
+  return defHttp.post<string>(
+    {
+      url: '/register',
+      params,
+    },
+    {
+      errorMessageMode: mode,
+    },
+  );
+}
+
+export function getThirdProviders() {
+  return defHttp.get<any[]>({ url: '/auth-providers' });
+}
+
 /**
  * @description: getUserInfo
  */

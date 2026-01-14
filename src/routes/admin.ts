@@ -1,6 +1,6 @@
 import 'express-session';
 import { Router } from "express";
-import { login, profile } from '../controllers/auth';
+import { login, profile, register } from '../controllers/auth';
 import { json, error } from '../utils/route';
 import { authenticate, generateToken } from '../utils/auth';
 import { JwtPayload } from 'jsonwebtoken';
@@ -10,6 +10,7 @@ import StoryRoute from './story';
 import UserRoute from './user';
 import McpRoute from './mcp';
 import ThirdPartyRoute from './thirdParty';
+import ThirdPartyInstance from '../controllers/third';
 import pako from 'pako';
 import { In } from 'typeorm';
 import { omit } from '../utils';
@@ -100,6 +101,49 @@ router.post("/token", async (req, res) => {
     }
   } catch (err: any) {
     error(res, err.message, 403);
+  }
+});
+
+/**
+ * @swagger
+ * /api/register:
+ *   post:
+ *     summary: 用户注册
+ *     tags: [Admin]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - username
+ *               - password
+ *             properties:
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: 注册成功
+ */
+router.post("/register", async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    await register({ username, password });
+    json(res, "注册成功");
+  } catch (err: any) {
+    error(res, err.message);
+  }
+});
+
+router.get("/auth-providers", async (req, res) => {
+  try {
+    const thirds = await ThirdPartyInstance.getAll();
+    json(res, thirds.map(t => ({ id: t.id, name: t.name, icon: t.icon })));
+  } catch (err: any) {
+    error(res, err.message);
   }
 });
 
