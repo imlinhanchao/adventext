@@ -98,6 +98,9 @@ export default defineConfig({
       pagefindPlugin({
         customSearchQuery: chineseSearchOptimize,
       }),
-    ]
+    ],
+    server: {
+      allowedHosts: true,
+    }
   }
 })

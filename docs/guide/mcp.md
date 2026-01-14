@@ -7,14 +7,13 @@ MCP (Model Context Protocol) 是一个开放标准，允许 AI 模型安全地�
 在管理后台，你可以方便地获取连接所需的配置信息。
 
 1. 登录千屿引擎[管理后台](https://adventext.fun/admin)。
-2. 在页面右上角导航栏，找到并点击 <img src="/images/mcp/mcp.svg" style="display: inline; width: 1em; height: 1em;" alt="MCP"/> 图标。
-3. 在弹出的窗口中，你会看到适用于不同客户端的配置信息。
+2. 在页面右上角导航栏，找到并点击 <img src="/images/mcp/mcp.svg" style="display: inline; width: 1em; height: 1em;" alt="MCP"/> 图标就可以复制 MCP Server 的配置。
 
 ## 如何使用
 
 ### 1. 配置客户端
 
-Text RPG 的 MCP 服务仅支持 Server-Sent Events (SSE) 模式。请确保你的 AI 工具支持通过 HTTP SSE 连接 MCP 服务。
+MCP 服务仅支持 Server-Sent Events (SSE) 模式。请确保你的 AI 工具支持通过 HTTP SSE 连接 MCP 服务。
 
 在管理后台获取配置后，将其添加到你的 AI 助手配置文件中。
 
