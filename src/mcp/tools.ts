@@ -94,54 +94,97 @@ export function registerMcpTools(server: McpServer, currentUser?: { username: st
     }
   );
 
-  // Tool: Create Scene
+  // Tool: Manage Scene
   server.registerTool(
-    "create_scene",
+    "manage_scene",
     {
-      description: "为故事草稿创建一个新场景",
+      description: "管理故事草稿中的场景（创建、更新、删除）",
       inputSchema: {
-        draftId: z.string().describe("故事草稿 ID"),
-        name: z.string().describe("场景名称"),
-        description: z.string().describe("场景内容的文本描述"),
+        operation: z.enum(["create", "update", "delete"]).describe("操作类型"),
+        draftId: z.string().describe("故事草稿 ID (创建时必填，更新/删除操作自动校验)"),
+        sceneId: z.string().optional().describe("场景 ID (更新/删除时必填)"),
+        name: z.string().optional().describe("场景名称 (创建时必填)"),
+        content: z.string().optional().describe("场景内容的文本描述 (创建时必填)"),
         isEnd: z.boolean().optional().describe("该场景是否为结局场景"),
         theEnd: z.string().optional().describe("如果是结局场景，结局的名称"),
-        isStart: z.boolean().optional().describe("是否为草稿的起始场景"),
       }
     },
-    async ({ draftId, name, description, isEnd, theEnd, isStart }) => {
-      // Access Logic Check
-      if (!currentUser?.isAdmin) {
-          const draft = await DraftRepo.findOneBy({ id: draftId });
-          if (!draft || draft.author !== currentUser?.username) {
-            return {
-                content: [{ type: "text", text: `Draft with ID ${draftId} not found or permission denied.` }],
-                isError: true,
-            };
+    async ({ operation, draftId, sceneId, name, content, isEnd, theEnd }) => {
+      // Helper: Check Draft Access
+      const checkDraftAccess = async (targetDraftId: string) => {
+          if (!currentUser?.isAdmin) {
+              const draft = await DraftRepo.findOneBy({ id: targetDraftId });
+              if (!draft || draft.author !== currentUser?.username) {
+                  throw new Error(`Draft with ID ${targetDraftId} not found or permission denied.`);
+              }
           }
-      }
-
-      if (isStart) {
-        const draft = await DraftRepo.findOneBy({ id: draftId });
-        if (draft) {
-          draft.start = name;
-          await DraftRepo.save(draft);
-        }
-      }
-
-      const scene = SceneRepo.create({
-        storyId: draftId,
-        name,
-        content: description,
-        options: [],
-        position: { x: 0, y: 0 },
-        theEnd: theEnd || "",
-        isEnd: isEnd || false,
-        tags: []
-      });
-      const result = await SceneRepo.save(scene);
-      return {
-        content: [{ type: "text", text: JSON.stringify({ id: result.id, name: result.name, storyId: result.storyId }, null, 2) }],
       };
+
+      if (operation === "create") {
+          if (!draftId) return { content: [{ type: "text", text: "draftId is required for create." }], isError: true };
+          if (!name || !content) return { content: [{ type: "text", text: "name and content are required for create." }], isError: true };
+          
+          try {
+              await checkDraftAccess(draftId);
+          } catch (e: any) {
+               return { content: [{ type: "text", text: e.message }], isError: true };
+          }
+
+          const scene = SceneRepo.create({
+            storyId: draftId,
+            name,
+            content,
+            options: [],
+            position: { x: 0, y: 0 },
+            theEnd: theEnd || "",
+            isEnd: isEnd || false,
+            tags: []
+          });
+          const result = await SceneRepo.save(scene);
+          await DraftRepo.update({ id: draftId }, { status: 0 });
+          return {
+            content: [{ type: "text", text: JSON.stringify({ id: result.id, name: result.name, storyId: result.storyId }, null, 2) }],
+          };
+      }
+
+      // Logic for Update/Delete
+      if (!sceneId) return { content: [{ type: "text", text: "sceneId is required for update/delete." }], isError: true };
+      const id = parseInt(sceneId);
+      if (isNaN(id)) return { content: [{ type: "text", text: "Invalid scene ID" }], isError: true };
+      
+      const scene = await SceneRepo.findOneBy({ id });
+      if (!scene) return { content: [{ type: "text", text: "Scene not found" }], isError: true };
+
+      try {
+          // If draftId is provided, safeguard that it matches (optional but good for consistency)
+          if (draftId && draftId !== scene.storyId) {
+             return { content: [{ type: "text", text: "Provided draftId does not match scene owner." }], isError: true };
+          }
+          await checkDraftAccess(scene.storyId);
+      } catch (e: any) {
+           return { content: [{ type: "text", text: e.message }], isError: true };
+      }
+
+      if (operation === "update") {
+          if (name !== undefined) scene.name = name;
+          if (content !== undefined) scene.content = content;
+          if (isEnd !== undefined) scene.isEnd = isEnd;
+          if (theEnd !== undefined) scene.theEnd = theEnd;
+          
+          const result = await SceneRepo.save(scene);
+          await DraftRepo.update({ id: scene.storyId }, { status: 0 });
+          return {
+             content: [{ type: "text", text: `Scene ${id} updated.` }]
+          };
+      } else if (operation === "delete") {
+          await SceneRepo.remove(scene);
+          await DraftRepo.update({ id: scene.storyId }, { status: 0 });
+          return {
+             content: [{ type: "text", text: `Scene ${id} deleted.` }]
+          };
+      }
+      
+      return { content: [{ type: "text", text: "Invalid operation" }], isError: true };
     }
   );
   
@@ -190,6 +233,7 @@ export function registerMcpTools(server: McpServer, currentUser?: { username: st
               attributes: attributes || {}
           });
           const result = await ItemRepo.save(item);
+          await DraftRepo.update({ id: draftId }, { status: 0 });
           return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
       } else if (operation === "update") {
           if (!existingItem) {
@@ -201,12 +245,14 @@ export function registerMcpTools(server: McpServer, currentUser?: { username: st
           if (attributes) existingItem.attributes = attributes;
           
           const result = await ItemRepo.save(existingItem);
+          await DraftRepo.update({ id: draftId }, { status: 0 });
           return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
       } else if (operation === "delete") {
           if (!existingItem) {
                return { content: [{ type: "text", text: `Item '${key}' not found.` }], isError: true };
           }
           await ItemRepo.remove(existingItem);
+          await DraftRepo.update({ id: draftId }, { status: 0 });
           return { content: [{ type: "text", text: `Item '${key}' deleted.` }] };
       }
       return { content: [{ type: "text", text: "Invalid operation" }], isError: true };
@@ -261,6 +307,7 @@ export function registerMcpTools(server: McpServer, currentUser?: { username: st
               conditions: conditions || []
           });
           const result = await TargetRepo.save(target);
+          await DraftRepo.update({ id: draftId }, { status: 0 });
           return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
       } else if (operation === "update") {
           if (!existingTarget) {
@@ -278,12 +325,14 @@ export function registerMcpTools(server: McpServer, currentUser?: { username: st
           }));
           
           const result = await TargetRepo.save(existingTarget);
+          await DraftRepo.update({ id: draftId }, { status: 0 });
           return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
       } else if (operation === "delete") {
           if (!existingTarget) {
                return { content: [{ type: "text", text: `Achievement '${key}' not found.` }], isError: true };
           }
           await TargetRepo.remove(existingTarget);
+          await DraftRepo.update({ id: draftId }, { status: 0 });
           return { content: [{ type: "text", text: `Achievement '${key}' deleted.` }] };
       }
       return { content: [{ type: "text", text: "Invalid operation" }], isError: true };
@@ -294,19 +343,24 @@ export function registerMcpTools(server: McpServer, currentUser?: { username: st
   server.registerTool(
     "update_scene_options",
     {
-      description: "更新场景的选项",
+      description: "更新场景的选项列表，包含基本信息（文本、跳转）及高级配置（追加内容、弹窗、循环模式等）。注意：此操作会保留现有选项的条件和效果（基于 ID 匹配）。",
       inputSchema: {
         sceneId: z.string().describe("要更新的场景 ID"),
         options: z.array(z.object({
             id: z.string().regex(/^[a-zA-Z_][a-zA-Z0-9_]*$/, "选项 ID 必须以字母或下划线开头，且只能包含字母、数字和下划线").describe("选项 ID，场景内唯一"),
             text: z.string().describe("选项文本"),
             next: z.string().describe("目标场景名称"),
+            append: z.string().optional().describe("选项存在追加的内容：当选项显示时，追加到场景内容的文本 (支持在场景内容中使用 ${选项} 占位)"),
+            antiAppend: z.string().optional().describe("选项消失后追加内容：当选项被条件过滤隐藏时，追加到场景内容的文本 (支持在场景内容中使用 ${选项} 占位)，通常与 loop = -1 配合使用。"),
+            loop: z.number().optional().describe("触发模式：0/空=默认，可无限触发; -1=单次触发(隐藏); >0=重复触发间隔(秒)"),
+            shortcut: z.string().optional().describe("快捷键"),
+            value: z.string().optional().describe("输入弹窗配置：普通文本作为提示语，或格式 'item:提示语:物品类型' 用于选择物品，物品类型可不写，或 items 表示选择多个"),
         })).describe("选项列表")
       }
     },
     async ({ sceneId, options }) => {
         const id = parseInt(sceneId);
-        if (isNaN(id)) {
+        if (isNaN(id)){ 
             return {
                 content: [{ type: "text", text: `Invalid scene ID: ${sceneId}`}],
                 isError: true
@@ -340,22 +394,27 @@ export function registerMcpTools(server: McpServer, currentUser?: { username: st
             }
         }
 
-        const nextScene = await SceneRepo.findOneBy({ storyId: scene.storyId, name: options[0]?.next });
-        if (!nextScene) {
-            return {
-                content: [{ type: "text", text: `Target scene '${options[0]?.next}' not found in the same draft.`}],
-                isError: true
-            }
-        }
+        const existingOptionsMap = new Map((scene.options || []).map(o => [o.id, o]));
         
-        scene.options = options.map(o => ({ 
-          id: o.id,
-          text: o.text, 
-          next: o.next,
-          loop: 0,
-          disabled: false
-        }));
+        scene.options = options.map(o => {
+          const existing = o.id ? existingOptionsMap.get(o.id) : undefined;
+          return { 
+            id: o.id,
+            text: o.text, 
+            next: o.next,
+            append: o.append,
+            antiAppend: o.antiAppend,
+            loop: o.loop || 0,
+            shortcut: o.shortcut,
+            value: o.value,
+            disabled: false,
+            // Preserve logic
+            conditions: existing?.conditions || [],
+            effects: existing?.effects || []
+          };
+        });
         await SceneRepo.save(scene);
+        await DraftRepo.update({ id: scene.storyId }, { status: 0 });
         return {
             content: [{ type: "text", text: `Scene ${sceneId} updated with ${options.length} options.`}]
         }
@@ -413,6 +472,7 @@ export function registerMcpTools(server: McpServer, currentUser?: { username: st
 
       draft.attr = newAttr;
       draft.attrName = attrNameList; 
+      draft.status = 0;
       
       await DraftRepo.save(draft);
       
@@ -500,6 +560,7 @@ export function registerMcpTools(server: McpServer, currentUser?: { username: st
 
         option.effects = nextEffects;
         await SceneRepo.save(scene);
+        await DraftRepo.update({ id: scene.storyId }, { status: 0 });
 
         return {
             content: [{ type: "text", text: `Updated effects for option '${optionId}' in scene ${sceneId}.` }]
@@ -572,6 +633,7 @@ export function registerMcpTools(server: McpServer, currentUser?: { username: st
 
         option.conditions = nextConditions;
         await SceneRepo.save(scene);
+        await DraftRepo.update({ id: scene.storyId }, { status: 0 });
 
         return {
             content: [{ type: "text", text: `Updated conditions for option '${optionId}' in scene ${sceneId}.` }]
@@ -633,6 +695,7 @@ export function registerMcpTools(server: McpServer, currentUser?: { username: st
       
       scene.attributes = newAttr;
       await SceneRepo.save(scene);
+      await DraftRepo.update({ id: scene.storyId }, { status: 0 });
       
       return {
         content: [{ type: "text", text: `Scene ${sceneId} attributes updated. Set ${attributes.length} attributes.` }],
@@ -663,6 +726,7 @@ export function registerMcpTools(server: McpServer, currentUser?: { username: st
         };
       }
       draft.start = sceneId;
+      draft.status = 0;
       await DraftRepo.save(draft);
       return {
         content: [{ type: "text", text: `Draft ${draftId} start scene set to ${sceneId}.` }],
@@ -747,6 +811,7 @@ export function registerMcpTools(server: McpServer, currentUser?: { username: st
       }
       
       draft.inventory = newInventory as any;
+      draft.status = 0;
       await DraftRepo.save(draft);
       
       return {
