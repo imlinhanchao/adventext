@@ -213,7 +213,7 @@ export class Scene {
    * 自定义 CSS
    */
   customStyle?: string;
-  
+
   /**
    * 进入场景效果
    */

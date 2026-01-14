@@ -3,12 +3,28 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 import { registerMcpTools } from "../mcp/tools";
 import { randomUUID } from "node:crypto";
-import { verifyToken } from "../utils/auth";
+import { authenticate, verifyToken } from "../utils/auth";
 import { UserRepo } from "../entities";
 import { User } from "../entities/User";
+import { JwtPayload } from "jsonwebtoken";
+import { error } from "../utils/route";
 
 const router = Router();
 const transports = new Map<string, SSEServerTransport>();
+
+router.use(authenticate(async (payload: JwtPayload, req, res, next) => {
+  try {
+    const user = await UserRepo.findOne({ where: { id: payload.id } });
+    if (!user) {
+      throw new Error("用户不存在");
+    }
+    req.user = user;
+
+    next();
+  } catch (err: any) {
+    error(res, err.message);
+  }
+}))
 
 // GET /api/mcp/sse
 // Initiate SSE connection
@@ -21,9 +37,7 @@ router.get("/sse", async (req, res) => {
   }
 
   const connectionId = randomUUID();
-  // Ensure we use absolute URL to avoid client confusion, especially behind proxies
-  const baseUrl = process.env.MCP_BASE_URL || `https://story.time-pack.com`; 
-  const endpoint = `${baseUrl}/api/mcp/message?connectionId=${connectionId}&token=${token}`;
+  const endpoint = `/api/mcp/message?connectionId=${connectionId}&token=${token}`;
   
   const transport = new SSEServerTransport(endpoint, res);
   
