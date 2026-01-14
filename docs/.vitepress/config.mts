@@ -76,6 +76,10 @@ export default defineConfig({
           { text: '如何发布', link: '/guide/release.md' },
         ],
       },
+      {
+        text: 'MCP 服务使用指南',
+        link: '/guide/mcp-guide.md'
+      }
     ],
 
     socialLinks: [
