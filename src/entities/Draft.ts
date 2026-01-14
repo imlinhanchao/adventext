@@ -39,7 +39,7 @@ import { Effect, IAttribute, Option } from './Scene';
  *           type: array
  *           items:
  *             $ref: '#/components/schemas/Inventory'
- *           description: 初始化物品
+ *           description: 初始背包物品
  *         options:
  *           type: array
  *           items:
@@ -86,7 +86,7 @@ export class Draft {
   @Column('json', { comment: '属性名称' })
   attrName: { [key: string]: [string, string] | string } | { key: string; name: string; }[] = [];
 
-  @Column('json', { comment: '初始化物品' })  
+  @Column('json', { comment: '初始背包物品' })  
   inventory: Inventory[];
 
   @Column("json", { nullable: true, comment: '全局选项' })
