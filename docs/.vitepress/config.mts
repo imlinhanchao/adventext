@@ -78,7 +78,7 @@ export default defineConfig({
       },
       {
         text: 'MCP 服务使用指南',
-        link: '/guide/mcp-guide.md'
+        link: '/guide/mcp.md'
       }
     ],
 
