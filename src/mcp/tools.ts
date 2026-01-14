@@ -101,11 +101,14 @@ export function registerMcpTools(server: McpServer, currentUser?: { username: st
       description: "Create a new scene for a story draft",
       inputSchema: {
         draftId: z.string().describe("ID of the story draft"),
-        name: z.string().describe("Name/Title of the scene"),
+        name: z.string().describe("Name of the scene"),
         description: z.string().describe("Content/Description of the scene text"),
+        isEnd: z.boolean().optional().describe("Is this scene an ending scene"),
+        theEnd: z.string().optional().describe("Name of the ending if isEnd is true"),
+        isStart: z.boolean().optional().describe("Is this the starting scene of the draft"),
       }
     },
-    async ({ draftId, name, description }) => {
+    async ({ draftId, name, description, isEnd, theEnd, isStart }) => {
       // Access Logic Check
       if (!currentUser?.isAdmin) {
           const draft = await DraftRepo.findOneBy({ id: draftId });
@@ -117,14 +120,22 @@ export function registerMcpTools(server: McpServer, currentUser?: { username: st
           }
       }
 
+      if (isStart) {
+        const draft = await DraftRepo.findOneBy({ id: draftId });
+        if (draft) {
+          draft.start = name;
+          await DraftRepo.save(draft);
+        }
+      }
+
       const scene = SceneRepo.create({
         storyId: draftId,
         name,
         content: description,
         options: [],
         position: { x: 0, y: 0 },
-        theEnd: "",
-        isEnd: false,
+        theEnd: theEnd || "",
+        isEnd: isEnd || false,
         tags: []
       });
       const result = await SceneRepo.save(scene);
@@ -143,7 +154,7 @@ export function registerMcpTools(server: McpServer, currentUser?: { username: st
         sceneId: z.string().describe("ID of the scene to update"),
         options: z.array(z.object({
             text: z.string().describe("Option text"),
-            next: z.string().describe("Target scene ID"),
+            next: z.string().describe("Target scene name"),
         })).describe("List of options")
       }
     },
@@ -173,6 +184,14 @@ export function registerMcpTools(server: McpServer, currentUser?: { username: st
                 };
              }
         }
+
+        const nextScene = await SceneRepo.findOneBy({ storyId: scene.storyId, name: options[0]?.next });
+        if (!nextScene) {
+            return {
+                content: [{ type: "text", text: `Target scene '${options[0]?.next}' not found in the same draft.`}],
+                isError: true
+            }
+        }
         
         scene.options = options.map(o => ({ 
           text: o.text, 
@@ -191,7 +210,7 @@ export function registerMcpTools(server: McpServer, currentUser?: { username: st
   server.registerTool(
     "set_draft_start_scene",
     {
-      description: "Set the starting scene for a draft",
+      description: "Set the starting scene for a draft, must be done after creating scenes",
       inputSchema: {
         draftId: z.string().describe("ID of the draft"),
         sceneId: z.string().describe("ID of the scene to be the start"),

@@ -86,10 +86,10 @@ export class Profile {
   @Column('json', { comment: '物品栏' })
   inventory: Inventory[];
 
-  @Column('json', { comment: '属性' })
+  @Column('json', { comment: '属性', nullable: true })
   attr: any;
 
-  @Column('json', { comment: '场景属性' })
+  @Column('json', { comment: '场景属性', nullable: true })
   sceneAttr: any;
 
   @Column('json', { comment: '属性名称' })
