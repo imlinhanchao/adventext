@@ -18,13 +18,13 @@
     </section>
   </div>
   
-  <div id="game" class="flex-1 overflow-auto flex flex-col justify-center overflow-auto">
+  <div id="game" class="flex-1 overflow-auto flex flex-col justify-center">
     <section class="inline-flex flex-col items-start border-dashed border p-2 border-gray-200 dark:border-gray-700 rounded">
       <% if (locals.message){ -%>
       <p class="<%= type -%> message"><%= message -%></p>
       <% } -%>
       <p class="message whitespace-pre-wrap" id="message"></p>
-      <div id="story" class="py-3 px-1 whitespace-pre-wrap"></div>
+      <div id="story" class="py-3 px-1 whitespace-pre-wrap overflow-auto max-h-[50vh]"></div>
       <div id="options" class="space-x-2">
         
       </div>

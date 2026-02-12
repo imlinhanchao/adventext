@@ -218,9 +218,6 @@ export class Scene {
   @Column("text", { nullable: true, comment: '自定义样式' })
   customStyle: string;
 
-  @Column({ comment: '场景渲染模式(废弃)', default: 0 })
-  renderMode: number = 0;
-
   @Column("simple-array", { comment: '场景标签' })
   tags: string[] = [];
 

@@ -57,12 +57,12 @@ export class Item {
   @Column('varchar', { length: 200, comment: '类型' })
   type: string;
 
-  @Column('json', { comment: '属性' })
+  @Column('json', { comment: '属性', nullable: true })
   attributes: {
     [key: string]: any;
   };
   
-  @Column('json', { comment: '属性名称' })
+  @Column('json', { comment: '属性名称', nullable: true })
   attrName: { [key: string]: string };
 
   @Column('bigint', { comment: "创建时间" })

@@ -104,12 +104,13 @@ export function registerMcpTools(server: McpServer, currentUser?: { username: st
         draftId: z.string().describe("故事草稿 ID (创建时必填，更新/删除操作自动校验)"),
         sceneId: z.string().optional().describe("场景 ID (更新/删除时必填)"),
         name: z.string().optional().describe("场景名称 (创建时必填)"),
-        content: z.string().optional().describe("场景内容的文本描述 (创建时必填)，支持 Markdown 格式"),
-        isEnd: z.boolean().optional().describe("该场景是否为结局场景"),
+        content: z.string().optional().describe("场景内容的文本描述 (创建时必填)，支持 Markdown 格式。注意：场景内容应是静态描述，不要包含“点击选项后的结果”，结果请使用选项的 antiAppend (配合 loop=-1) 或 Tip 效果。"),
+        isEnd: z.boolean().optional().describe("该场景是否为结局场景，结局场景请不要添加选项"),
         theEnd: z.string().optional().describe("如果是结局场景，结局的名称"),
+        isStart: z.boolean().optional().describe("该场景是否为起始场景"),
       }
     },
-    async ({ operation, draftId, sceneId, name, content, isEnd, theEnd }) => {
+    async ({ operation, draftId, sceneId, name, content, isEnd, theEnd, isStart }) => {
       // Helper: Check Draft Access
       const checkDraftAccess = async (targetDraftId: string) => {
           if (!currentUser?.isAdmin) {
@@ -140,6 +141,9 @@ export function registerMcpTools(server: McpServer, currentUser?: { username: st
             isEnd: isEnd || false,
             tags: []
           });
+          if (isStart) {
+              await DraftRepo.update({ id: draftId }, { start: name });
+          }
           const result = await SceneRepo.save(scene);
           await DraftRepo.update({ id: draftId }, { status: 0 });
           return {
@@ -170,6 +174,10 @@ export function registerMcpTools(server: McpServer, currentUser?: { username: st
           if (content !== undefined) scene.content = content;
           if (isEnd !== undefined) scene.isEnd = isEnd;
           if (theEnd !== undefined) scene.theEnd = theEnd;
+
+          if (isStart) {
+            await DraftRepo.update({ id: scene.storyId }, { start: name });
+          }
           
           const result = await SceneRepo.save(scene);
           await DraftRepo.update({ id: scene.storyId }, { status: 0 });
@@ -272,9 +280,9 @@ export function registerMcpTools(server: McpServer, currentUser?: { username: st
         description: z.string().optional().describe("成就描述"),
         conditions: z.array(z.object({
           type: z.string().describe("条件类型: Time(时间), Attr(属性), ItemAttr(物品属性), Item(物品), Target(成就), ItemType(物品类型), Value(输入值), Circle(周目), From(来源场景), Fn(函数)"),
-          name: z.string().optional().describe("属性名/物品名/成就名"),
+          name: z.string().optional().describe("物品名/成就名"),
           operator: z.string().optional().describe("运算符 (=, !=, <, >, ≤, ≥)"),
-          content: z.any().optional().describe("条件内容 (Time类型时为对象 {year, month...}, Attr/ItemAttr为对象 {key: {operator, value}}, 其他为字符串或数字)"),
+          content: z.any().optional().describe("条件内容 (Time类型时为对象 {year, month...}, Attr/ItemAttr为对象 {key: {operator, value}}，key为属性的key, 其他为字符串或数字)"),
         })).optional().describe("成就获得条件")
       }
     },
@@ -343,16 +351,16 @@ export function registerMcpTools(server: McpServer, currentUser?: { username: st
   server.registerTool(
     "update_scene_options",
     {
-      description: "更新场景的选项列表，包含基本信息（文本、跳转）及高级配置（追加内容、弹窗、循环模式等）。注意：此操作会保留现有选项的条件和效果（基于 ID 匹配）。",
+      description: "更新场景的选项列表。重要提示：若需表达“点击选项后显示一段文字”（如探索结果），请勿修改场景内容，而是设置该选项的 loop=-1 (点击后隐藏) 并在 antiAppend 中填入该文字。或者在 effects 中使用 Tip 效果。",
       inputSchema: {
         sceneId: z.string().describe("要更新的场景 ID"),
         options: z.array(z.object({
             id: z.string().regex(/^[a-zA-Z_][a-zA-Z0-9_]*$/, "选项 ID 必须以字母或下划线开头，且只能包含字母、数字和下划线").describe("选项 ID，场景内唯一"),
             text: z.string().describe("选项文本"),
-            next: z.string().describe("目标场景名称"),
+            next: z.string().describe("目标场景名称，若目标场景与当前场景相同，建议至少要添加一个效果以免用户以为无响应"),
             append: z.string().optional().describe("选项存在追加的内容：当选项显示时，追加到场景内容的文本 (支持在场景内容中使用 ${选项} 占位)"),
-            antiAppend: z.string().optional().describe("选项消失后追加内容：当选项被条件过滤隐藏时，追加到场景内容的文本 (支持在场景内容中使用 ${选项} 占位)，通常与 loop = -1 配合使用。"),
-            loop: z.number().optional().describe("触发模式：0/空=默认，可无限触发; -1=单次触发(隐藏); >0=重复触发间隔(秒)"),
+            antiAppend: z.string().optional().describe("选项点击/消失后追加内容：当选项因 loop=-1 被点击隐藏时，追加到场景内容的文本。专门用于显示“点击后的结果”。"),
+            loop: z.number().optional().describe("触发模式：0/空=默认; -1=单次触发(点击后隐藏，常用配合 antiAppend 显示反馈); >0=重复触发间隔(秒)"),
             shortcut: z.string().optional().describe("快捷键"),
             value: z.string().optional().describe("输入弹窗配置：普通文本作为提示语，或格式 'item:提示语:物品类型' 用于选择物品，物品类型可不写，或 items 表示选择多个"),
         })).describe("选项列表")
@@ -430,7 +438,7 @@ export function registerMcpTools(server: McpServer, currentUser?: { username: st
         draftId: z.string().describe("故事草稿 ID"),
         attributes: z.array(z.object({
           key: z.string().describe("属性标识符 (用于逻辑判断等)"),
-          name: z.string().optional().describe("属性公开名称 (如'HP', '体力', 若设置则玩家可见，若不设置相当于故事的内置变量)"),
+          name: z.string().optional().describe("属性公开名称 (如'HP', '体力', 若设置则玩家可见，若不设置相当于故事的内置变量，玩家不可见)"),
           value: z.union([z.string(), z.number()]).describe("属性初始值 (支持数字或字符串)"),
           group: z.string().optional().describe("属性分类名称"),
           desc: z.string().optional().describe("备注信息 (仅故事作者可见)")
@@ -486,14 +494,14 @@ export function registerMcpTools(server: McpServer, currentUser?: { username: st
   server.registerTool(
     "update_scene_option_effects",
     {
-      description: "设置场景选项的触发效果。支持：获得物品、获得成就、扣除物品属性、修改玩家属性、场景变化、函数调用、消息提醒。",
+      description: "设置场景选项的触发效果。支持：获得物品、获得成就、扣除物品属性、修改玩家属性、场景变化、函数调用、消息提醒(Tip)。如果只需简单的文字反馈而不修改场景内容，请优先使用 Tip 效果。",
       inputSchema: {
         sceneId: z.string().describe("场景 ID"),
         optionId: z.string().describe("选项 ID （场景内唯一的字符串标识符）"),
         effects: z.array(z.object({
           type: z.string().describe("效果类型: Item(获得物品), Target(获得成就), ItemAttr(物品属性消耗), Attr(属性变化), SceneAttr(场景属性变化), Scene(场景变化), Fn(函数调用), Tip(消息提醒)"),
-          name: z.string().optional().describe("属性名/物品名/成就名"),
-          content: z.string().optional().describe("数量/内容/值/场景名"),
+          name: z.string().optional().describe("属性名/物品名/成就名/场景名"),
+          content: z.string().optional().describe("数量/内容/值"),
           operator: z.string().optional().describe("运算符 (属性变化时用: +, -, *, /, =)"),
           tip: z.string().optional().describe("提示语"),
           conditions: z.array(z.object({
@@ -699,37 +707,6 @@ export function registerMcpTools(server: McpServer, currentUser?: { username: st
       
       return {
         content: [{ type: "text", text: `Scene ${sceneId} attributes updated. Set ${attributes.length} attributes.` }],
-      };
-    }
-  );
-
-  // Tool: Set Start Scene
-  server.registerTool(
-    "set_draft_start_scene",
-    {
-      description: "设置草稿的起始场景，必须在创建完成起始场景后操作",
-      inputSchema: {
-        draftId: z.string().describe("草稿 ID"),
-        sceneId: z.string().describe("作为起始的场景 ID"),
-      }
-    },
-    async ({ draftId, sceneId }) => {
-      const where: any = { id: draftId };
-      if (!currentUser?.isAdmin) {
-          where.author = currentUser?.username;
-      }
-      const draft = await DraftRepo.findOneBy(where);
-      if (!draft) {
-        return {
-          content: [{ type: "text", text: `Draft with ID ${draftId} not found.` }],
-          isError: true,
-        };
-      }
-      draft.start = sceneId;
-      draft.status = 0;
-      await DraftRepo.save(draft);
-      return {
-        content: [{ type: "text", text: `Draft ${draftId} start scene set to ${sceneId}.` }],
       };
     }
   );

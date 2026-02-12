@@ -225,11 +225,6 @@ export class Scene {
   leaveEffects?: Effect[];
 
   /**
-   * 渲染模式
-   */
-  renderMode: string = 'normal';
-
-  /**
    * 标签
    */
   tags: string[] = [];
