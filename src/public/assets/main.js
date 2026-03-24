@@ -290,7 +290,7 @@ function showMessage(message, type) {
   const messageCon = document.getElementById('message');
   messageCon.style.display = message ? 'block' : 'none';
   messageCon.className = 'message ' + type;
-  messageCon.textContent = message;
+  messageCon.textContent = DOMPurify.sanitize(marked?.parse(message) || message);
 }
 
 function initGame(story) {

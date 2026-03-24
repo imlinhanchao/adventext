@@ -194,6 +194,9 @@
   const contentHTML = computed(() => {
     return DOMPurify.sanitize(marked(content.value) as any);
   });
+  const messageHTML = computed(() => {
+    return DOMPurify.sanitize(marked(message.value) as any);
+  });
 
   const itemSelector = ref(false);
   const dlgMessage = ref('');
@@ -469,7 +472,9 @@
           </section>
         </section>
       </section>
-      <el-alert v-if="message" :type="msgType" :closable="false">{{ message }}</el-alert>
+      <el-alert v-if="message" :type="msgType" :closable="false">
+        <div v-html="messageHTML"></div>
+      </el-alert>
       <ButtonEx
         v-if="fnLogs.length"
         icon="i-material-symbols:search"
